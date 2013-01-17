@@ -5,27 +5,42 @@
 #include <vector>
 #include <memory>
 
+class VertexBuffer;
+class VertexBufferScope;
+
 class ShaderProgram {
 public:
   ShaderProgram();
-  void createProgram(const std::string & filename);
-  void deleteProgram();
+  ShaderProgram(const std::string & filename);
+  ~ShaderProgram();
   GLuint id;
 };
 
-class VertexBufferObject {
+class VertexBufferScope {
 public:
-  VertexBufferObject();
-  ~VertexBufferObject();
+  VertexBufferScope(VertexBuffer * buffer);
+  ~VertexBufferScope();
+private:
+  VertexBuffer * buffer;
+};
 
-  void createBuffer(GLuint index, const int num_data);
-  void createBuffer(const std::vector<glm::vec3> & data, GLuint index = 0, GLuint divisor = 0);
-  void deleteBuffers();
-
-  void bind();
-  void unbind();
+class VertexBuffer {
+  friend class VertexBufferScope;
+public:
+  VertexBuffer(const std::vector<glm::vec3> & datasource, GLuint index, GLuint divisor = 0);
+  VertexBuffer(const int num_data, GLuint index, GLuint divisor);
+  ~VertexBuffer();
 
 private:
-  class VertexBufferObjectP;
-  std::unique_ptr<VertexBufferObjectP> self;
+  void bind();
+  void unbind();
+  void bindTransformFeedback();
+  void unbindTransformFeedback();
+  void construct(const glm::vec3 * data, const int num_data);
+
+private:
+  GLuint index;
+  GLuint buffer;
+  GLuint divisor;
+  GLuint feedback_buffer;
 };

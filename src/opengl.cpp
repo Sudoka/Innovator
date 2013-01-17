@@ -9,103 +9,71 @@
 using namespace glm;
 using namespace std;
 
-class VertexBuffer {
-public:
-  VertexBuffer(const vector<vec3> & datasource, GLuint index, GLuint divisor)
-    : index(index),
-      divisor(divisor)  
-  {
-    this->construct(datasource.data(), datasource.size());
-  }
+VertexBufferScope::VertexBufferScope(VertexBuffer * buffer) : buffer(buffer) { this->buffer->bind(); }
+VertexBufferScope::~VertexBufferScope() { this->buffer->unbind(); }
 
-  VertexBuffer(const int num_data, GLuint index, GLuint divisor)
-    : index(index),
-      divisor(divisor)  
-  {
-    this->construct(NULL, num_data);
-  }
-
-  ~VertexBuffer() 
-  {
-    glDeleteBuffers(1, &this->buffer);
-  }
-
-  void construct(const vec3 * data, const int num_data) 
-  {
-    glGenBuffers(1, &this->buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * num_data, data, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
-
-  void bind() 
-  {
-    glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
-    glEnableVertexAttribArray(this->index);
-    glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glVertexAttribDivisor(this->index, this->divisor);
-  }
-
-  void unbind()
-  {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray(this->index);
-  }
-
-private:
-  GLuint index;
-  GLuint buffer;
-  GLuint divisor;
-};
-
-class VertexBufferObject::VertexBufferObjectP {
-public:
-  VertexBufferObjectP() {}
-  ~VertexBufferObjectP() {}
-  vector<VertexBuffer*> buffers;
-};
-
-VertexBufferObject::VertexBufferObject() 
-  : self(new VertexBufferObjectP)
+VertexBuffer::VertexBuffer(const vector<vec3> & datasource, GLuint index, GLuint divisor)
+  : index(index),
+    divisor(divisor),
+    feedback_buffer(0)
 {
+  this->construct(datasource.data(), datasource.size());
 }
 
-VertexBufferObject::~VertexBufferObject() 
+VertexBuffer::VertexBuffer(const int num_data, GLuint index, GLuint divisor)
+  : index(index),
+    divisor(divisor),
+    feedback_buffer(0)
 {
+  this->construct(NULL, num_data);
 }
 
-void
-VertexBufferObject::createBuffer(GLuint index, const int num_data)
+VertexBuffer::~VertexBuffer() 
 {
-  self->buffers.push_back(new VertexBuffer(num_data, index, 0));
-}
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glDeleteBuffers(1, &this->buffer);
 
-void
-VertexBufferObject::createBuffer(const vector<vec3> & data, GLuint index, GLuint divisor)
-{
-  self->buffers.push_back(new VertexBuffer(data, index, divisor));
-}
-
-void
-VertexBufferObject::deleteBuffers()
-{
-  self->buffers.clear();
-}
-
-void
-VertexBufferObject::bind()
-{
-  for (size_t i = 0; i < self->buffers.size(); i++) {
-    self->buffers[i]->bind();
+  if (this->feedback_buffer != 0) {
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+    glDeleteTransformFeedbacks(1, &this->feedback_buffer);
   }
 }
 
-void
-VertexBufferObject::unbind()
+void 
+VertexBuffer::construct(const vec3 * data, const int num_data)
 {
-  for (size_t i = 0; i < self->buffers.size(); i++) {
-    self->buffers[i]->unbind();
+  glGenBuffers(1, &this->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * num_data, data, GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void VertexBuffer::bind()
+{
+  glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
+  glEnableVertexAttribArray(this->index);
+  glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(this->index, this->divisor);
+}
+
+void VertexBuffer::unbind()
+{
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glDisableVertexAttribArray(this->index);
+}
+
+void VertexBuffer::bindTransformFeedback()
+{
+  if (this->feedback_buffer == 0) {
+    glGenTransformFeedbacks(1, &this->feedback_buffer);
   }
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback_buffer);
+  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, this->index, this->buffer);
+}
+
+void VertexBuffer::unbindTransformFeedback()
+{
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
 }
 
 // *************************************************************************************************
@@ -120,12 +88,10 @@ struct ShaderObject {
 };
 
 ShaderProgram::ShaderProgram() 
-  : id(0)
-{
-}
+  : id(0) {}
 
-void
-ShaderProgram::createProgram(const string & filename) 
+ShaderProgram::ShaderProgram(const string & filename) 
+  : id(0)
 {
   vector<ShaderObject> objects(5);
   objects[0] = ShaderObject(GL_VERTEX_SHADER,          "//-- Vertex");
@@ -202,8 +168,7 @@ ShaderProgram::createProgram(const string & filename)
   }
 }
 
-void 
-ShaderProgram::deleteProgram()
+ShaderProgram::~ShaderProgram()
 {
   glDeleteProgram(this->id);
 }

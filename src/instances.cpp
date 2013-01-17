@@ -10,18 +10,17 @@ using namespace std;
 
 class Instances::InstancesP {
 public:
-  InstancesP(Instances * self) {
-    bufferobject.createBuffer(self->vertices, 0, 0);
-    bufferobject.createBuffer(self->instances, 1, 1);
-    //bufferobject.createBuffer(2, self->instances.size());
-    program.createProgram("../../src/instances.glsl");
+  InstancesP(Instances * self) 
+    : vertexbuffer(new VertexBuffer(self->vertices, 0, 0)),
+      instancebuffer(new VertexBuffer(self->instances, 1, 1)),
+      program(new ShaderProgram("../../src/instances.glsl"))
+  {
   }
-  ~InstancesP() {
-    bufferobject.deleteBuffers();
-    program.deleteProgram();
-  }
-  ShaderProgram program;
-  VertexBufferObject bufferobject;
+
+  ~InstancesP() {}
+  unique_ptr<ShaderProgram> program;
+  unique_ptr<VertexBuffer> vertexbuffer;
+  unique_ptr<VertexBuffer> instancebuffer;
 };
 
 Instances::Instances()
@@ -41,12 +40,14 @@ Instances::renderGL(RenderAction * action)
   if (self.get() == nullptr)
     self.reset(new InstancesP(this));
 
-  action->state->programelem.program = self->program;
+  action->state->programelem.program = *self->program;
   action->state->flush();
 
-  self->bufferobject.bind();
-  glDrawElementsInstanced(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, this->indices.data(), this->instances.size());
-  self->bufferobject.unbind();
+  {
+    VertexBufferScope bufferscope(self->vertexbuffer.get());
+    VertexBufferScope instancescope(self->instancebuffer.get());
+    glDrawElementsInstanced(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, this->indices.data(), this->instances.size());
+  }
 }
 
 void

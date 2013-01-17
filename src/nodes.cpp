@@ -182,9 +182,9 @@ Separator::getBoundingBox(BoundingBoxAction * action)
 
 class Shader::ShaderP {
 public:
-  ShaderP(const string & filename) { this->program.createProgram(filename); }
-  ~ShaderP() { this->program.deleteProgram(); }
-  ShaderProgram program;
+  ShaderP(const string & filename) : program(new ShaderProgram(filename)) {}
+  ~ShaderP() {}
+  unique_ptr<ShaderProgram> program;
 };
 
 Shader::Shader() : self(nullptr) {}
@@ -196,7 +196,7 @@ Shader::renderGL(RenderAction * action)
   if (self.get() == nullptr) {
     self.reset(new ShaderP(this->fileName));
   }
-  action->state->programelem.program = self->program;
+  action->state->programelem.program = *self->program;
 }
 
 // *************************************************************************************************
@@ -232,13 +232,9 @@ Transform::getBoundingBox(BoundingBoxAction * action)
 
 class Triangles::TrianglesP {
 public:
-  TrianglesP(Triangles * self) { 
-    bufferobject.createBuffer(self->vertices, State::VertexPosition);
-  }
-  ~TrianglesP() { 
-    bufferobject.deleteBuffers();
-  }
-  VertexBufferObject bufferobject;
+  TrianglesP(Triangles * self) : vertexbuffer(new VertexBuffer(self->vertices, State::VertexPosition)) {}
+  ~TrianglesP() {}
+  unique_ptr<VertexBuffer> vertexbuffer;
 };
 
 Triangles::Triangles() : self(nullptr) {}
@@ -252,9 +248,8 @@ Triangles::renderGL(RenderAction * action)
 
   action->state->flush();
 
-  self->bufferobject.bind();
+  VertexBufferScope scope(self->vertexbuffer.get());
   glDrawArrays(GL_TRIANGLES, 0, 3);
-  self->bufferobject.unbind();
 }
 
 void
