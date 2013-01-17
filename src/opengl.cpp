@@ -9,74 +9,106 @@
 using namespace glm;
 using namespace std;
 
-ArrayBuffer::Scope::Scope(ArrayBuffer & buffer) 
-  : buffer(buffer) 
-{ 
-  this->buffer.bind(); 
+class VertexBuffer {
+public:
+  VertexBuffer(const vector<vec3> & datasource, GLuint index, GLuint divisor)
+    : index(index),
+      divisor(divisor)  
+  {
+    this->construct(datasource.data(), datasource.size());
+  }
+
+  VertexBuffer(const int num_data, GLuint index, GLuint divisor)
+    : index(index),
+      divisor(divisor)  
+  {
+    this->construct(NULL, num_data);
+  }
+
+  ~VertexBuffer() 
+  {
+    glDeleteBuffers(1, &this->buffer);
+  }
+
+  void construct(const vec3 * data, const int num_data) 
+  {
+    glGenBuffers(1, &this->buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * num_data, data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+
+  void bind() 
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
+    glEnableVertexAttribArray(this->index);
+    glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribDivisor(this->index, this->divisor);
+  }
+
+  void unbind()
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDisableVertexAttribArray(this->index);
+  }
+
+private:
+  GLuint index;
+  GLuint buffer;
+  GLuint divisor;
+};
+
+class VertexBufferObject::VertexBufferObjectP {
+public:
+  VertexBufferObjectP() {}
+  ~VertexBufferObjectP() {}
+  vector<VertexBuffer*> buffers;
+};
+
+VertexBufferObject::VertexBufferObject() 
+  : self(new VertexBufferObjectP)
+{
 }
 
-ArrayBuffer::Scope::~Scope() 
-{ 
-  this->buffer.unbind(); 
+VertexBufferObject::~VertexBufferObject() 
+{
 }
 
 void
-ArrayBuffer::Scope::draw() 
-{ 
-  this->buffer.draw();
-}
-
-
-ArrayBuffer::ArrayBuffer() 
-  : index(0),
-    divisor(0)
+VertexBufferObject::createBuffer(GLuint index, const int num_data)
 {
-}
-
-ArrayBuffer::~ArrayBuffer() 
-{
+  self->buffers.push_back(new VertexBuffer(num_data, index, 0));
 }
 
 void
-ArrayBuffer::createBuffer(const vector<vec3> & data, GLuint index, GLuint divisor)
+VertexBufferObject::createBuffer(const vector<vec3> & data, GLuint index, GLuint divisor)
 {
-  this->index = index;
-  this->divisor = divisor;
-  
-  glGenBuffers(1, &this->buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * data.size(), &data[0], GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  self->buffers.push_back(new VertexBuffer(data, index, divisor));
 }
 
 void
-ArrayBuffer::deleteBuffer()
+VertexBufferObject::deleteBuffers()
 {
-  glDeleteBuffers(1, &this->buffer);
+  self->buffers.clear();
 }
 
 void
-ArrayBuffer::bind()
+VertexBufferObject::bind()
 {
-  glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
-  glEnableVertexAttribArray(this->index);
-  glVertexAttribDivisor(this->index, this->divisor);
-  glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  for (size_t i = 0; i < self->buffers.size(); i++) {
+    self->buffers[i]->bind();
+  }
 }
 
 void
-ArrayBuffer::draw()
+VertexBufferObject::unbind()
 {
-  glDrawArrays(GL_TRIANGLES, 0, 3);
+  for (size_t i = 0; i < self->buffers.size(); i++) {
+    self->buffers[i]->unbind();
+  }
 }
 
-
-void
-ArrayBuffer::unbind()
-{
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDisableVertexAttribArray(this->index);
-}
+// *************************************************************************************************
 
 struct ShaderObject {
   ShaderObject() {}

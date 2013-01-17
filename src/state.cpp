@@ -45,7 +45,4 @@ State::flush()
   this->viewmatrixelem.updateGL(this);
   this->projmatrixelem.updateGL(this);
   this->modelmatrixelem.updateGL(this);
-
-  ArrayBuffer::Scope bufferscope(this->buffer);
-  bufferscope.draw();
 }

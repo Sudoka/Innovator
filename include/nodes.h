@@ -4,12 +4,14 @@
 #include <string>
 #include <vector>
 
+class Action;
 class RenderAction;
 class BoundingBoxAction;
 
 class Node {
 public:
   virtual void renderGL(RenderAction * action) = 0;
+  virtual void getBoundingBox(BoundingBoxAction * action) {}
 };
 
 class Group : public Node {
@@ -17,6 +19,7 @@ public:
   Group();
   ~Group();
   virtual void renderGL(RenderAction * action);
+  virtual void getBoundingBox(BoundingBoxAction * action);
   void addChild(std::shared_ptr<Node> child);
 private:
   class GroupP;
@@ -33,6 +36,7 @@ public:
   void orbit(const glm::vec2 & dx);
   void moveTo(const glm::vec3 & position);
   void lookAt(const glm::vec3 & focalpoint);
+  void viewAll(std::shared_ptr<Node> root);
   glm::vec3 getFocalDir() const;
   void perspective(float fovy, float aspect, float near, float far);
 
@@ -43,7 +47,10 @@ private:
 
 class Separator : public Group {
 public:
+  Separator();
+  ~Separator();
   virtual void renderGL(RenderAction * action);
+  virtual void getBoundingBox(BoundingBoxAction * action);
 };
 
 class Shader : public Node {
@@ -61,7 +68,9 @@ class Transform : public Node {
 public:
   Transform();
   ~Transform();
+  void doAction(Action * action);
   virtual void renderGL(RenderAction * action);
+  virtual void getBoundingBox(BoundingBoxAction * action);
   glm::vec3 translation;
   glm::vec3 scaleFactor;
 };
@@ -72,8 +81,26 @@ public:
   ~Triangles();
   std::vector<glm::vec3> vertices;
   virtual void renderGL(RenderAction * action);
+  virtual void getBoundingBox(BoundingBoxAction * action);
 
 private:
   class TrianglesP;
   std::unique_ptr<TrianglesP> self;
+};
+
+class Instances : public Node {
+public:
+  Instances();
+  ~Instances();
+
+  std::vector<unsigned int> indices;
+  std::vector<glm::vec3> vertices;
+  std::vector<glm::vec3> instances;
+
+  virtual void renderGL(RenderAction * action);
+  virtual void getBoundingBox(BoundingBoxAction * action);
+
+private:
+  class InstancesP;
+  std::unique_ptr<InstancesP> self;
 };

@@ -4,9 +4,12 @@
 
 using namespace std;
 
-RenderAction::RenderAction()
+Action::Action()
   : state(nullptr) {}
+Action::~Action() {}
 
+RenderAction::RenderAction()
+  : Action() {}
 RenderAction::~RenderAction() {}
 
 void
@@ -18,4 +21,30 @@ RenderAction::apply(shared_ptr<Node> node)
 
   state.reset(new State);
   node->renderGL(this);
+}
+
+BoundingBoxAction::BoundingBoxAction()
+  : Action() {}
+
+BoundingBoxAction::~BoundingBoxAction() {}
+
+void
+BoundingBoxAction::extendBy(const box3 & box)
+{
+  this->box.extendBy(box.min);
+  this->box.extendBy(box.max);
+}
+
+void
+BoundingBoxAction::apply(shared_ptr<Node> node)
+{
+  state.reset(new State);
+  this->box.makeEmpty();
+  node->getBoundingBox(this);
+}
+
+const box3 & 
+BoundingBoxAction::getBoundingBox() const
+{
+  return this->box;
 }

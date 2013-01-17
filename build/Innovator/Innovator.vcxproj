@@ -78,8 +78,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\actions.cpp" />
+    <ClCompile Include="..\..\src\box3.cpp" />
     <ClCompile Include="..\..\src\canvas.cpp" />
     <ClCompile Include="..\..\src\elements.cpp" />
+    <ClCompile Include="..\..\src\instances.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\nodes.cpp" />
     <ClCompile Include="..\..\src\opengl.cpp" />
@@ -88,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\actions.h" />
+    <ClInclude Include="..\..\include\box3.h" />
     <ClInclude Include="..\..\include\canvas.h" />
     <ClInclude Include="..\..\include\elements.h" />
     <ClInclude Include="..\..\include\nodes.h" />

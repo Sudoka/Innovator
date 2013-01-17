@@ -6,12 +6,12 @@
 
 using namespace std;
 
+static Canvas * canvas = nullptr;
+
 class Canvas::CanvasP {
 public:
-  CanvasP(Canvas * canvas, int width, int height) 
+  CanvasP(int width, int height) 
   {
-    assert(CanvasP::canvas == nullptr);
-
     if (!glfwInit()) {
       cout << "failed to initialize GLFW." << endl;
       exit(0);
@@ -32,43 +32,38 @@ public:
 
     glfwSetMousePosCallback(CanvasP::mouseMoved);
     glfwSetMouseButtonCallback(CanvasP::mouseButton);
-    CanvasP::canvas = canvas;
   }
 
   ~CanvasP() 
   {
-    CanvasP::canvas = nullptr;
     glfwTerminate();
   }
 
 private:
   static void mouseMoved(int x, int y)
   {
-    if (CanvasP::canvas) {
-      CanvasP::canvas->mouseMoved(x, y);
+    if (canvas) {
+      canvas->mouseMoved(x, y);
     }
   }
 
   static void mouseButton(int button, int action)
   {
-    if (CanvasP::canvas) {
-      CanvasP::canvas->mouseButton(button, action);
+    if (canvas) {
+      canvas->mouseButton(button, action);
     }
   }
-
-  static Canvas * canvas;
 };
-
-Canvas * Canvas::CanvasP::canvas = nullptr;
 
 Canvas::Canvas(int width, int height)
 {
-  self.reset(new CanvasP(this, width, height));
+  self.reset(new CanvasP(width, height));
+  canvas = this;
 }
 
 Canvas::~Canvas()
 {
-
+  canvas = nullptr;
 }
 
 void 

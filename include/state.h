@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <opengl.h>
 #include <elements.h>
 
 class State {
@@ -27,7 +26,6 @@ public:
   void pop();
   void flush();
 
-  ArrayBuffer buffer;
   ProgramElement programelem;
   MatrixElement viewmatrixelem;
   MatrixElement modelmatrixelem;

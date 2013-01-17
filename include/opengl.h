@@ -3,40 +3,29 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <memory>
 
 class ShaderProgram {
 public:
   ShaderProgram();
-
   void createProgram(const std::string & filename);
   void deleteProgram();
-
   GLuint id;
 };
 
-class ArrayBuffer {
+class VertexBufferObject {
 public:
-  class Scope {
-    ArrayBuffer & buffer;
-  public:
-    Scope(ArrayBuffer & buffer);
-    ~Scope();
-    void draw();
-  };
+  VertexBufferObject();
+  ~VertexBufferObject();
 
-  ArrayBuffer();
-  ~ArrayBuffer();
-
+  void createBuffer(GLuint index, const int num_data);
   void createBuffer(const std::vector<glm::vec3> & data, GLuint index = 0, GLuint divisor = 0);
-  void deleteBuffer();
+  void deleteBuffers();
 
-private:
-  friend class Scope;
   void bind();
-  void draw();
   void unbind();
 
-  GLuint index;
-  GLuint buffer;
-  GLuint divisor;
+private:
+  class VertexBufferObjectP;
+  std::unique_ptr<VertexBufferObjectP> self;
 };

@@ -15,14 +15,16 @@ public:
   ViewerP() 
     : prev_x(0),
       prev_y(0),
+      button(0),
       mousedown(false),
       camera(new Camera),
       renderaction(new RenderAction)  
   {}
   ~ViewerP() {}
 
-  int prev_x;
-  int prev_y;
+  float prev_x;
+  float prev_y;
+  int button;
   bool mousedown;
   shared_ptr<Group> root;
   shared_ptr<Camera> camera;
@@ -33,8 +35,7 @@ Viewer::Viewer(int width, int height)
   : Canvas(width, height),
     self(new ViewerP)
 {
-  self->camera->perspective(45, 640.0f / 480.0f, 0.1f, 100);
-  self->camera->moveTo(vec3(0.0, 0.0, 5.0));
+  self->camera->perspective(45, float(width) / float(height), 0.1f, 100);
 }
 
 Viewer::~Viewer()
@@ -54,16 +55,27 @@ Viewer::setSceneGraph(std::shared_ptr<Node> root)
   self->root.reset(new Group);
   self->root->addChild(self->camera);
   self->root->addChild(root);
+  self->camera->viewAll(root);
 }
 
 void 
 Viewer::mouseMoved(int x, int y)
 {
   if (self->mousedown) {
-    int dx = self->prev_x - x;
-    int dy = self->prev_y - y;
-    cout << "mouse dragged: <dx=" << dx << "dy=" << dy << ">" << endl;
-    self->camera->orbit(vec2(dx, dy));
+    float dx = (self->prev_x - x) / 100.0f;
+    float dy = (self->prev_y - y) / 100.0f;
+
+    switch (self->button) {
+    case GLFW_MOUSE_BUTTON_LEFT:
+      self->camera->orbit(vec2(dx * 100.0, dy * 100.0));
+      break;
+    case GLFW_MOUSE_BUTTON_MIDDLE:
+      self->camera->pan(vec2(dx, dy));
+      break;
+    case GLFW_MOUSE_BUTTON_RIGHT:
+      self->camera->zoom(-dy);
+      break;
+    }
   }
   self->prev_x = x;
   self->prev_y = y;
@@ -72,9 +84,8 @@ Viewer::mouseMoved(int x, int y)
 void
 Viewer::mouseButton(int button, int action)
 {
-  if (button == GLFW_MOUSE_BUTTON_LEFT) {
-    self->mousedown = action == GLFW_PRESS;
-  }
+  self->button = button;
+  self->mousedown = action == GLFW_PRESS;
 }
 
 void
