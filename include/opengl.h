@@ -3,44 +3,125 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <vector>
-#include <memory>
 
-class VertexBuffer;
-class VertexBufferScope;
+struct DrawElementsIndirectBuffer
+{
+  DrawElementsIndirectBuffer(GLuint count, 
+                             GLuint primCount = 0, 
+                             GLuint firstIndex = 0, 
+                             GLint baseVertex = 0)
+    : count(count), 
+      primCount(primCount),
+      firstIndex(firstIndex),
+      baseVertex(baseVertex),
+      reservedMustBeZero(0) 
+  {}
+  ~DrawElementsIndirectBuffer() {}
+
+  GLuint count;
+  GLuint primCount;
+  GLuint firstIndex;
+  GLint baseVertex;
+  GLuint reservedMustBeZero;
+};
 
 class ShaderProgram {
 public:
   ShaderProgram();
-  ShaderProgram(const std::string & filename);
+  ShaderProgram(const std::string & filename, std::vector<const char *> transformFeedbackVaryings);
   ~ShaderProgram();
+  void link();
   GLuint id;
 };
 
-class VertexBufferScope {
+class BindBufferBase {
 public:
-  VertexBufferScope(VertexBuffer * buffer);
-  ~VertexBufferScope();
+  BindBufferBase(GLenum target, GLuint index, GLuint buffer)
+    : target(target) {
+    glBindBufferBase(this->target, index, buffer);
+  }
+  ~BindBufferBase() {
+    glBindBuffer(this->target, 0);
+  }
 private:
-  VertexBuffer * buffer;
+  GLenum target;
 };
 
-class VertexBuffer {
-  friend class VertexBufferScope;
+class BindBufferRange {
 public:
-  VertexBuffer(const std::vector<glm::vec3> & datasource, GLuint index, GLuint divisor = 0);
-  VertexBuffer(const int num_data, GLuint index, GLuint divisor);
-  ~VertexBuffer();
+  BindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)
+    : target(target) {
+    glBindBufferRange(this->target, index, buffer, offset, size);
+  }
+  ~BindBufferRange() {
+    glBindBuffer(this->target, 0);
+  }
+private:
+  GLenum target;
+};
+
+class Bindable {
+public:
+  virtual void bind() = 0;
+  virtual void unbind() = 0;
+};
+
+class BindScope {
+public:
+  BindScope(Bindable * b) : bindable(b) {
+    this->bindable->bind();
+  }
+  ~BindScope() {
+    this->bindable->unbind();
+  }
+private:
+  Bindable * bindable;
+};
+
+class BufferObject : public Bindable {
+public:
+  BufferObject(GLenum target);
+  BufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
+  BufferObject(const std::vector<glm::vec3> & data, GLenum target = GL_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
+  BufferObject(const std::vector<unsigned int> & data, GLenum target = GL_ELEMENT_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
+  ~BufferObject();
+
+  void setValues(GLenum usage, GLsizeiptr size, const GLvoid * data);
+  void set1Value(int index, GLuint value);
+
+  virtual void bind();
+  virtual void unbind();
 
 private:
-  void bind();
-  void unbind();
-  void bindTransformFeedback();
-  void unbindTransformFeedback();
-  void construct(const glm::vec3 * data, const int num_data);
+  void construct(GLenum target, GLenum usage, GLsizeiptr size, const GLvoid * data);
+
+public:
+  GLuint buffer;
+  GLenum target;
+};
+
+class VertexBuffer : public BufferObject {
+public:
+  VertexBuffer(const std::vector<glm::vec3> & data, GLuint index, GLuint divisor = 0);
+  ~VertexBuffer();
+
+  virtual void bind();
+  virtual void unbind();
 
 private:
   GLuint index;
-  GLuint buffer;
   GLuint divisor;
-  GLuint feedback_buffer;
+};
+
+class TransformFeedback : public Bindable {
+public:
+  TransformFeedback(GLuint buffer, GLenum mode = GL_POINTS);
+  ~TransformFeedback();
+
+  virtual void bind();
+  virtual void unbind();
+
+public:
+  GLuint id;
+  GLenum mode;
 };

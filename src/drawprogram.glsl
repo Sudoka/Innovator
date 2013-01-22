@@ -1,9 +1,9 @@
-#version 400 core
+#version 420 core
 
 //-- Vertex
 
 layout(location = 0) in vec3 VertexPosition;
-layout(location = 1) in vec3 VertexOffset;
+layout(location = 2) in vec3 VertexOffset;
 
 uniform mat4 ViewMatrix = mat4(1.0);
 uniform mat4 ModelMatrix = mat4(1.0);

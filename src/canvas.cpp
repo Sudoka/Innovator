@@ -25,8 +25,8 @@ public:
       cout << "failed to initialize GLEW." << endl;
       exit(0);
     }
-    if (!GLEW_VERSION_4_0) {
-      cout << "OpenGL 4.0 not supported.\n" << endl;
+    if (!GLEW_VERSION_4_2) {
+      cout << "OpenGL 4.2 not supported.\n" << endl;
       exit(0);
     }
 

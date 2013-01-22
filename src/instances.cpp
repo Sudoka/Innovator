@@ -8,50 +8,103 @@
 using namespace glm;
 using namespace std;
 
-class Instances::InstancesP {
+#undef DEBUG_CULLING
+
+class InstancedTriangleSet::InstancedTriangleSetP {
 public:
-  InstancesP(Instances * self) 
-    : vertexbuffer(new VertexBuffer(self->vertices, 0, 0)),
-      instancebuffer(new VertexBuffer(self->instances, 1, 1)),
-      program(new ShaderProgram("../../src/instances.glsl"))
+  InstancedTriangleSetP(InstancedTriangleSet * self) 
+    : self(self),
+      drawprogram(new Shader),
+      cullprogram(new Shader),
+      elements(new BufferObject(self->indices)),
+      vertices(new VertexBuffer(self->vertices, 0, 0)),
+      drawinstances(new VertexBuffer(self->instances, 1, 0)),
+      cullinstances(new VertexBuffer(self->instances, 2, 1)),
+      indirectbuffer(new BufferObject(GL_DRAW_INDIRECT_BUFFER)),
+      transformfeedback(new TransformFeedback(cullinstances->buffer))
+  {
+    drawprogram->fileName = "drawprogram.glsl";
+    cullprogram->fileName = "cullprogram.glsl";
+    cullprogram->transformFeedbackVaryings.push_back("Position");
+
+    DrawElementsIndirectBuffer buffer(self->indices.size());
+    this->indirectbuffer->setValues(GL_DYNAMIC_DRAW, sizeof(buffer), &buffer);
+  }
+
+  ~InstancedTriangleSetP() 
   {
   }
 
-  ~InstancesP() {}
-  unique_ptr<ShaderProgram> program;
-  unique_ptr<VertexBuffer> vertexbuffer;
-  unique_ptr<VertexBuffer> instancebuffer;
+  void cull(RenderAction * action) 
+  {
+    this->cullprogram->renderGL(action);
+    action->state->flush();
+    
+    // clear instance count
+    this->indirectbuffer->set1Value(1, 0);
+    // bind instance count to atomic counter in cullprogram
+    BindBufferRange bufferrange(GL_ATOMIC_COUNTER_BUFFER, 0, this->indirectbuffer->buffer, sizeof(GLuint), sizeof(GLuint));
+    BindScope instances(this->drawinstances.get());
+    BindScope transformfeedback(this->transformfeedback.get());
+    glDrawArrays(GL_POINTS, 0, self->instances.size());
+  }
+
+  void draw(RenderAction * action) 
+  {
+    this->drawprogram->renderGL(action);
+    action->state->flush();
+
+    BindScope vertices(this->vertices.get());
+    BindScope elements(this->elements.get());
+    BindScope indirect(this->indirectbuffer.get());
+    BindScope instances(this->cullinstances.get());
+
+    glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr);
+
+#ifdef DEBUG_CULLING
+    GLuint instancecount;
+    glGetBufferSubData(GL_DRAW_INDIRECT_BUFFER, 4, sizeof(GLuint), &instancecount);
+    cout << "instancecount: " << instancecount << endl;
+#endif
+  }
+
+  unique_ptr<Shader> drawprogram;
+  unique_ptr<Shader> cullprogram;
+
+  unique_ptr<BufferObject> elements;
+  unique_ptr<VertexBuffer> vertices;
+
+  unique_ptr<VertexBuffer> drawinstances;
+  unique_ptr<VertexBuffer> cullinstances;
+  unique_ptr<BufferObject> indirectbuffer;
+
+  unique_ptr<TransformFeedback> transformfeedback;
+  InstancedTriangleSet * self;
 };
 
-Instances::Instances()
+InstancedTriangleSet::InstancedTriangleSet()
   : self(nullptr)
 {
 
 }
 
-Instances::~Instances()
+InstancedTriangleSet::~InstancedTriangleSet()
 {
 
 }
 
 void
-Instances::renderGL(RenderAction * action)
+InstancedTriangleSet::renderGL(RenderAction * action)
 {
-  if (self.get() == nullptr)
-    self.reset(new InstancesP(this));
-
-  action->state->programelem.program = *self->program;
-  action->state->flush();
-
-  {
-    VertexBufferScope bufferscope(self->vertexbuffer.get());
-    VertexBufferScope instancescope(self->instancebuffer.get());
-    glDrawElementsInstanced(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, this->indices.data(), this->instances.size());
+  if (self.get() == nullptr) {
+    self.reset(new InstancedTriangleSetP(this));
   }
+  self->cull(action);
+  self->draw(action);
 }
 
 void
-Instances::getBoundingBox(BoundingBoxAction * action)
+InstancedTriangleSet::getBoundingBox(BoundingBoxAction * action)
 {
   box3 bbox;
   for (size_t i = 0; i < this->vertices.size(); i++) {

@@ -1,5 +1,6 @@
 #include <opengl.h>
 #include <GL/glew.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -9,71 +10,127 @@
 using namespace glm;
 using namespace std;
 
-VertexBufferScope::VertexBufferScope(VertexBuffer * buffer) : buffer(buffer) { this->buffer->bind(); }
-VertexBufferScope::~VertexBufferScope() { this->buffer->unbind(); }
-
-VertexBuffer::VertexBuffer(const vector<vec3> & datasource, GLuint index, GLuint divisor)
-  : index(index),
-    divisor(divisor),
-    feedback_buffer(0)
-{
-  this->construct(datasource.data(), datasource.size());
-}
-
-VertexBuffer::VertexBuffer(const int num_data, GLuint index, GLuint divisor)
-  : index(index),
-    divisor(divisor),
-    feedback_buffer(0)
-{
-  this->construct(NULL, num_data);
-}
-
-VertexBuffer::~VertexBuffer() 
-{
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDeleteBuffers(1, &this->buffer);
-
-  if (this->feedback_buffer != 0) {
-    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
-    glDeleteTransformFeedbacks(1, &this->feedback_buffer);
-  }
-}
-
-void 
-VertexBuffer::construct(const vec3 * data, const int num_data)
+BufferObject::BufferObject(GLenum target)
+  : target(target)
 {
   glGenBuffers(1, &this->buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * num_data, data, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void VertexBuffer::bind()
+BufferObject::BufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
+  : target(target)
 {
-  glBindBuffer(GL_ARRAY_BUFFER, this->buffer);
+  this->construct(target, usage, size, data);
+}
+
+BufferObject::BufferObject(const std::vector<glm::vec3> & data, GLenum target, GLenum usage)
+  : target(target)
+{
+  this->construct(target, usage, sizeof(vec3) * data.size(), data.data());
+}
+
+BufferObject::BufferObject(const std::vector<unsigned int> & data, GLenum target, GLenum usage)
+  : target(target)
+{
+  this->construct(target, usage, sizeof(GLuint) * data.size(), data.data());
+}
+
+void
+BufferObject::construct(GLenum target, GLenum usage, GLsizeiptr size, const GLvoid * data)
+{
+  glGenBuffers(1, &this->buffer);
+  this->setValues(usage, size, data);
+}
+
+BufferObject::~BufferObject()
+{
+  glBindBuffer(this->target, this->buffer);
+  glDeleteBuffers(1, &this->buffer);
+}
+
+void
+BufferObject::setValues(GLenum usage, GLsizeiptr size, const GLvoid * data)
+{
+  this->bind();
+  glBufferData(this->target, size, data, usage);
+  this->unbind();
+}
+
+void
+BufferObject::set1Value(int index, GLuint value)
+{
+  this->bind();
+  glBufferSubData(this->target, sizeof(GLuint) * index, sizeof(GLuint), &value);
+  this->unbind();
+}
+
+void
+BufferObject::bind()
+{
+  glBindBuffer(this->target, this->buffer);
+}
+
+void
+BufferObject::unbind()
+{
+  glBindBuffer(this->target, 0);
+}
+
+VertexBuffer::VertexBuffer(const std::vector<vec3> & data, GLuint index, GLuint divisor)
+  : index(index),
+    divisor(divisor),
+    BufferObject(data, GL_ARRAY_BUFFER, GL_STATIC_DRAW)
+{
+}
+
+VertexBuffer::~VertexBuffer()
+{
+}
+
+void
+VertexBuffer::bind()
+{
+  BufferObject::bind();
   glEnableVertexAttribArray(this->index);
   glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glVertexAttribDivisor(this->index, this->divisor);
 }
 
-void VertexBuffer::unbind()
+void
+VertexBuffer::unbind()
 {
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  BufferObject::unbind();
   glDisableVertexAttribArray(this->index);
 }
 
-void VertexBuffer::bindTransformFeedback()
+TransformFeedback::TransformFeedback(GLuint buffer, GLenum mode)
+  : mode(mode)
 {
-  if (this->feedback_buffer == 0) {
-    glGenTransformFeedbacks(1, &this->feedback_buffer);
-  }
-  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback_buffer);
-  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, this->index, this->buffer);
+  glGenTransformFeedbacks(1, &this->id);
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
+  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer);
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+
 }
 
-void VertexBuffer::unbindTransformFeedback()
+TransformFeedback::~TransformFeedback()
 {
-  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+  glDeleteTransformFeedbacks(1, &this->id);
+}
+
+void
+TransformFeedback::bind()
+{
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
+  glEnable(GL_RASTERIZER_DISCARD);
+  glBeginTransformFeedback(this->mode);
+}
+
+void
+TransformFeedback::unbind()
+{
+  glEndTransformFeedback();
+  glDisable(GL_RASTERIZER_DISCARD);
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
 // *************************************************************************************************
@@ -90,7 +147,7 @@ struct ShaderObject {
 ShaderProgram::ShaderProgram() 
   : id(0) {}
 
-ShaderProgram::ShaderProgram(const string & filename) 
+ShaderProgram::ShaderProgram(const string & filename, vector<const char *> transformFeedbackVaryings) 
   : id(0)
 {
   vector<ShaderObject> objects(5);
@@ -103,7 +160,7 @@ ShaderProgram::ShaderProgram(const string & filename)
   this->id = glCreateProgram();
 
   string line;
-  ifstream file(filename);
+  ifstream file("../../src/" + filename);
   
   if (file.is_open()) {
     
@@ -151,18 +208,12 @@ ShaderProgram::ShaderProgram(const string & filename)
         }
       }
     }
-    glLinkProgram(this->id);
-
-    GLint status;
-    glGetProgramiv(this->id, GL_LINK_STATUS, &status);
-    if (status != GL_TRUE) {
-      GLint length;
-      glGetShaderiv(this->id, GL_INFO_LOG_LENGTH, &length);
-      GLchar * log = new GLchar[length + 1];
-      glGetProgramInfoLog(this->id, length, NULL, log);
-      cout << "Shader::link()" << "failed to link shader: " <<  log << endl;
-      delete [] log;
+    GLsizei count = transformFeedbackVaryings.size();
+    if (count > 0) {
+      const char ** varyings = transformFeedbackVaryings.data();
+      glTransformFeedbackVaryings(this->id, count, varyings, GL_SEPARATE_ATTRIBS);
     }
+    this->link();
   } else {
     cout << "Unable to open file" << endl;
   }
@@ -171,4 +222,21 @@ ShaderProgram::ShaderProgram(const string & filename)
 ShaderProgram::~ShaderProgram()
 {
   glDeleteProgram(this->id);
+}
+
+void
+ShaderProgram::link()
+{
+  glLinkProgram(this->id);
+  
+  GLint status;
+  glGetProgramiv(this->id, GL_LINK_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLint length;
+    glGetShaderiv(this->id, GL_INFO_LOG_LENGTH, &length);
+    GLchar * log = new GLchar[length + 1];
+    glGetProgramInfoLog(this->id, length, NULL, log);
+    cout << "Shader::link()" << "failed to link shader: " <<  log << endl;
+    delete [] log;
+  }
 }

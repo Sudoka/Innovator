@@ -41,7 +41,7 @@ int main(int argc, char * argv[])
       root->addChild(sep);
     }
 */
-    shared_ptr<Instances> instances(new Instances);
+    shared_ptr<InstancedTriangleSet> instances(new InstancedTriangleSet);
     instances->vertices.push_back(vec3(-1, -1, -1));
     instances->vertices.push_back(vec3(-1, -1,  1));
     instances->vertices.push_back(vec3(-1,  1, -1));

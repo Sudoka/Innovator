@@ -70,15 +70,15 @@ Viewer::mouseMoved(int x, int y)
       self->camera->orbit(vec2(dx * 100.0, dy * 100.0));
       break;
     case GLFW_MOUSE_BUTTON_MIDDLE:
-      self->camera->pan(vec2(dx, dy));
+      self->camera->pan(vec2(dx, -dy));
       break;
     case GLFW_MOUSE_BUTTON_RIGHT:
       self->camera->zoom(-dy);
       break;
     }
   }
-  self->prev_x = x;
-  self->prev_y = y;
+  self->prev_x = (float)x;
+  self->prev_y = (float)y;
 }
 
 void

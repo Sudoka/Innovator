@@ -182,7 +182,8 @@ Separator::getBoundingBox(BoundingBoxAction * action)
 
 class Shader::ShaderP {
 public:
-  ShaderP(const string & filename) : program(new ShaderProgram(filename)) {}
+  ShaderP(Shader * self) 
+    : program(new ShaderProgram(self->fileName, self->transformFeedbackVaryings)) {}
   ~ShaderP() {}
   unique_ptr<ShaderProgram> program;
 };
@@ -194,7 +195,7 @@ void
 Shader::renderGL(RenderAction * action)
 {
   if (self.get() == nullptr) {
-    self.reset(new ShaderP(this->fileName));
+    self.reset(new ShaderP(this));
   }
   action->state->programelem.program = *self->program;
 }
@@ -232,9 +233,9 @@ Transform::getBoundingBox(BoundingBoxAction * action)
 
 class Triangles::TrianglesP {
 public:
-  TrianglesP(Triangles * self) : vertexbuffer(new VertexBuffer(self->vertices, State::VertexPosition)) {}
+  TrianglesP(Triangles * self) : position(new VertexBuffer(self->vertices, State::VertexPosition)) {}
   ~TrianglesP() {}
-  unique_ptr<VertexBuffer> vertexbuffer;
+  unique_ptr<VertexBuffer> position;
 };
 
 Triangles::Triangles() : self(nullptr) {}
@@ -248,7 +249,7 @@ Triangles::renderGL(RenderAction * action)
 
   action->state->flush();
 
-  VertexBufferScope scope(self->vertexbuffer.get());
+  BindScope scope(self->position.get());
   glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 

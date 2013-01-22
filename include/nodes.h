@@ -58,6 +58,7 @@ public:
   Shader();
  ~Shader();
   std::string fileName;
+  std::vector<const char *> transformFeedbackVaryings;
   virtual void renderGL(RenderAction * action);
 private:
   class ShaderP;
@@ -88,10 +89,10 @@ private:
   std::unique_ptr<TrianglesP> self;
 };
 
-class Instances : public Node {
+class InstancedTriangleSet : public Node {
 public:
-  Instances();
-  ~Instances();
+  InstancedTriangleSet();
+  ~InstancedTriangleSet();
 
   std::vector<unsigned int> indices;
   std::vector<glm::vec3> vertices;
@@ -101,6 +102,6 @@ public:
   virtual void getBoundingBox(BoundingBoxAction * action);
 
 private:
-  class InstancesP;
-  std::unique_ptr<InstancesP> self;
+  class InstancedTriangleSetP;
+  std::unique_ptr<InstancedTriangleSetP> self;
 };
