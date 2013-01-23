@@ -25,7 +25,7 @@ public:
   {
     drawprogram->fileName = "drawprogram.glsl";
     cullprogram->fileName = "cullprogram.glsl";
-    cullprogram->transformFeedbackVaryings.push_back("Position");
+    cullprogram->transformFeedbackVaryings.push_back("PositionOut");
 
     DrawElementsIndirectBuffer buffer(self->indices.size());
     this->indirectbuffer->setValues(GL_DYNAMIC_DRAW, sizeof(buffer), &buffer);
