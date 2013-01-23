@@ -83,7 +83,7 @@ public:
   BufferObject(GLenum target);
   BufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
   BufferObject(const std::vector<glm::vec3> & data, GLenum target = GL_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
-  BufferObject(const std::vector<unsigned int> & data, GLenum target = GL_ELEMENT_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
+  BufferObject(const std::vector<glm::ivec3> & data, GLenum target = GL_ELEMENT_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
   ~BufferObject();
 
   void setValues(GLenum usage, GLsizeiptr size, const GLvoid * data);

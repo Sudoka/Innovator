@@ -27,7 +27,7 @@ public:
     cullprogram->fileName = "cullprogram.glsl";
     cullprogram->transformFeedbackVaryings.push_back("PositionOut");
 
-    DrawElementsIndirectBuffer buffer(self->indices.size());
+    DrawElementsIndirectBuffer buffer(self->indices.size() * 3);
     this->indirectbuffer->setValues(GL_DYNAMIC_DRAW, sizeof(buffer), &buffer);
   }
 

@@ -28,10 +28,10 @@ BufferObject::BufferObject(const std::vector<glm::vec3> & data, GLenum target, G
   this->construct(target, usage, sizeof(vec3) * data.size(), data.data());
 }
 
-BufferObject::BufferObject(const std::vector<unsigned int> & data, GLenum target, GLenum usage)
+BufferObject::BufferObject(const std::vector<ivec3> & data, GLenum target, GLenum usage)
   : target(target)
 {
-  this->construct(target, usage, sizeof(GLuint) * data.size(), data.data());
+  this->construct(target, usage, sizeof(ivec3) * data.size(), data.data());
 }
 
 void

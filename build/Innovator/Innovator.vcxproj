@@ -86,6 +86,7 @@
     <ClCompile Include="..\..\src\elements.cpp" />
     <ClCompile Include="..\..\src\instances.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\mesh.cpp" />
     <ClCompile Include="..\..\src\nodes.cpp" />
     <ClCompile Include="..\..\src\opengl.cpp" />
     <ClCompile Include="..\..\src\state.cpp" />
@@ -96,6 +97,7 @@
     <ClInclude Include="..\..\include\box3.h" />
     <ClInclude Include="..\..\include\canvas.h" />
     <ClInclude Include="..\..\include\elements.h" />
+    <ClInclude Include="..\..\include\mesh.h" />
     <ClInclude Include="..\..\include\nodes.h" />
     <ClInclude Include="..\..\include\opengl.h" />
     <ClInclude Include="..\..\include\state.h" />

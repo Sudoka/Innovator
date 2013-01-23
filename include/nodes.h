@@ -94,7 +94,7 @@ public:
   InstancedTriangleSet();
   ~InstancedTriangleSet();
 
-  std::vector<unsigned int> indices;
+  std::vector<glm::ivec3> indices;
   std::vector<glm::vec3> vertices;
   std::vector<glm::vec3> instances;
 
