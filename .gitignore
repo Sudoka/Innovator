@@ -11,3 +11,14 @@
 *.lai
 *.la
 *.a
+
+# Directories
+external
+build/Innovator
+build/Release
+build/Debug
+build/build.suo
+build/build.sdf
+build/ipch
+build/build.opensdf
+

@@ -1,3 +1,6 @@
 
+- lua file format?
+- port mesh functionality from IvJS
 - port LEGO model import to C++
 - visualize normals for debug
+- text rendering
