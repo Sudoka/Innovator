@@ -233,7 +233,7 @@ ShaderProgram::link()
   glGetProgramiv(this->id, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
     GLint length;
-    glGetShaderiv(this->id, GL_INFO_LOG_LENGTH, &length);
+    glGetProgramiv(this->id, GL_INFO_LOG_LENGTH, &length);
     GLchar * log = new GLchar[length + 1];
     glGetProgramInfoLog(this->id, length, NULL, log);
     cout << "Shader::link()" << "failed to link shader: " <<  log << endl;
