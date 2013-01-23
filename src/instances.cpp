@@ -39,13 +39,14 @@ public:
   {
     this->cullprogram->renderGL(action);
     action->state->flush();
-    
+
     // clear instance count
     this->indirectbuffer->set1Value(1, 0);
     // bind instance count to atomic counter in cullprogram
     BindBufferRange bufferrange(GL_ATOMIC_COUNTER_BUFFER, 0, this->indirectbuffer->buffer, sizeof(GLuint), sizeof(GLuint));
     BindScope instances(this->drawinstances.get());
     BindScope transformfeedback(this->transformfeedback.get());
+
     glDrawArrays(GL_POINTS, 0, self->instances.size());
   }
 

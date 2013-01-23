@@ -4,4 +4,8 @@
     <LocalDebuggerEnvironment>PATH=..\..\external\glew-1.9.0\bin;..\..\external\glfw-2.7.7\support\msvc100\Debug</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerEnvironment>PATH=..\..\external\glew-1.9.0\bin;..\..\external\glfw-2.7.7\support\msvc100\Debug</LocalDebuggerEnvironment>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>
