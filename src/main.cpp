@@ -7,10 +7,8 @@
 using namespace std;
 using namespace glm;
 
-int main(int argc, char * argv[])
+shared_ptr<Node> getInstances()
 {
-  shared_ptr<Separator> root(new Separator);
-
   shared_ptr<InstancedTriangleSet> triangleset(new InstancedTriangleSet);
   triangleset->vertices.push_back(vec3(-1, -1, -1));
   triangleset->vertices.push_back(vec3(-1, -1,  1));
@@ -43,10 +41,61 @@ int main(int argc, char * argv[])
   triangleset->indices.push_back(ivec3(7, 6, 2));
   triangleset->indices.push_back(ivec3(1, 0, 4));
   triangleset->indices.push_back(ivec3(4, 5, 1));
+
+  return triangleset;
+}
+
+shared_ptr<Node> getSphere()
+{
+	shared_ptr<InstancedTriangleSet> triangleset(new InstancedTriangleSet);
+
+	float t = (1.0f + sqrtf(5.0f)) / 2.0f; // golden ratio
+	triangleset->vertices.push_back(vec3(-1,  0,  t));
+	triangleset->vertices.push_back(vec3( 1,  0,  t));
+	triangleset->vertices.push_back(vec3(-1,  0, -t));
+	triangleset->vertices.push_back(vec3( 1,  0, -t));
+	triangleset->vertices.push_back(vec3( 0,  t,  1));
+	triangleset->vertices.push_back(vec3( 0,  t, -1));
+	triangleset->vertices.push_back(vec3( 0, -t,  1));
+	triangleset->vertices.push_back(vec3( 0, -t, -1));
+	triangleset->vertices.push_back(vec3( t,  1,  0));
+	triangleset->vertices.push_back(vec3(-t,  1,  0));
+	triangleset->vertices.push_back(vec3( t, -1,  0));
+	triangleset->vertices.push_back(vec3(-t, -1,  0));
+
+	triangleset->indices.push_back(ivec3(1, 4, 0));
+	triangleset->indices.push_back(ivec3(4, 9, 0));
+	triangleset->indices.push_back(ivec3(4, 5, 9));
+	triangleset->indices.push_back(ivec3(8, 5, 4));
+	triangleset->indices.push_back(ivec3(1, 8, 4));
+
+	triangleset->indices.push_back(ivec3(1, 10, 8));
+	triangleset->indices.push_back(ivec3(10, 3, 8));
+	triangleset->indices.push_back(ivec3(8,  3, 5));
+	triangleset->indices.push_back(ivec3(3,  2, 5));
+	triangleset->indices.push_back(ivec3(3,  7, 2));
+
+	triangleset->indices.push_back(ivec3(3, 10, 7));
+	triangleset->indices.push_back(ivec3(10, 6, 7));
+	triangleset->indices.push_back(ivec3(6, 11, 7));
+	triangleset->indices.push_back(ivec3(6, 0, 11));
+	triangleset->indices.push_back(ivec3(6,  1, 0));
+
+	triangleset->indices.push_back(ivec3(10, 1, 6));
+	triangleset->indices.push_back(ivec3(11, 0, 9));
+	triangleset->indices.push_back(ivec3(2, 11, 9));
+	triangleset->indices.push_back(ivec3(5, 2,  9));
+	triangleset->indices.push_back(ivec3(11, 2, 7));
+
+	triangleset->instances.push_back(vec3(0, 0, 0));
+	return triangleset;
+}
+
+int main(int argc, char * argv[])
+{
   
-  shared_ptr<Transform> transform(new Transform);
-  root->addChild(transform);
-  root->addChild(triangleset);
+  shared_ptr<Separator> root(new Separator);
+  root->addChild(getSphere());
   
   unique_ptr<Viewer> viewer(new Viewer(640, 480));
   viewer->setSceneGraph(root);

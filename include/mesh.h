@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 class InstancedTriangleSet;
 
 class Mesh {
@@ -13,8 +11,8 @@ public:
   void deflate();
   void generateNormals();
   void subdivide(int lod);
+  void normalize();
 
 private:
-  class MeshP;
-  std::unique_ptr<MeshP> self;
+  InstancedTriangleSet * self;
 };

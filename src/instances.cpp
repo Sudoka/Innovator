@@ -1,4 +1,5 @@
 #include <nodes.h>
+#include <mesh.h>
 #include <opengl.h>
 #include <state.h>
 #include <actions.h>
@@ -16,16 +17,25 @@ public:
     : self(self),
       drawprogram(new Shader),
       cullprogram(new Shader),
-      elements(new BufferObject(self->indices)),
-      vertices(new VertexBuffer(self->vertices, 0, 0)),
+      normalprogram(new Shader),
       drawinstances(new VertexBuffer(self->instances, 1, 0)),
       cullinstances(new VertexBuffer(self->instances, 2, 1)),
       indirectbuffer(new BufferObject(GL_DRAW_INDIRECT_BUFFER)),
       transformfeedback(new TransformFeedback(cullinstances->buffer))
   {
     drawprogram->fileName = "drawprogram.glsl";
+    normalprogram->fileName = "normalprogram.glsl";
     cullprogram->fileName = "cullprogram.glsl";
     cullprogram->transformFeedbackVaryings.push_back("PositionOut");
+
+    Mesh mesh(self);
+    mesh.subdivide(1);
+    mesh.normalize();
+    mesh.generateNormals();
+    
+    this->elements.reset(new BufferObject(self->indices));
+    this->vertices.reset(new VertexBuffer(self->vertices, 0, 0));
+    this->normals.reset(new VertexBuffer(self->normals, 1, 0));
 
     DrawElementsIndirectBuffer buffer(self->indices.size() * 3);
     this->indirectbuffer->setValues(GL_DYNAMIC_DRAW, sizeof(buffer), &buffer);
@@ -56,6 +66,7 @@ public:
     action->state->flush();
 
     BindScope vertices(this->vertices.get());
+    BindScope normals(this->normals.get());
     BindScope elements(this->elements.get());
     BindScope indirect(this->indirectbuffer.get());
     BindScope instances(this->cullinstances.get());
@@ -69,11 +80,24 @@ public:
 #endif
   }
 
+  void drawNormals(RenderAction * action)
+  {
+    this->normalprogram->renderGL(action);
+    action->state->flush();
+
+    BindScope vertices(this->vertices.get());
+    BindScope normals(this->normals.get());
+    
+    glDrawArrays(GL_POINTS, 0, self->vertices.size());
+  }
+
   unique_ptr<Shader> drawprogram;
   unique_ptr<Shader> cullprogram;
+  unique_ptr<Shader> normalprogram;
 
   unique_ptr<BufferObject> elements;
   unique_ptr<VertexBuffer> vertices;
+  unique_ptr<VertexBuffer> normals;
 
   unique_ptr<VertexBuffer> drawinstances;
   unique_ptr<VertexBuffer> cullinstances;
@@ -102,6 +126,7 @@ InstancedTriangleSet::renderGL(RenderAction * action)
   }
   self->cull(action);
   self->draw(action);
+  self->drawNormals(action);
 }
 
 void
