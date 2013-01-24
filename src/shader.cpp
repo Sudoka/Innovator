@@ -21,18 +21,16 @@ public:
     lua_getglobal(L, "VertexShader");
     if (lua_isstring(L, -1)) {
       program->attach(lua_tostring(L, -1), GL_VERTEX_SHADER);
-      lua_pop(L, 2);
     }
     lua_getglobal(L, "GeometryShader");
     if (lua_isstring(L, -1)) {
       program->attach(lua_tostring(L, -1), GL_GEOMETRY_SHADER);
-      lua_pop(L, 2);
     }
     lua_getglobal(L, "FragmentShader");
     if (lua_isstring(L, -1)) {
       program->attach(lua_tostring(L, -1), GL_FRAGMENT_SHADER);
-      lua_pop(L, 2);
     }
+    lua_close(L);
 
     if (self->transformFeedbackVaryings.size() > 0) {
       glTransformFeedbackVaryings(program->id, 

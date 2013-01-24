@@ -1,6 +1,6 @@
 
-- lua file format?
+- lua file format!
+- statically link dependencies
 - port mesh functionality from IvJS
 - port LEGO model import to C++
-- visualize normals for debug
 - text rendering
