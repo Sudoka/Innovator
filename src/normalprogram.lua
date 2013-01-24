@@ -1,7 +1,5 @@
-#version 420 core
-
-//-- Vertex
-
+VertexShader = [[
+#version 420
 layout(location = 0) in vec3 VertexPosition;
 layout(location = 1) in vec3 VertexNormal;
 
@@ -13,9 +11,10 @@ void main()
   Normal = VertexNormal;
   Position = VertexPosition;
 }
+]]
 
-//-- Geometry
-
+GeometryShader = [[
+#version 420
 layout(points) in;
 layout(line_strip, max_vertices = 2) out;
 
@@ -36,12 +35,14 @@ void main()
   EmitVertex();
   EndPrimitive();
 }
+]]
 
-//-- Fragment
-
+FragmentShader = [[
+#version 420
 layout(location = 0) out vec4 FragColor;
 
 void main()
 {
   FragColor = vec4(1.0, 1.0, 0.0, 1.0);
 }
+]]

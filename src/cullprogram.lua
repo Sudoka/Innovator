@@ -1,17 +1,17 @@
-#version 420 core
 
-//-- Vertex
-
+VertexShader = [[
+#version 420
 layout(location = 1) in vec3 VertexPosition;
 out vec3 Position;
-
+                   
 void main() 
 {
   Position = VertexPosition;
 }
+]]
 
-//-- Geometry
-
+GeometryShader = [[
+#version 420
 layout(points) in;
 layout(points, max_vertices = 1) out;
 layout(stream = 0) out vec3 PositionOut;
@@ -55,3 +55,4 @@ void main()
     EmitStreamVertex(0);
   }
 }
+]]

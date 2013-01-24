@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <glm/glm.hpp>
+
 class InstancedTriangleSet;
 
 class Mesh {
@@ -9,9 +12,13 @@ public:
 
   void inflate();
   void deflate();
-  void generateNormals();
-  void subdivide(int lod);
-  void normalize();
+  void subdivide();
+
+  void generatePerFaceNormals();
+  void generatePerVertexNormals();
+
+private:
+  glm::vec3 getFaceNormal(const glm::ivec3 & face);
 
 private:
   InstancedTriangleSet * self;

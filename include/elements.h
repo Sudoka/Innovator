@@ -3,6 +3,7 @@
 #include <opengl.h>
 #include <string>
 #include <glm/glm.hpp>
+#include <GL/glew.h>
 
 class State;
 
@@ -17,5 +18,5 @@ public:
 class ProgramElement {
 public:
   void updateGL(State * state);
-  ShaderProgram program;
+  GLuint program;
 };

@@ -180,28 +180,6 @@ Separator::getBoundingBox(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-class Shader::ShaderP {
-public:
-  ShaderP(Shader * self) 
-    : program(new ShaderProgram(self->fileName, self->transformFeedbackVaryings)) {}
-  ~ShaderP() {}
-  unique_ptr<ShaderProgram> program;
-};
-
-Shader::Shader() : self(nullptr) {}
-Shader::~Shader() {}
-
-void
-Shader::renderGL(RenderAction * action)
-{
-  if (self.get() == nullptr) {
-    self.reset(new ShaderP(this));
-  }
-  action->state->programelem.program = *self->program;
-}
-
-// *************************************************************************************************
-
 Transform::Transform()
   : translation(0, 0, 0),
     scaleFactor(1, 1, 1) 

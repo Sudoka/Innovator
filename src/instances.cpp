@@ -23,15 +23,18 @@ public:
       indirectbuffer(new BufferObject(GL_DRAW_INDIRECT_BUFFER)),
       transformfeedback(new TransformFeedback(cullinstances->buffer))
   {
-    drawprogram->fileName = "drawprogram.glsl";
-    normalprogram->fileName = "normalprogram.glsl";
-    cullprogram->fileName = "cullprogram.glsl";
+    drawprogram->fileName = "drawprogram.lua";
+    normalprogram->fileName = "normalprogram.lua";
+    cullprogram->fileName = "cullprogram.lua";
     cullprogram->transformFeedbackVaryings.push_back("PositionOut");
 
     Mesh mesh(self);
-    mesh.subdivide(1);
-    mesh.normalize();
-    mesh.generateNormals();
+    mesh.subdivide();
+    mesh.subdivide();
+    for (size_t i = 0; i < self->vertices.size(); i++) {
+      self->vertices[i] = glm::normalize(self->vertices[i]);
+    }
+    mesh.generatePerVertexNormals();
     
     this->elements.reset(new BufferObject(self->indices));
     this->vertices.reset(new VertexBuffer(self->vertices, 0, 0));

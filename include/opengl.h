@@ -28,8 +28,8 @@ struct DrawElementsIndirectBuffer
 class ShaderProgram {
 public:
   ShaderProgram();
-  ShaderProgram(const std::string & filename, std::vector<const char *> transformFeedbackVaryings);
   ~ShaderProgram();
+  void attach(const char * shader, GLenum type);
   void link();
   GLuint id;
 };

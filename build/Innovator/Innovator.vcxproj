@@ -50,7 +50,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\deps\glfw-2.7.7\include;..\..\deps\glm-0.9.4.1;..\..\deps\glew-1.9.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;..\..\deps\glfw-2.7.7\include;..\..\deps\glm-0.9.4.1;..\..\deps\glew-1.9.0\include;..\..\deps\lua-5.2.1\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,6 +80,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lapi.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lauxlib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lbaselib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lbitlib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lcode.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lcorolib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lctype.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldblib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldebug.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldo.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldump.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lfunc.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lgc.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\linit.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\liolib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\llex.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lmathlib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lmem.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\loadlib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lobject.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lopcodes.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\loslib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lparser.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lstate.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lstring.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lstrlib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ltable.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ltablib.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ltm.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lundump.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lvm.c" />
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lzio.c" />
     <ClCompile Include="..\..\src\actions.cpp" />
     <ClCompile Include="..\..\src\box3.cpp" />
     <ClCompile Include="..\..\src\canvas.cpp" />
@@ -89,6 +121,7 @@
     <ClCompile Include="..\..\src\mesh.cpp" />
     <ClCompile Include="..\..\src\nodes.cpp" />
     <ClCompile Include="..\..\src\opengl.cpp" />
+    <ClCompile Include="..\..\src\shader.cpp" />
     <ClCompile Include="..\..\src\state.cpp" />
     <ClCompile Include="..\..\src\viewer.cpp" />
   </ItemGroup>

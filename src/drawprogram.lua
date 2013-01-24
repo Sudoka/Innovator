@@ -1,7 +1,5 @@
-#version 420 core
-
-//-- Vertex
-
+VertexShader = [[
+#version 420
 layout(location = 0) in vec3 VertexPosition;
 layout(location = 1) in vec3 VertexNormal;
 layout(location = 2) in vec3 VertexOffset;
@@ -19,9 +17,10 @@ void main()
   Normal = normalize(ModelViewMatrix * vec4(VertexNormal, 0.0));
   gl_Position = MVP * vec4(VertexPosition + VertexOffset, 1.0);
 }
+]]
 
-//-- Fragment
-
+FragmentShader = [[
+#version 420
 layout(location = 0) out vec4 FragColor;
 
 in vec4 Normal;
@@ -30,3 +29,4 @@ void main()
 {
   FragColor = vec4(Normal.zzz, 1.0);
 }
+]]

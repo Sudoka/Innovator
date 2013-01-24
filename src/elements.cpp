@@ -5,12 +5,12 @@
 void
 ProgramElement::updateGL(State * state)
 {
-  glUseProgram(this->program.id);
+  glUseProgram(this->program);
 }
 
 void
 MatrixElement::updateGL(State * state)
 {
-  GLuint loc = glGetUniformLocation(state->programelem.program.id, this->name.c_str());
+  GLuint loc = glGetUniformLocation(state->programelem.program, this->name.c_str());
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
 }

@@ -135,93 +135,36 @@ TransformFeedback::unbind()
 
 // *************************************************************************************************
 
-struct ShaderObject {
-  ShaderObject() {}
-  ShaderObject(GLenum type, const string & tag)
-    : type(type), tag(tag) {}
-  GLenum type;
-  string tag;
-  string source;
-};
-
 ShaderProgram::ShaderProgram() 
-  : id(0) {}
-
-ShaderProgram::ShaderProgram(const string & filename, vector<const char *> transformFeedbackVaryings) 
-  : id(0)
+  : id(glCreateProgram())
 {
-  vector<ShaderObject> objects(5);
-  objects[0] = ShaderObject(GL_VERTEX_SHADER,          "//-- Vertex");
-  objects[1] = ShaderObject(GL_TESS_CONTROL_SHADER,    "//-- Tess Control");
-  objects[2] = ShaderObject(GL_TESS_EVALUATION_SHADER, "//-- Tess Evaluation");
-  objects[3] = ShaderObject(GL_GEOMETRY_SHADER,        "//-- Geometry");
-  objects[4] = ShaderObject(GL_FRAGMENT_SHADER,        "//-- Fragment");
-
-  this->id = glCreateProgram();
-
-  string line;
-  ifstream file("../../src/" + filename);
-  
-  if (file.is_open()) {
-    
-    string version("#version 400 core");
-    int index = -1;
-    
-    while (file.good()) {
-      getline(file, line);
-      line += "\n";
-      if (line.find("#version") != string::npos) {
-        version = line;
-        continue;
-      }
-      for (size_t i = 0; i < objects.size(); i++) {
-        if (line.find(objects[i].tag) != string::npos) {
-          objects[i].source += version;
-          index = i;
-          continue;
-        }
-      }
-      if (index < 0) continue;
-      objects[index].source += line;
-    }
-    file.close();
-    
-    for (auto i = objects.begin(); i != objects.end(); i++) {
-      if (!i->source.empty()) {
-        GLuint shader = glCreateShader(i->type);
-        const char * s = i->source.c_str();
-        glShaderSource(shader, 1, &s, NULL);
-        glCompileShader(shader);
-
-        GLint status;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-        if (status != GL_TRUE) {
-          GLint length;
-          glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-          GLchar * log = new GLchar[length + 1];
-          glGetShaderInfoLog(shader, length, NULL, log);
-          cout << "Shader::attach" << "failed to compile shader: " << log << endl;
-          delete [] log;
-        } else {
-          glAttachShader(this->id, shader);
-          glDeleteShader(shader);
-        }
-      }
-    }
-    GLsizei count = transformFeedbackVaryings.size();
-    if (count > 0) {
-      const char ** varyings = transformFeedbackVaryings.data();
-      glTransformFeedbackVaryings(this->id, count, varyings, GL_SEPARATE_ATTRIBS);
-    }
-    this->link();
-  } else {
-    cout << "Unable to open file" << endl;
-  }
 }
 
 ShaderProgram::~ShaderProgram()
 {
   glDeleteProgram(this->id);
+}
+
+void 
+ShaderProgram::attach(const char * source, GLenum type)
+{
+  GLuint shader = glCreateShader(type);
+  glShaderSource(shader, 1, &source, NULL);
+  glCompileShader(shader);
+  
+  GLint status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLint length;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    GLchar * log = new GLchar[length + 1];
+    glGetShaderInfoLog(shader, length, NULL, log);
+    cout << "Shader::attach" << "failed to compile shader: " << log << endl;
+    delete [] log;
+  } else {
+    glAttachShader(this->id, shader);
+    glDeleteShader(shader);
+  }
 }
 
 void
@@ -236,7 +179,7 @@ ShaderProgram::link()
     glGetProgramiv(this->id, GL_INFO_LOG_LENGTH, &length);
     GLchar * log = new GLchar[length + 1];
     glGetProgramInfoLog(this->id, length, NULL, log);
-    cout << "Shader::link()" << "failed to link shader: " <<  log << endl;
+    cout << "Shader::link()" << "failed to link program: " <<  log << endl;
     delete [] log;
   }
 }

@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="deps">
+      <UniqueIdentifier>{fb9b3e1d-db02-4395-9acd-147ee9b47d97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deps\lua">
+      <UniqueIdentifier>{505fdbb4-6a25-4fcb-8511-37126e11fed0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\nodes.cpp">
@@ -46,6 +52,105 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lapi.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lauxlib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lbaselib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lbitlib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lcode.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lcorolib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lctype.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldblib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldebug.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldo.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ldump.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lfunc.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lgc.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\linit.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\liolib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\llex.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lmathlib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lmem.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\loadlib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lobject.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lopcodes.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\loslib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lparser.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lstate.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lstring.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lstrlib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ltable.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ltablib.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\ltm.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lundump.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lvm.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\lua-5.2.1\src\lzio.c">
+      <Filter>deps\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
