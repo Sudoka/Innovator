@@ -116,6 +116,7 @@
     <ClCompile Include="..\..\src\box3.cpp" />
     <ClCompile Include="..\..\src\canvas.cpp" />
     <ClCompile Include="..\..\src\elements.cpp" />
+    <ClCompile Include="..\..\src\file.cpp" />
     <ClCompile Include="..\..\src\instances.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\mesh.cpp" />
@@ -130,6 +131,7 @@
     <ClInclude Include="..\..\include\box3.h" />
     <ClInclude Include="..\..\include\canvas.h" />
     <ClInclude Include="..\..\include\elements.h" />
+    <ClInclude Include="..\..\include\file.h" />
     <ClInclude Include="..\..\include\mesh.h" />
     <ClInclude Include="..\..\include\nodes.h" />
     <ClInclude Include="..\..\include\opengl.h" />
