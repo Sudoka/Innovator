@@ -118,6 +118,7 @@
     <ClCompile Include="..\..\src\elements.cpp" />
     <ClCompile Include="..\..\src\file.cpp" />
     <ClCompile Include="..\..\src\instances.cpp" />
+    <ClCompile Include="..\..\src\luawrapper.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\mesh.cpp" />
     <ClCompile Include="..\..\src\nodes.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="..\..\include\canvas.h" />
     <ClInclude Include="..\..\include\elements.h" />
     <ClInclude Include="..\..\include\file.h" />
+    <ClInclude Include="..\..\include\luawrapper.h" />
     <ClInclude Include="..\..\include\mesh.h" />
     <ClInclude Include="..\..\include\nodes.h" />
     <ClInclude Include="..\..\include\opengl.h" />
