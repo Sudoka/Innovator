@@ -129,5 +129,5 @@ Mesh::subdivide()
     self->indices.push_back(ivec3(face[0], i, k));
     self->indices.push_back(ivec3(i, face[1], j));
     self->indices[faceindex] = ivec3(k, j, face[2]);
-    }
+  }
 }

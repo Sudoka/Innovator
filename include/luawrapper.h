@@ -9,7 +9,7 @@ class Lua {
 public:
   static std::shared_ptr<Separator> doivfile(const std::string & file);
   static void dofile(const std::string & file);
-  static void registerNodes();
+  static void * getuserdata(const std::string name);
 
 private:
   static Lua * instance();

@@ -10,8 +10,6 @@ class File::FileP {
 public:
   FileP() 
   {
-    Lua::dofile("../../src/file.lua");
-    Lua::registerNodes();
   }
   ~FileP() 
   {
@@ -30,5 +28,8 @@ File::~File()
 shared_ptr<Separator> 
 File::readAll(const string & filename)
 {
-  return Lua::doivfile(filename);
+  Lua::dofile(filename);
+  Separator * scene = static_cast<Separator *>(Lua::getuserdata("root"));
+  assert(scene);
+  return std::shared_ptr<Separator>(scene);
 }

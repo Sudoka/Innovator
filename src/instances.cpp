@@ -125,6 +125,9 @@ void
 InstancedTriangleSet::renderGL(RenderAction * action)
 {
   if (self.get() == nullptr) {
+    if (this->instances.size() == 0) {
+      this->instances.push_back(vec3(0, 0, 0));
+    }
     self.reset(new InstancedTriangleSetP(this));
   }
   self->cull(action);
