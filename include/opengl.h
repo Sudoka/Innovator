@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <glstate.h>
 
 struct DrawElementsIndirectBuffer
 {
@@ -96,8 +97,7 @@ private:
   void construct(GLenum target, GLenum usage, GLsizeiptr size, const GLvoid * data);
 
 public:
-  GLuint buffer;
-  GLenum target;
+  BufferState state;
 };
 
 class VertexBuffer : public BufferObject {

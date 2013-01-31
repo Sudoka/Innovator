@@ -20,12 +20,36 @@ root = Separator {
                     1, 1, 0, 1, 1, 1 } 
       },
 
+      VertexBuffer {
+         index = 1,
+         type = vec3,
+         values = { 0, 0, 0, 0, 0, 1, 
+                    0, 1, 0, 0, 1, 1,
+                    1, 0, 0, 1, 0, 1,
+                    1, 1, 0, 1, 1, 1 } 
+      },
+
+      VertexBuffer {
+	 index = 2,
+	 divisor = 1,
+	 values = { 0, 0, 0, 1, 1, 1 }
+      },
+
       Program {
          file = "drawprogram.lua"
       },
 
       Shape { 
+	 attributes = { 0, 1 },
          mode = TRIANGLES 
+      }
+
+      Program {
+	 file = "normalprogram.lua"
+      }
+      Shape {
+	 attributes = { 0, 1 }
+	 mode = POINTS
       }
    }
 }

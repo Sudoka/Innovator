@@ -36,18 +36,14 @@ function IndexBuffer(data)
 end
 
 function VertexBuffer(data)
-   return Group {
-      children = {
-         BufferObject { 
-            target = ARRAY, 
-            usage = STATIC_DRAW, 
-            type = data.type, 
-            value = data.values 
-         },
-         VertexAttribute { 
+   return VertexAttribute { 
             data.index, 
-            data.divisor 
-         }
-      }
-   }
+	    data.divisor, 
+	    buffer = BufferObject { 
+	       target = ARRAY, 
+	       usage = STATIC_DRAW, 
+	       type = data.type, 
+	       value = data.values
+            }
+          }
 end

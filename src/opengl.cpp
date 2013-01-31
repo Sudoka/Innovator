@@ -10,25 +10,25 @@ using namespace glm;
 using namespace std;
 
 BufferObject::BufferObject(GLenum target)
-  : target(target)
+  : state(target)
 {
-  glGenBuffers(1, &this->buffer);
+  glGenBuffers(1, &this->state.buffer);
 }
 
 BufferObject::BufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
-  : target(target)
+  : state(target)
 {
   this->construct(target, usage, size, data);
 }
 
 BufferObject::BufferObject(const std::vector<glm::vec3> & data, GLenum target, GLenum usage)
-  : target(target)
+  : state(target)
 {
   this->construct(target, usage, sizeof(vec3) * data.size(), data.data());
 }
 
 BufferObject::BufferObject(const std::vector<ivec3> & data, GLenum target, GLenum usage)
-  : target(target)
+  : state(target)
 {
   this->construct(target, usage, sizeof(ivec3) * data.size(), data.data());
 }
@@ -36,21 +36,21 @@ BufferObject::BufferObject(const std::vector<ivec3> & data, GLenum target, GLenu
 void
 BufferObject::construct(GLenum target, GLenum usage, GLsizeiptr size, const GLvoid * data)
 {
-  glGenBuffers(1, &this->buffer);
+  glGenBuffers(1, &this->state.buffer);
   this->setValues(usage, size, data);
 }
 
 BufferObject::~BufferObject()
 {
-  glBindBuffer(this->target, this->buffer);
-  glDeleteBuffers(1, &this->buffer);
+  glBindBuffer(this->state.target, this->state.buffer);
+  glDeleteBuffers(1, &this->state.buffer);
 }
 
 void
 BufferObject::setValues(GLenum usage, GLsizeiptr size, const GLvoid * data)
 {
   this->bind();
-  glBufferData(this->target, size, data, usage);
+  glBufferData(this->state.target, size, data, usage);
   this->unbind();
 }
 
@@ -58,20 +58,20 @@ void
 BufferObject::set1Value(int index, GLuint value)
 {
   this->bind();
-  glBufferSubData(this->target, sizeof(GLuint) * index, sizeof(GLuint), &value);
+  glBufferSubData(this->state.target, sizeof(GLuint) * index, sizeof(GLuint), &value);
   this->unbind();
 }
 
 void
 BufferObject::bind()
 {
-  glBindBuffer(this->target, this->buffer);
+  glBindBuffer(this->state.target, this->state.buffer);
 }
 
 void
 BufferObject::unbind()
 {
-  glBindBuffer(this->target, 0);
+  glBindBuffer(this->state.target, 0);
 }
 
 VertexBuffer::VertexBuffer(const std::vector<vec3> & data, GLuint index, GLuint divisor)

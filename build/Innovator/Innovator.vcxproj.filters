@@ -194,5 +194,8 @@
     <ClInclude Include="..\..\include\luawrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\glstate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,10 +1,12 @@
 #include <nodes.h>
 
 #include <actions.h>
+#include <opengl.h>
 #include <state.h>
 #include <box3.h>
 #include <vector>
 #include <math.h>
+#include <iostream>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -209,11 +211,42 @@ Transform::getBoundingBox(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+class Buffer::BufferP {
+public:
+  BufferP(Buffer * self) 
+    : buffer(new BufferObject(self->values, GL_ARRAY_BUFFER, GL_STATIC_DRAW)) {}
+  ~BufferP() {}
+
+  unique_ptr<BufferObject> buffer;
+};
+
+Buffer::Buffer()
+  : self(nullptr)
+{
+}
+
+Buffer::~Buffer()
+{
+  
+}
+
+void
+Buffer::renderGL(RenderAction * action)
+{
+  if (self.get() == nullptr) {
+    self.reset(new BufferP(this));
+  }
+  action->state->bufferelem.state = self->buffer->state;
+}
+
+// *************************************************************************************************
+
 class Triangles::TrianglesP {
 public:
-  TrianglesP(Triangles * self) : position(new VertexBuffer(self->vertices, State::VertexPosition)) {}
+  TrianglesP(Triangles * self) 
+    : elements(new BufferObject(self->indices)) {}
   ~TrianglesP() {}
-  unique_ptr<VertexBuffer> position;
+  unique_ptr<BufferObject> elements;
 };
 
 Triangles::Triangles() : self(nullptr) {}
@@ -226,9 +259,12 @@ Triangles::renderGL(RenderAction * action)
     self.reset(new TrianglesP(this));
 
   action->state->flush();
-
-  BindScope scope(self->position.get());
-  glDrawArrays(GL_TRIANGLES, 0, 3);
+  BindScope indices(self->elements.get());
+  BufferElement::Scope vertices(&action->state->bufferelem.state);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glDrawElements(GL_TRIANGLES, this->indices.size() * 3, GL_UNSIGNED_INT, 0);
+  glDisableVertexAttribArray(0);
 }
 
 void

@@ -21,7 +21,7 @@ public:
       drawinstances(new VertexBuffer(self->instances, 1, 0)),
       cullinstances(new VertexBuffer(self->instances, 2, 1)),
       indirectbuffer(new BufferObject(GL_DRAW_INDIRECT_BUFFER)),
-      transformfeedback(new TransformFeedback(cullinstances->buffer))
+      transformfeedback(new TransformFeedback(cullinstances->state.buffer))
   {
     drawprogram->fileName = "drawprogram.lua";
     normalprogram->fileName = "normalprogram.lua";
@@ -56,7 +56,7 @@ public:
     // clear instance count
     this->indirectbuffer->set1Value(1, 0);
     // bind instance count to atomic counter in cullprogram
-    BindBufferRange bufferrange(GL_ATOMIC_COUNTER_BUFFER, 0, this->indirectbuffer->buffer, sizeof(GLuint), sizeof(GLuint));
+    BindBufferRange bufferrange(GL_ATOMIC_COUNTER_BUFFER, 0, this->indirectbuffer->state.buffer, sizeof(GLuint), sizeof(GLuint));
     BindScope instances(this->drawinstances.get());
     BindScope transformfeedback(this->transformfeedback.get());
 

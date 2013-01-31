@@ -76,10 +76,24 @@ public:
   glm::vec3 scaleFactor;
 };
 
+class Buffer : public Node {
+public:
+  Buffer();
+  ~Buffer();
+
+  virtual void renderGL(RenderAction * action);
+  std::vector<glm::vec3> values;
+
+private:
+  class BufferP;
+  std::unique_ptr<BufferP> self;
+};
+
 class Triangles : public Node {
 public:
   Triangles();
   ~Triangles();
+  std::vector<glm::ivec3> indices;
   std::vector<glm::vec3> vertices;
   virtual void renderGL(RenderAction * action);
   virtual void getBoundingBox(BoundingBoxAction * action);

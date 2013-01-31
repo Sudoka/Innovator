@@ -1,5 +1,6 @@
 #include <state.h>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -10,6 +11,7 @@ public:
 
   vector<ProgramElement> programstack;
   vector<MatrixElement> modelmatrixstack;
+  vector<BufferElement> bufferstack;
 };
 
 State::State()
@@ -27,6 +29,7 @@ State::push()
 {
   self->programstack.push_back(this->programelem);
   self->modelmatrixstack.push_back(this->modelmatrixelem);
+  self->bufferstack.push_back(this->bufferelem);
 }
 
 void
@@ -34,8 +37,11 @@ State::pop()
 {
   this->programelem = self->programstack.back();
   this->modelmatrixelem = self->modelmatrixstack.back();
+  this->bufferelem = self->bufferstack.back();
+
   self->programstack.pop_back();
   self->modelmatrixstack.pop_back();
+  self->bufferstack.pop_back();
 }
 
 void

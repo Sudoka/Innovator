@@ -133,6 +133,7 @@
     <ClInclude Include="..\..\include\canvas.h" />
     <ClInclude Include="..\..\include\elements.h" />
     <ClInclude Include="..\..\include\file.h" />
+    <ClInclude Include="..\..\include\glstate.h" />
     <ClInclude Include="..\..\include\luawrapper.h" />
     <ClInclude Include="..\..\include\mesh.h" />
     <ClInclude Include="..\..\include\nodes.h" />

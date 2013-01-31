@@ -30,6 +30,7 @@ public:
   MatrixElement viewmatrixelem;
   MatrixElement modelmatrixelem;
   MatrixElement projmatrixelem;
+  BufferElement bufferelem;
 
 private:
   class StateP;
