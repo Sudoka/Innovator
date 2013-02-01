@@ -1,6 +1,7 @@
 #include <state.h>
 #include <vector>
 #include <iostream>
+#include <nodes.h>
 
 using namespace std;
 
@@ -9,9 +10,9 @@ public:
   StateP() {}
   ~StateP() {}
 
-  vector<ProgramElement> programstack;
+  vector<Program*> programstack;
   vector<MatrixElement> modelmatrixstack;
-  vector<BufferElement> bufferstack;
+  vector<AttributeElement> attributestack;
 };
 
 State::State()
@@ -20,6 +21,8 @@ State::State()
   this->viewmatrixelem.name = "ViewMatrix";
   this->modelmatrixelem.name = "ModelMatrix";
   this->projmatrixelem.name = "ProjectionMatrix";
+
+  this->program = nullptr;
 }
 
 State::~State() {}
@@ -27,28 +30,32 @@ State::~State() {}
 void
 State::push()
 {
-  self->programstack.push_back(this->programelem);
+  self->programstack.push_back(this->program);
+  self->attributestack.push_back(this->attribelem);
   self->modelmatrixstack.push_back(this->modelmatrixelem);
-  self->bufferstack.push_back(this->bufferelem);
 }
 
 void
 State::pop()
 {
-  this->programelem = self->programstack.back();
+  this->program = self->programstack.back();
+  this->attribelem = self->attributestack.back();
   this->modelmatrixelem = self->modelmatrixstack.back();
-  this->bufferelem = self->bufferstack.back();
 
   self->programstack.pop_back();
+  self->attributestack.pop_back();
   self->modelmatrixstack.pop_back();
-  self->bufferstack.pop_back();
 }
 
 void
-State::flush()
+State::flush(Triangles * shape)
 {
-  this->programelem.updateGL(this);
+  BindScope program(this->program);
+  BindScope attributes(&this->attribelem);
+
   this->viewmatrixelem.updateGL(this);
   this->projmatrixelem.updateGL(this);
   this->modelmatrixelem.updateGL(this);
+
+  shape->draw(this);
 }

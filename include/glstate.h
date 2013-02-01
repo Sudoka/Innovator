@@ -1,12 +1,19 @@
 #pragma once
 
-#include <GL/glew.h>
-
-class BufferState {
+class Bindable {
 public:
-  BufferState() : target(GL_INVALID_VALUE), buffer(0) {}
-  BufferState(GLenum target, GLuint buffer = 0) : target(target), buffer(buffer) {}
-  GLuint buffer;
-  GLenum target;
+  virtual void bind() = 0;
+  virtual void unbind() = 0;
 };
 
+class BindScope {
+public:
+  BindScope(Bindable * b) : bindable(b) {
+    this->bindable->bind();
+  }
+  ~BindScope() {
+    this->bindable->unbind();
+  }
+private:
+  Bindable * bindable;
+};

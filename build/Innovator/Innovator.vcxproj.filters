@@ -45,13 +45,7 @@
     <ClCompile Include="..\..\src\canvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\instances.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\box3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\deps\lua-5.2.1\src\lapi.c">
@@ -150,13 +144,13 @@
     <ClCompile Include="..\..\deps\lua-5.2.1\src\lzio.c">
       <Filter>deps\lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\luawrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

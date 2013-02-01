@@ -26,12 +26,14 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
-class ShaderProgram {
+class ShaderProgram : public Bindable {
 public:
   ShaderProgram();
   ~ShaderProgram();
   void attach(const char * shader, GLenum type);
   void link();
+  virtual void bind();
+  virtual void unbind();
   GLuint id;
 };
 
@@ -61,31 +63,13 @@ private:
   GLenum target;
 };
 
-class Bindable {
+class GLBufferObject : public Bindable {
 public:
-  virtual void bind() = 0;
-  virtual void unbind() = 0;
-};
-
-class BindScope {
-public:
-  BindScope(Bindable * b) : bindable(b) {
-    this->bindable->bind();
-  }
-  ~BindScope() {
-    this->bindable->unbind();
-  }
-private:
-  Bindable * bindable;
-};
-
-class BufferObject : public Bindable {
-public:
-  BufferObject(GLenum target);
-  BufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
-  BufferObject(const std::vector<glm::vec3> & data, GLenum target = GL_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
-  BufferObject(const std::vector<glm::ivec3> & data, GLenum target = GL_ELEMENT_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
-  ~BufferObject();
+  GLBufferObject(GLenum target);
+  GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
+  GLBufferObject(const std::vector<glm::vec3> & data, GLenum target = GL_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
+  GLBufferObject(const std::vector<glm::ivec3> & data, GLenum target = GL_ELEMENT_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
+  ~GLBufferObject();
 
   void setValues(GLenum usage, GLsizeiptr size, const GLvoid * data);
   void set1Value(int index, GLuint value);
@@ -93,17 +77,17 @@ public:
   virtual void bind();
   virtual void unbind();
 
+  GLenum target;
+  GLuint buffer;
+
 private:
   void construct(GLenum target, GLenum usage, GLsizeiptr size, const GLvoid * data);
-
-public:
-  BufferState state;
 };
 
-class VertexBuffer : public BufferObject {
+class GLVertexAttribute : public GLBufferObject {
 public:
-  VertexBuffer(const std::vector<glm::vec3> & data, GLuint index, GLuint divisor = 0);
-  ~VertexBuffer();
+  GLVertexAttribute(const std::vector<glm::vec3> & data, GLuint index, GLuint divisor = 0);
+  ~GLVertexAttribute();
 
   virtual void bind();
   virtual void unbind();

@@ -12,9 +12,10 @@ static int new_Separator(lua_State * L)
   return 1;
 }
 
+
 static int new_InstancedTriangleSet(lua_State * L)
 {
-  lua_pushlightuserdata(L, new InstancedTriangleSet);
+  //lua_pushlightuserdata(L, new InstancedTriangleSet);
   return 1;
 }
 

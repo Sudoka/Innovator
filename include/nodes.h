@@ -3,23 +3,28 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#include <glstate.h>
 
+class State;
 class Action;
 class RenderAction;
 class BoundingBoxAction;
 
-class Node {
+class Node : public Bindable {
 public:
-  virtual void renderGL(RenderAction * action) = 0;
-  virtual void getBoundingBox(BoundingBoxAction * action) {}
+  virtual void traverse(RenderAction * action) = 0;
+  virtual void traverse(BoundingBoxAction * action) {}
+
+  virtual void bind() {}
+  virtual void unbind() {}
 };
 
 class Group : public Node {
 public:
   Group();
   ~Group();
-  virtual void renderGL(RenderAction * action);
-  virtual void getBoundingBox(BoundingBoxAction * action);
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
   void addChild(std::shared_ptr<Node> child);
 private:
   class GroupP;
@@ -30,7 +35,7 @@ class Camera : public Node {
 public:
   Camera();
   ~Camera();
-  virtual void renderGL(RenderAction * action);
+  virtual void traverse(RenderAction * action);
   void zoom(float dz);
   void pan(const glm::vec2 & dx);
   void orbit(const glm::vec2 & dx);
@@ -49,58 +54,87 @@ class Separator : public Group {
 public:
   Separator();
   ~Separator();
-  virtual void renderGL(RenderAction * action);
-  virtual void getBoundingBox(BoundingBoxAction * action);
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
 };
 
-class Shader : public Node {
+class Program : public Node {
 public:
-  Shader();
- ~Shader();
+  Program();
+ ~Program();
   std::string fileName;
   std::vector<const char *> transformFeedbackVaryings;
-  virtual void renderGL(RenderAction * action);
+  virtual void traverse(RenderAction * action);
+  unsigned int getProgramId() const;
+
 private:
-  class ShaderP;
-  std::unique_ptr<ShaderP> self;
+  virtual void bind();
+  virtual void unbind();
+
+private:
+  class ProgramP;
+  std::unique_ptr<ProgramP> self;
 };
 
 class Transform : public Node {
 public:
   Transform();
   ~Transform();
-  void doAction(Action * action);
-  virtual void renderGL(RenderAction * action);
-  virtual void getBoundingBox(BoundingBoxAction * action);
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
   glm::vec3 translation;
   glm::vec3 scaleFactor;
+private:
+  void doAction(Action * action);
 };
 
-class Buffer : public Node {
+class IndexBuffer : public Node {
 public:
-  Buffer();
-  ~Buffer();
+  IndexBuffer();
+  ~IndexBuffer();
 
-  virtual void renderGL(RenderAction * action);
-  std::vector<glm::vec3> values;
+  virtual void traverse(RenderAction * action);
+  std::vector<glm::ivec3> values;
 
 private:
-  class BufferP;
-  std::unique_ptr<BufferP> self;
+  friend class AttributeElement;
+  virtual void bind();
+  virtual void unbind();
+
+  class IndexBufferP;
+  std::unique_ptr<IndexBufferP> self;
+};
+
+class VertexAttribute : public Node {
+public:
+  VertexAttribute();
+  ~VertexAttribute();
+
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
+  std::vector<glm::vec3> values;
+  unsigned int index;
+  unsigned int divisor;
+
+private:
+  void doAction(Action * action);
+  friend class AttributeElement;
+  virtual void bind();
+  virtual void unbind();
+
+private:
+  class VertexAttributeP;
+  std::unique_ptr<VertexAttributeP> self;
 };
 
 class Triangles : public Node {
 public:
   Triangles();
   ~Triangles();
-  std::vector<glm::ivec3> indices;
-  std::vector<glm::vec3> vertices;
-  virtual void renderGL(RenderAction * action);
-  virtual void getBoundingBox(BoundingBoxAction * action);
 
-private:
-  class TrianglesP;
-  std::unique_ptr<TrianglesP> self;
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
+  virtual void draw(State * state);
 };
 
 class InstancedTriangleSet : public Node {
@@ -113,8 +147,8 @@ public:
   std::vector<glm::vec3> normals;
   std::vector<glm::vec3> instances;
 
-  virtual void renderGL(RenderAction * action);
-  virtual void getBoundingBox(BoundingBoxAction * action);
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
 
 private:
   class InstancedTriangleSetP;

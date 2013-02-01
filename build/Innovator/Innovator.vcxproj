@@ -117,13 +117,11 @@
     <ClCompile Include="..\..\src\canvas.cpp" />
     <ClCompile Include="..\..\src\elements.cpp" />
     <ClCompile Include="..\..\src\file.cpp" />
-    <ClCompile Include="..\..\src\instances.cpp" />
     <ClCompile Include="..\..\src\luawrapper.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
-    <ClCompile Include="..\..\src\mesh.cpp" />
     <ClCompile Include="..\..\src\nodes.cpp" />
     <ClCompile Include="..\..\src\opengl.cpp" />
-    <ClCompile Include="..\..\src\shader.cpp" />
+    <ClCompile Include="..\..\src\program.cpp" />
     <ClCompile Include="..\..\src\state.cpp" />
     <ClCompile Include="..\..\src\viewer.cpp" />
   </ItemGroup>

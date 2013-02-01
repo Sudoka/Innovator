@@ -3,6 +3,9 @@
 #include <memory>
 #include <elements.h>
 
+class Program;
+class Triangles;
+
 class State {
 public:
   State();
@@ -24,13 +27,13 @@ public:
 
   void push();
   void pop();
-  void flush();
+  void flush(Triangles * shape);
 
-  ProgramElement programelem;
+  Program * program;
+  AttributeElement attribelem;
   MatrixElement viewmatrixelem;
   MatrixElement modelmatrixelem;
   MatrixElement projmatrixelem;
-  BufferElement bufferelem;
 
 private:
   class StateP;

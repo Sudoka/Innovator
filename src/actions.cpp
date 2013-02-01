@@ -20,7 +20,7 @@ RenderAction::apply(shared_ptr<Node> node)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   state.reset(new State);
-  node->renderGL(this);
+  node->traverse(this);
 }
 
 BoundingBoxAction::BoundingBoxAction()
@@ -40,7 +40,7 @@ BoundingBoxAction::apply(shared_ptr<Node> node)
 {
   state.reset(new State);
   this->box.makeEmpty();
-  node->getBoundingBox(this);
+  node->traverse(this);
 }
 
 const box3 & 

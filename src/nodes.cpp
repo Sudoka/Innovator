@@ -39,7 +39,7 @@ Camera::~Camera()
 }
 
 void 
-Camera::renderGL(RenderAction * action)
+Camera::traverse(RenderAction * action)
 {
   self->viewmatrix = glm::transpose(self->orientation) * self->translation;
   action->state->viewmatrixelem.matrix = self->viewmatrix;
@@ -136,22 +136,20 @@ Group::~Group() {}
 // *************************************************************************************************
 
 void
-Group::renderGL(RenderAction * action)
+Group::traverse(RenderAction * action)
 {
   for (size_t i = 0; i < self->children.size(); i++) {
-    self->children[i]->renderGL(action);
+    self->children[i]->traverse(action);
   }
 }
 
 void
-Group::getBoundingBox(BoundingBoxAction * action)
+Group::traverse(BoundingBoxAction * action)
 {
   for (size_t i = 0; i < self->children.size(); i++) {
-    self->children[i]->getBoundingBox(action);
+    self->children[i]->traverse(action);
   }
 }
-
-// *************************************************************************************************
 
 void 
 Group::addChild(std::shared_ptr<Node> child)
@@ -165,18 +163,18 @@ Separator::Separator() {}
 Separator::~Separator() {}
 
 void
-Separator::renderGL(RenderAction * action)
+Separator::traverse(RenderAction * action)
 {
   action->state->push();
-  Group::renderGL(action);
+  Group::traverse(action);
   action->state->pop();
 }
 
 void
-Separator::getBoundingBox(BoundingBoxAction * action)
+Separator::traverse(BoundingBoxAction * action)
 {
   action->state->push();
-  Group::getBoundingBox(action);
+  Group::traverse(action);
   action->state->pop();
 }
 
@@ -198,81 +196,144 @@ Transform::doAction(Action * action)
 }
 
 void
-Transform::renderGL(RenderAction * action)
+Transform::traverse(RenderAction * action)
 {
   this->doAction(action);
 }
 
 void
-Transform::getBoundingBox(BoundingBoxAction * action)
+Transform::traverse(BoundingBoxAction * action)
 {
   this->doAction(action);
 }
 
 // *************************************************************************************************
 
-class Buffer::BufferP {
+class IndexBuffer::IndexBufferP {
 public:
-  BufferP(Buffer * self) 
-    : buffer(new BufferObject(self->values, GL_ARRAY_BUFFER, GL_STATIC_DRAW)) {}
-  ~BufferP() {}
+  IndexBufferP(IndexBuffer * self) 
+    : buffer(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, sizeof(ivec3) * self->values.size(), self->values.data()))  {}
+  ~IndexBufferP() {}
 
-  unique_ptr<BufferObject> buffer;
+  unique_ptr<GLBufferObject> buffer;
 };
 
-Buffer::Buffer()
+IndexBuffer::IndexBuffer()
   : self(nullptr)
 {
+
 }
 
-Buffer::~Buffer()
+IndexBuffer::~IndexBuffer()
 {
-  
+
 }
 
 void
-Buffer::renderGL(RenderAction * action)
+IndexBuffer::traverse(RenderAction * action)
 {
   if (self.get() == nullptr) {
-    self.reset(new BufferP(this));
+    self.reset(new IndexBufferP(this));
   }
-  action->state->bufferelem.state = self->buffer->state;
+  action->state->attribelem.set(this);
+}
+
+void
+IndexBuffer::bind()
+{
+  self->buffer->bind();
+}
+
+void
+IndexBuffer::unbind()
+{
+  self->buffer->unbind();
 }
 
 // *************************************************************************************************
 
-class Triangles::TrianglesP {
+class VertexAttribute::VertexAttributeP {
 public:
-  TrianglesP(Triangles * self) 
-    : elements(new BufferObject(self->indices)) {}
-  ~TrianglesP() {}
-  unique_ptr<BufferObject> elements;
+  VertexAttributeP(VertexAttribute * self) 
+    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, sizeof(vec3) * self->values.size(), self->values.data())) {}
+  ~VertexAttributeP() {}
+  unique_ptr<GLBufferObject> buffer;
 };
 
-Triangles::Triangles() : self(nullptr) {}
+VertexAttribute::VertexAttribute()
+  : index(0),
+    divisor(0),
+    self(nullptr)
+{
+}
+
+VertexAttribute::~VertexAttribute()
+{
+}
+
+void
+VertexAttribute::doAction(Action * action)
+{
+  if (self.get() == nullptr) {
+    self.reset(new VertexAttributeP(this));
+  }
+  action->state->attribelem.set(this);
+}
+
+void
+VertexAttribute::traverse(RenderAction * action)
+{
+  this->doAction(action);
+}
+
+void
+VertexAttribute::traverse(BoundingBoxAction * action)
+{
+  this->doAction(action);
+}
+
+void
+VertexAttribute::bind()
+{
+  self->buffer->bind();
+  glEnableVertexAttribArray(this->index);
+  glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(this->index, this->divisor);
+}
+
+void
+VertexAttribute::unbind()
+{
+  self->buffer->unbind();
+  glDisableVertexAttribArray(this->index);
+}
+
+// *************************************************************************************************
+
+Triangles::Triangles() {}
 Triangles::~Triangles() {}
 
 void
-Triangles::renderGL(RenderAction * action)
+Triangles::traverse(RenderAction * action)
 {
-  if (self.get() == nullptr)
-    self.reset(new TrianglesP(this));
-
-  action->state->flush();
-  BindScope indices(self->elements.get());
-  BufferElement::Scope vertices(&action->state->bufferelem.state);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glDrawElements(GL_TRIANGLES, this->indices.size() * 3, GL_UNSIGNED_INT, 0);
-  glDisableVertexAttribArray(0);
+  action->state->flush(this);
 }
 
 void
-Triangles::getBoundingBox(BoundingBoxAction * action)
+Triangles::draw(State * state)
 {
+  const vector<ivec3> & indices = state->attribelem.getIndices();
+  unsigned int num = indices.size() * sizeof(ivec3);
+  glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, 0);
+}
+
+void
+Triangles::traverse(BoundingBoxAction * action)
+{
+  const vector<vec3> & vertices = action->state->attribelem.getVertices();
   box3 bbox;
-  for (size_t i = 0; i < this->vertices.size(); i++) {
-    bbox.extendBy(this->vertices[i]);
+  for (size_t i = 0; i < vertices.size(); i++) {
+    bbox.extendBy(vertices[i]);
   }
   bbox.transform(action->state->modelmatrixelem.matrix);
   action->extendBy(bbox);
