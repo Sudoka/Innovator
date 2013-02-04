@@ -3,8 +3,8 @@
 #include <memory>
 #include <elements.h>
 
+class Shape;
 class Program;
-class Triangles;
 
 class State {
 public:
@@ -27,7 +27,7 @@ public:
 
   void push();
   void pop();
-  void flush(Triangles * shape);
+  void flush(Shape * shape);
 
   Program * program;
   AttributeElement attribelem;

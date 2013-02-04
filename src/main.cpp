@@ -11,9 +11,9 @@ using namespace glm;
 int main(int argc, char * argv[])
 {
   File file;
-  //shared_ptr<Separator> root = file.readAll("../../src/scene.lua");
+  shared_ptr<Separator> test = file.readAll("../../src/scene2.lua");
   shared_ptr<Separator> root(new Separator);
-  shared_ptr<Triangles> triangles(new Triangles);
+  shared_ptr<Shape> shape(new Shape);
 
   shared_ptr<IndexBuffer> indices(new IndexBuffer);
 
@@ -47,10 +47,10 @@ int main(int argc, char * argv[])
   root->addChild(program);
   root->addChild(indices);
   root->addChild(buffer);
-  root->addChild(triangles);
+  root->addChild(shape);
   
   unique_ptr<Viewer> viewer(new Viewer(640, 480));
-  viewer->setSceneGraph(root);
+  viewer->setSceneGraph(test);
   viewer->loop();
 
   cout << "press Return to exit" << endl;

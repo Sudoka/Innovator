@@ -13,7 +13,7 @@ static int newNode(lua_State * L)
   return 1;
 }
 
-static int AddChild(lua_State * L)
+static int addChild(lua_State * L)
 {
   luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
   luaL_checktype(L, -2, LUA_TLIGHTUSERDATA);
@@ -27,7 +27,7 @@ static int AddChild(lua_State * L)
 }
 
 template<typename NodeType, typename T>
-static int set_vec3(lua_State * L)
+static int setVec3(lua_State * L)
 {
   luaL_checktype(L, -1, LUA_TTABLE);
   luaL_checktype(L, -2, LUA_TLIGHTUSERDATA);
@@ -59,14 +59,45 @@ static void registerNode(lua_State * L, const string & name)
   lua_setglobal(L, name.c_str());
 }
 
+template <typename NodeType>
+static void registerGroup(lua_State * L, const string & name)
+{
+  luaL_Reg functions[] = {
+    { "new", newNode<NodeType> },
+    { "addChild", addChild },
+    { nullptr, nullptr } 
+  };
+
+  luaL_newlib(L, functions);
+  lua_setglobal(L, name.c_str());
+}
+
+template <typename NodeType>
+static void registerBuffer(lua_State * L, const string & name)
+{
+  luaL_Reg functions[] = {
+    { "new", newNode<NodeType> },
+    { "setiVec3", setVec3<NodeType, int> },
+    { "setVec3", setVec3<NodeType, float> },
+    { nullptr, nullptr } 
+  };
+
+  luaL_newlib(L, functions);
+  lua_setglobal(L, name.c_str());
+}
+
 Lua::Lua()
 {
   L = luaL_newstate();
   luaL_openlibs(L);
   int error = luaL_dofile(L, "../../src/file.lua");
 
-  registerNode<Separator>(L, "Separator");
-  registerNode<VertexAttribute>(L, "VertexAttribute");
+  registerNode<Shape>(L, "Innovator_Shape");
+  registerNode<Program>(L, "Innovator_Program");
+  registerGroup<Group>(L, "Innovator_Group");
+  registerGroup<Separator>(L, "Innovator_Separator");
+  registerBuffer<IndexBuffer>(L, "Innovator_IndexBuffer");
+  registerBuffer<VertexAttribute>(L, "Innovator_VertexAttribute");
 }
 
 Lua::~Lua()

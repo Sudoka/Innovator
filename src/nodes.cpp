@@ -310,17 +310,17 @@ VertexAttribute::unbind()
 
 // *************************************************************************************************
 
-Triangles::Triangles() {}
-Triangles::~Triangles() {}
+Shape::Shape() {}
+Shape::~Shape() {}
 
 void
-Triangles::traverse(RenderAction * action)
+Shape::traverse(RenderAction * action)
 {
   action->state->flush(this);
 }
 
 void
-Triangles::draw(State * state)
+Shape::draw(State * state)
 {
   const vector<ivec3> & indices = state->attribelem.getIndices();
   unsigned int num = indices.size() * sizeof(ivec3);
@@ -328,7 +328,7 @@ Triangles::draw(State * state)
 }
 
 void
-Triangles::traverse(BoundingBoxAction * action)
+Shape::traverse(BoundingBoxAction * action)
 {
   const vector<vec3> & vertices = action->state->attribelem.getVertices();
   box3 bbox;

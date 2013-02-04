@@ -48,7 +48,7 @@ State::pop()
 }
 
 void
-State::flush(Triangles * shape)
+State::flush(Shape * shape)
 {
   BindScope program(this->program);
   BindScope attributes(&this->attribelem);

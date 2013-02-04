@@ -44,7 +44,9 @@ public:
   unique_ptr<ShaderProgram> program;
 };
 
-Program::Program() : self(nullptr) {}
+Program::Program() 
+  : fileName("program.lua"), 
+    self(nullptr) {}
 Program::~Program() {}
 
 void

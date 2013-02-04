@@ -127,10 +127,10 @@ private:
   std::unique_ptr<VertexAttributeP> self;
 };
 
-class Triangles : public Node {
+class Shape : public Node {
 public:
-  Triangles();
-  ~Triangles();
+  Shape();
+  ~Shape();
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
