@@ -6,71 +6,57 @@
 using namespace std;
 using namespace glm;
 
-static int new_Separator(lua_State * L)
+template<class NodeType>
+static int newNode(lua_State * L) 
 {
-  lua_pushlightuserdata(L, new Separator);
+  lua_pushlightuserdata(L, new NodeType);
   return 1;
 }
 
-
-static int new_InstancedTriangleSet(lua_State * L)
-{
-  //lua_pushlightuserdata(L, new InstancedTriangleSet);
-  return 1;
-}
-
-static int Separator_addChild(lua_State * L)
+static int AddChild(lua_State * L)
 {
   luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
   luaL_checktype(L, -2, LUA_TLIGHTUSERDATA);
 
-  Node * node = static_cast<Node *>(lua_touserdata(L, -1));
-  Separator * sep = static_cast<Separator *>(lua_touserdata(L, -2));
-  assert(node && sep);
+  Node * child = static_cast<Node *>(lua_touserdata(L, -1));
+  Group * group = static_cast<Group *>(lua_touserdata(L, -2));
+  assert(group && child);
 
-  sep->addChild(shared_ptr<Node>(node));
-
+  group->addChild(shared_ptr<Node>(child));
   return 0;
 }
 
-static int InstancedTriangleSet_setIndices(lua_State * L)
+template<typename NodeType, typename T>
+static int set_vec3(lua_State * L)
 {
   luaL_checktype(L, -1, LUA_TTABLE);
   luaL_checktype(L, -2, LUA_TLIGHTUSERDATA);
 
-  InstancedTriangleSet * node = static_cast<InstancedTriangleSet *>(lua_touserdata(L, -2));
+  NodeType * node = static_cast<NodeType *>(lua_touserdata(L, -2));
   assert(node);
 
   int n = luaL_len(L, 2);
-  node->indices.resize(n / 3);
-  int * dataptr = (int *) node->indices.data();
+  node->values.resize(n / 3);
+  T * dataptr = (T *) node->values.data();
 
   for (int i = 1; i <= n; i++) {
     lua_rawgeti(L, -1, i);
-    dataptr[i-1] = (int)luaL_checkinteger(L, -1);
+    dataptr[i-1] = (T)luaL_checknumber(L, -1);
     lua_pop(L, 1);
   }
   return 0;
 }
 
-static int InstancedTriangleSet_setVertices(lua_State * L)
+template <typename NodeType>
+static void registerNode(lua_State * L, const string & name)
 {
-  luaL_checktype(L, -1, LUA_TTABLE);
-  luaL_checktype(L, -2, LUA_TLIGHTUSERDATA);
+  luaL_Reg functions[] = {
+    { "new", newNode<NodeType> },
+    { nullptr, nullptr } 
+  };
 
-  InstancedTriangleSet * node = static_cast<InstancedTriangleSet *>(lua_touserdata(L, -2));
-  assert(node);
-
-  int n = luaL_len(L, 2);
-  node->vertices.resize(n / 3);
-  float * dataptr = (float *) node->vertices.data();
-
-  for (int i = 1; i <= n; i++) {
-    lua_rawgeti(L, -1, i);
-    dataptr[i-1] = (float)luaL_checknumber(L, -1);
-    lua_pop(L, 1);
-  }
-  return 0;
+  luaL_newlib(L, functions);
+  lua_setglobal(L, name.c_str());
 }
 
 Lua::Lua()
@@ -78,22 +64,9 @@ Lua::Lua()
   L = luaL_newstate();
   luaL_openlibs(L);
   int error = luaL_dofile(L, "../../src/file.lua");
-  luaL_Reg its[] = {
-    { "new", new_InstancedTriangleSet },
-    { "setIndices", InstancedTriangleSet_setIndices },
-    { "setVertices", InstancedTriangleSet_setVertices },
-    { nullptr, nullptr }
-  };
-  luaL_Reg sep[] = {
-    { "new", new_Separator },
-    { "addChild", Separator_addChild },
-    { nullptr, nullptr }
-  };
-  
-  luaL_newlib(L, its);
-  lua_setglobal(L, "InstancedTriangleSet2");
-  luaL_newlib(L, sep);
-  lua_setglobal(L, "Separator2");
+
+  registerNode<Separator>(L, "Separator");
+  registerNode<VertexAttribute>(L, "VertexAttribute");
 }
 
 Lua::~Lua()

@@ -11,25 +11,23 @@ root = Separator {
                     1, 0, 4, 4, 5, 1 } 
       },
 
-      VertexBuffer {
+      VertexAttribute {
          index = 0,
-         type = vec3,
          values = { 0, 0, 0, 0, 0, 1, 
                     0, 1, 0, 0, 1, 1,
                     1, 0, 0, 1, 0, 1,
                     1, 1, 0, 1, 1, 1 } 
       },
 
-      VertexBuffer {
+      VertexAttribute {
          index = 1,
-         type = vec3,
          values = { 0, 0, 0, 0, 0, 1, 
                     0, 1, 0, 0, 1, 1,
                     1, 0, 0, 1, 0, 1,
                     1, 1, 0, 1, 1, 1 } 
       },
 
-      VertexBuffer {
+      VertexAttribute {
 	 index = 2,
 	 divisor = 1,
 	 values = { 0, 0, 0, 1, 1, 1 }
