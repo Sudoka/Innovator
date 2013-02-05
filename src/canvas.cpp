@@ -8,68 +8,53 @@ using namespace std;
 
 static Canvas * canvas = nullptr;
 
-class Canvas::CanvasP {
-public:
-  CanvasP(int width, int height) 
-  {
-    if (!glfwInit()) {
-      cout << "failed to initialize GLFW." << endl;
-      exit(0);
-    }
-    if (!glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW)) {
-      cout << "failed to open window." << endl;
-      glfwTerminate();
-      exit(0);
-    }
-    if (glewInit() != GLEW_OK) {
-      cout << "failed to initialize GLEW." << endl;
-      exit(0);
-    }
-    if (!GLEW_VERSION_4_2) {
-      cout << "OpenGL 4.2 not supported.\n" << endl;
-      exit(0);
-    }
-
-    glfwSetMousePosCallback(CanvasP::mouseMoved);
-    glfwSetMouseButtonCallback(CanvasP::mouseButton);
+static void mouseMovedCB(int x, int y)
+{
+  if (canvas) {
+    canvas->mouseMoved(x, y);
   }
+}
 
-  ~CanvasP() 
-  {
-    glfwTerminate();
+static void mouseButtonCB(int button, int action)
+{
+  if (canvas) {
+    canvas->mouseButton(button, action);
   }
-
-private:
-  static void mouseMoved(int x, int y)
-  {
-    if (canvas) {
-      canvas->mouseMoved(x, y);
-    }
-  }
-
-  static void mouseButton(int button, int action)
-  {
-    if (canvas) {
-      canvas->mouseButton(button, action);
-    }
-  }
-};
+}
 
 Canvas::Canvas(int width, int height)
 {
-  self.reset(new CanvasP(width, height));
+  if (!glfwInit()) {
+    cout << "failed to initialize GLFW." << endl;
+  }
+  if (!glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW)) {
+    cout << "failed to open window." << endl;
+    glfwTerminate();
+  }
+  if (glewInit() != GLEW_OK) {
+    cout << "failed to initialize GLEW." << endl;
+  }
+  if (!GLEW_VERSION_4_2) {
+    cout << "OpenGL 4.2 not supported.\n" << endl;
+  }
+
+  glfwSetMousePosCallback(mouseMovedCB);
+  glfwSetMouseButtonCallback(mouseButtonCB);
+
+  assert(canvas == nullptr);
   canvas = this;
 }
 
 Canvas::~Canvas()
 {
   canvas = nullptr;
+  glfwTerminate();
 }
 
 void 
 Canvas::loop()
 {
-  int running = GL_TRUE;
+  int running = 1;
   while (running) {
     this->renderGL();
     if (glGetError() != GL_NO_ERROR) {

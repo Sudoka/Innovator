@@ -1,57 +1,21 @@
 
-#include <glm/glm.hpp>
 #include <iostream>
 #include <nodes.h>
 #include <viewer.h>
+#include <innovator.h>
 #include <file.h>
 
 using namespace std;
-using namespace glm;
 
 int main(int argc, char * argv[])
 {
-  File file;
-  shared_ptr<Separator> test = file.readAll("../../src/scene2.lua");
-  shared_ptr<Separator> root(new Separator);
-  shared_ptr<Shape> shape(new Shape);
+  Innovator innovator; // initialize file, lua
 
-  shared_ptr<IndexBuffer> indices(new IndexBuffer);
+  shared_ptr<Separator> test = File::readAll("../../src/scene.lua");
 
-  indices->values.push_back(ivec3(0, 1, 3));
-  indices->values.push_back(ivec3(3, 2, 0));
-  indices->values.push_back(ivec3(1, 5, 7));
-  indices->values.push_back(ivec3(7, 3, 1));
-  indices->values.push_back(ivec3(5, 4, 6));
-  indices->values.push_back(ivec3(6, 7, 5));
-  indices->values.push_back(ivec3(4, 0, 2));
-  indices->values.push_back(ivec3(2, 6, 4));
-  indices->values.push_back(ivec3(2, 3, 7));
-  indices->values.push_back(ivec3(7, 6, 2));
-  indices->values.push_back(ivec3(1, 0, 4));
-  indices->values.push_back(ivec3(4, 5, 1));
-  
-  shared_ptr<VertexAttribute> buffer(new VertexAttribute);
-  
-  buffer->values.push_back(vec3(0, 0, 0));
-  buffer->values.push_back(vec3(0, 0, 1));
-  buffer->values.push_back(vec3(0, 1, 0));
-  buffer->values.push_back(vec3(0, 1, 1));
-  buffer->values.push_back(vec3(1, 0, 0));
-  buffer->values.push_back(vec3(1, 0, 1));
-  buffer->values.push_back(vec3(1, 1, 0));
-  buffer->values.push_back(vec3(1, 1, 1));
-
-  shared_ptr<Program> program(new Program);
-  program->fileName = "program.lua";
-
-  root->addChild(program);
-  root->addChild(indices);
-  root->addChild(buffer);
-  root->addChild(shape);
-  
-  unique_ptr<Viewer> viewer(new Viewer(640, 480));
-  viewer->setSceneGraph(test);
-  viewer->loop();
+  Viewer viewer(640, 480);
+  viewer.setSceneGraph(test);
+  viewer.loop();
 
   cout << "press Return to exit" << endl;
   cin.get();

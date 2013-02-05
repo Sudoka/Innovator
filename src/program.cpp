@@ -2,7 +2,7 @@
 #include <opengl.h>
 #include <actions.h>
 #include <state.h>
-#include <lua.hpp>
+#include <luawrapper.h>
 #include <memory>
 
 using namespace std;
@@ -12,25 +12,11 @@ public:
   ProgramP(Program * self) 
     : program(new ShaderProgram()) 
   {
-    string fullname = "../../src/" + self->fileName;
+    Lua::dofile("../../src/" + self->fileName);
 
-    lua_State * L = luaL_newstate();
-    luaL_openlibs(L);
-    luaL_dofile(L, fullname.c_str());
-
-    lua_getglobal(L, "VertexShader");
-    if (lua_isstring(L, -1)) {
-      program->attach(lua_tostring(L, -1), GL_VERTEX_SHADER);
-    }
-    lua_getglobal(L, "GeometryShader");
-    if (lua_isstring(L, -1)) {
-      program->attach(lua_tostring(L, -1), GL_GEOMETRY_SHADER);
-    }
-    lua_getglobal(L, "FragmentShader");
-    if (lua_isstring(L, -1)) {
-      program->attach(lua_tostring(L, -1), GL_FRAGMENT_SHADER);
-    }
-    lua_close(L);
+    program->attach(Lua::getstring("VertexShader"), GL_VERTEX_SHADER);
+    program->attach(Lua::getstring("GeometryShader"), GL_GEOMETRY_SHADER);
+    program->attach(Lua::getstring("FragmentShader"), GL_FRAGMENT_SHADER);
 
     if (self->transformFeedbackVaryings.size() > 0) {
       glTransformFeedbackVaryings(program->id, 
@@ -45,8 +31,7 @@ public:
 };
 
 Program::Program() 
-  : fileName("program.lua"), 
-    self(nullptr) {}
+  : self(nullptr) {}
 Program::~Program() {}
 
 void

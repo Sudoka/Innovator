@@ -147,6 +147,8 @@ ShaderProgram::~ShaderProgram()
 void 
 ShaderProgram::attach(const char * source, GLenum type)
 {
+  if (source == nullptr) return;
+
   GLuint shader = glCreateShader(type);
   glShaderSource(shader, 1, &source, NULL);
   glCompileShader(shader);

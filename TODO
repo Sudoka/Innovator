@@ -1,6 +1,9 @@
 
 - lua file format!
+  - probably use tables of table for multi value fields
+  - fix program node
+  - mesh computations in lua?
+
 - statically link dependencies
-- port mesh functionality from IvJS
-- port LEGO model import to C++
+- port LEGO model import to Lua!
 - text rendering
