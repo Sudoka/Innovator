@@ -24,8 +24,8 @@ public:
   void set(VertexAttribute * attribute);
   void set(IndexBuffer * indices);
 
-  const std::vector<glm::vec3> & getVertices();
-  const std::vector<glm::ivec3> & getIndices();
+  IndexBuffer * get() const;
+  VertexAttribute * get(const int index) const;
 
 private:
   friend class Bindable;

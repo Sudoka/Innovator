@@ -1,9 +1,7 @@
 #include <opengl.h>
-#include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <assert.h>
 
 using namespace glm;
@@ -17,24 +15,6 @@ GLBufferObject::GLBufferObject(GLenum target)
 
 GLBufferObject::GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
   : target(target)
-{
-  this->construct(target, usage, size, data);
-}
-
-GLBufferObject::GLBufferObject(const std::vector<glm::vec3> & data, GLenum target, GLenum usage)
-  : target(target)
-{
-  this->construct(target, usage, sizeof(vec3) * data.size(), data.data());
-}
-
-GLBufferObject::GLBufferObject(const std::vector<ivec3> & data, GLenum target, GLenum usage)
-  : target(target)
-{
-  this->construct(target, usage, sizeof(ivec3) * data.size(), data.data());
-}
-
-void
-GLBufferObject::construct(GLenum target, GLenum usage, GLsizeiptr size, const GLvoid * data)
 {
   glGenBuffers(1, &this->buffer);
   this->setValues(usage, size, data);
@@ -77,7 +57,7 @@ GLBufferObject::unbind()
 GLVertexAttribute::GLVertexAttribute(const std::vector<vec3> & data, GLuint index, GLuint divisor)
   : index(index),
     divisor(divisor),
-    GLBufferObject(data, GL_ARRAY_BUFFER, GL_STATIC_DRAW)
+    GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, sizeof(vec3) * data.size(), (GLvoid*)data.data())
 {
 }
 

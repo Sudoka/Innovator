@@ -322,19 +322,28 @@ Shape::traverse(RenderAction * action)
 void
 Shape::draw(State * state)
 {
-  const vector<ivec3> & indices = state->attribelem.getIndices();
-  unsigned int num = indices.size() * sizeof(ivec3);
-  glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, 0);
+  IndexBuffer * indices = state->attribelem.get();
+  if (indices) {
+    GLuint num = indices->values.size() * sizeof(ivec3);
+    glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, 0);
+  } else {
+    VertexAttribute * attrib = state->attribelem.get(0);
+    if (attrib) {
+      glDrawArrays(GL_TRIANGLES, 0, attrib->values.size());
+    }
+  }
 }
 
 void
 Shape::traverse(BoundingBoxAction * action)
 {
-  const vector<vec3> & vertices = action->state->attribelem.getVertices();
-  box3 bbox;
-  for (size_t i = 0; i < vertices.size(); i++) {
-    bbox.extendBy(vertices[i]);
+  VertexAttribute * attrib = action->state->attribelem.get(0);
+  if (attrib) {
+    box3 bbox;
+    for (size_t i = 0; i < attrib->values.size(); i++) {
+      bbox.extendBy(attrib->values[i]);
+    }
+    bbox.transform(action->state->modelmatrixelem.matrix);
+    action->extendBy(bbox);
   }
-  bbox.transform(action->state->modelmatrixelem.matrix);
-  action->extendBy(bbox);
 }

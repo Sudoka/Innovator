@@ -1,7 +1,7 @@
 
 - lua file format!
+  - load glsl shader file, split into separate shaders?
   - probably use tables of table for multi value fields
-  - fix program node
   - mesh computations in lua?
 
 - statically link dependencies

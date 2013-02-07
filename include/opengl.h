@@ -67,8 +67,6 @@ class GLBufferObject : public Bindable {
 public:
   GLBufferObject(GLenum target);
   GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
-  GLBufferObject(const std::vector<glm::vec3> & data, GLenum target = GL_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
-  GLBufferObject(const std::vector<glm::ivec3> & data, GLenum target = GL_ELEMENT_ARRAY_BUFFER, GLenum usage = GL_STATIC_DRAW);
   ~GLBufferObject();
 
   void setValues(GLenum usage, GLsizeiptr size, const GLvoid * data);
@@ -79,9 +77,6 @@ public:
 
   GLenum target;
   GLuint buffer;
-
-private:
-  void construct(GLenum target, GLenum usage, GLsizeiptr size, const GLvoid * data);
 };
 
 class GLVertexAttribute : public GLBufferObject {

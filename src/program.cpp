@@ -2,27 +2,35 @@
 #include <opengl.h>
 #include <actions.h>
 #include <state.h>
-#include <luawrapper.h>
 #include <memory>
 
 using namespace std;
+
+void
+VertexShader::attach(ShaderProgram * program)
+{
+  program->attach(this->source.c_str(), GL_VERTEX_SHADER);
+}
+
+void
+GeometryShader::attach(ShaderProgram * program)
+{
+  program->attach(this->source.c_str(), GL_GEOMETRY_SHADER);
+}
+
+void
+FragmentShader::attach(ShaderProgram * program)
+{
+  program->attach(this->source.c_str(), GL_FRAGMENT_SHADER);
+}
 
 class Program::ProgramP {
 public:
   ProgramP(Program * self) 
     : program(new ShaderProgram()) 
   {
-    Lua::dofile("../../src/" + self->fileName);
-
-    program->attach(Lua::getstring("VertexShader"), GL_VERTEX_SHADER);
-    program->attach(Lua::getstring("GeometryShader"), GL_GEOMETRY_SHADER);
-    program->attach(Lua::getstring("FragmentShader"), GL_FRAGMENT_SHADER);
-
-    if (self->transformFeedbackVaryings.size() > 0) {
-      glTransformFeedbackVaryings(program->id, 
-                                  self->transformFeedbackVaryings.size(), 
-                                  self->transformFeedbackVaryings.data(), 
-                                  GL_SEPARATE_ATTRIBS);
+    for (unsigned int i = 0; i < self->shaders.size(); i++) {
+      self->shaders[i]->attach(this->program.get());
     }
     program->link();
   }
@@ -30,8 +38,7 @@ public:
   unique_ptr<ShaderProgram> program;
 };
 
-Program::Program() 
-  : self(nullptr) {}
+Program::Program() : self(nullptr) {}
 Program::~Program() {}
 
 void

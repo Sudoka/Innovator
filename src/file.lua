@@ -1,37 +1,52 @@
 
 function Shape(data)
-   return Innovator_Shape.new()
+   return LuaShape.new()
 end
 
 function Transform(data)
-   local transform = Innovator_Transform.new()
-   Innovator_Transform.setScaleFactor(transform, data.scaleFactor)
-   Innovator_Transform.setTranslation(transform, data.translation)
+   local transform = LuaTransform.new()
+   LuaTransform.setScaleFactor(transform, data.scaleFactor)
+   LuaTransform.setTranslation(transform, data.translation)
    return transform
 end
 
 function Program(data)
-   local program = Innovator_Program.new()
-   Innovator_Program.setFilename(program, data.fileName)
+   local program = LuaProgram.new()
+   for _, shader in pairs(data.shaders) do
+      LuaProgram.addShader(program, shader)
+   end
    return program
 end
 
+function VertexShader(data)
+   local shader = LuaVertexShader.new()
+   LuaVertexShader.setSource(shader, data.source)
+   return shader;
+end
+
+function FragmentShader(data)
+   local shader = LuaFragmentShader.new()
+   LuaFragmentShader.setSource(shader, data.source)
+   return shader
+end
+
 function VertexAttribute(data)
-   local attrib = Innovator_VertexAttribute.new()
-   Innovator_VertexAttribute.setVec3(attrib, data.values)
+   local attrib = LuaVertexAttribute.new()
+   LuaVertexAttribute.setVec3(attrib, data.values)
+   LuaVertexAttribute.setIndex(attrib, data.index or 0)
    return attrib;
 end
 
 function IndexBuffer(data)
-   local buffer = Innovator_IndexBuffer.new()
-   Innovator_IndexBuffer.setiVec3(buffer, data.values)
+   local buffer = LuaIndexBuffer.new()
+   LuaIndexBuffer.setiVec3(buffer, data.values)
    return buffer;
 end
 
 function Separator(data)
-   local group = Innovator_Separator.new()
+   local group = LuaSeparator.new()
    for _, child in pairs(data.children) do
-      Innovator_Separator.addChild(group, child)
+      LuaSeparator.addChild(group, child)
    end
    return group
 end
@@ -48,7 +63,6 @@ function Box(data)
                        1, 0, 4,  4, 5, 1 }
          },
          VertexAttribute {
-            index = 0,
             values = { -1, -1, -1, -1, -1,  1, 
                        -1,  1, -1, -1,  1,  1,
                         1, -1, -1,  1, -1,  1,
@@ -70,7 +84,6 @@ function Sphere(data)
                        10, 1, 6, 11, 0, 9, 2, 11, 9, 5, 2,  9, 11, 2, 7 }
          },
          VertexAttribute {
-            index = 0,
             values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
                         0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
                         t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }

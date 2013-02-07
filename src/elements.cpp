@@ -9,7 +9,7 @@ using namespace std;
 AttributeElement::AttributeElement()
   : indices(nullptr)
 {
-  this->attributes.resize(10);
+  this->attributes.resize(8);
   std::fill(this->attributes.begin(), this->attributes.end(), nullptr);
 }
 
@@ -31,17 +31,17 @@ AttributeElement::set(IndexBuffer * indices)
   this->indices = indices;
 }
 
-
-const vector<vec3> & 
-AttributeElement::getVertices()
+IndexBuffer * 
+AttributeElement::get() const
 {
-  assert(this->attributes.size() > 0);
-  return this->attributes[0]->values;
+  return this->indices;
 }
-const vector<ivec3> & 
-AttributeElement::getIndices()
+
+VertexAttribute * 
+AttributeElement::get(const int index) const
 {
-  return this->indices->values;
+  assert (this->attributes.size() > (size_t) index);
+  return this->attributes[index];
 }
 
 void

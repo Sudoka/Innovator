@@ -8,6 +8,7 @@
 class State;
 class Action;
 class RenderAction;
+class ShaderProgram;
 class BoundingBoxAction;
 
 class Node : public Bindable {
@@ -58,12 +59,35 @@ public:
   virtual void traverse(BoundingBoxAction * action);
 };
 
+class ShaderObject {
+public:
+  virtual void attach(ShaderProgram * program) = 0;
+  std::string source;
+};
+
+class VertexShader : public ShaderObject {
+public:
+  virtual void attach(ShaderProgram * program);
+};
+
+class GeometryShader : public ShaderObject {
+public:
+  virtual void attach(ShaderProgram * program);
+};
+
+class FragmentShader : public ShaderObject {
+public:
+  virtual void attach(ShaderProgram * program);
+};
+
 class Program : public Node {
 public:
   Program();
- ~Program();
+  ~Program();
+
   std::string fileName;
-  std::vector<const char *> transformFeedbackVaryings;
+  std::vector<ShaderObject*> shaders;
+
   virtual void traverse(RenderAction * action);
   unsigned int getProgramId() const;
 
