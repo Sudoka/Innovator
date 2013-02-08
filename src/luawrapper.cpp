@@ -17,6 +17,13 @@ Lua::exit()
   lua_close(L);
 }
 
+void
+Lua::registerFunction(const std::string & name, lua_CFunction f)
+{
+  lua_pushcfunction(L, f);
+  lua_setglobal(L, name.c_str());
+}
+
 void 
 Lua::registerLib(const std::string & name, const luaL_Reg * functions)
 {

@@ -1,15 +1,4 @@
 
-function Shape(data)
-   return LuaShape.new()
-end
-
-function Transform(data)
-   local transform = LuaTransform.new()
-   LuaTransform.setScaleFactor(transform, data.scaleFactor)
-   LuaTransform.setTranslation(transform, data.translation)
-   return transform
-end
-
 function Program(data)
    local program = LuaProgram.new()
    for _, shader in pairs(data.shaders) do
@@ -28,27 +17,6 @@ function FragmentShader(data)
    local shader = LuaFragmentShader.new()
    LuaFragmentShader.setSource(shader, data.source)
    return shader
-end
-
-function VertexAttribute(data)
-   local attrib = LuaVertexAttribute.new()
-   LuaVertexAttribute.setVec3(attrib, data.values)
-   LuaVertexAttribute.setIndex(attrib, data.index or 0)
-   return attrib;
-end
-
-function IndexBuffer(data)
-   local buffer = LuaIndexBuffer.new()
-   LuaIndexBuffer.setiVec3(buffer, data.values)
-   return buffer;
-end
-
-function Separator(data)
-   local group = LuaSeparator.new()
-   for _, child in pairs(data.children) do
-      LuaSeparator.addChild(group, child)
-   end
-   return group
 end
 
 function Box(data)
@@ -74,7 +42,7 @@ function Box(data)
 end
 
 function Sphere(data)
-   local t = (1 + math.sqrt(5)) / 2; -- golden ratio
+   local t = (1 + 5^0.5) / 2; -- golden ratio
    return Separator {
       children = {
          IndexBuffer {
