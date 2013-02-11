@@ -159,7 +159,10 @@ Group::addChild(std::shared_ptr<Node> child)
 
 // *************************************************************************************************
 
-Separator::Separator() {}
+Separator::Separator() 
+  : boundingBoxCaching(0)
+{}
+
 Separator::~Separator() {}
 
 void

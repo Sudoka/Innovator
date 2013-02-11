@@ -55,6 +55,7 @@ class Separator : public Group {
 public:
   Separator();
   ~Separator();
+  int boundingBoxCaching;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
 };

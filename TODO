@@ -1,9 +1,15 @@
 
 - lua file format!
-  - load glsl shader file, split into separate shaders?
   - probably use tables of table for multi value fields
   - mesh computations in lua?
 
+- debug:
+  - use new opengl debug output
+
 - statically link dependencies
 - port LEGO model import to Lua!
-- text rendering
+
+- nodes
+  - text
+  - one "shape" node for each draw call?
+  - indirect buffer

@@ -48,10 +48,9 @@ static void getString(lua_State * L, string & string, const char * name)
   lua_pop(L, 1);
 }
 
-static void getChildren(lua_State * L, Group * group, const char * name)
+static void getChildren(lua_State * L, Group * group)
 {
   luaL_checktype(L, -1, LUA_TTABLE);
-  lua_getfield(L, -1, name);
   int n = luaL_len(L, -1);
 
   for (int i = 1; i <= n; i++) {
@@ -61,13 +60,11 @@ static void getChildren(lua_State * L, Group * group, const char * name)
     group->addChild(shared_ptr<Node>(node));
     lua_pop(L, 1);
   }
-  lua_pop(L, 1);
 }
 
-static void getShaders(lua_State * L, Program * program, const char * name)
+static void getShaders(lua_State * L, Program * program)
 {
   luaL_checktype(L, -1, LUA_TTABLE);
-  lua_getfield(L, -1, name);
   int n = luaL_len(L, -1);
 
   for (int i = 1; i <= n; i++) {
@@ -78,7 +75,6 @@ static void getShaders(lua_State * L, Program * program, const char * name)
     program->shaders.push_back(shader);
     lua_pop(L, 1);
   }
-  lua_pop(L, 1);
 }
 
 template <typename T>
@@ -128,7 +124,7 @@ static int LuaTransform(lua_State * L)
 static int LuaProgram(lua_State * L)
 {
   Program * self = new Program;
-  getShaders(L, self, "shaders");
+  getShaders(L, self);
   lua_pushlightuserdata(L, self);
   return 1;
 }
@@ -142,11 +138,19 @@ static int LuaShader(lua_State * L)
   return 1;
 }
 
-template<typename NodeType>
 static int LuaGroup(lua_State * L)
 {
-  NodeType * self = new NodeType;
-  getChildren(L, self, "children");
+  Group * self = new Group;
+  getChildren(L, self);
+  lua_pushlightuserdata(L, self);
+  return 1;
+}
+
+static int LuaSeparator(lua_State * L)
+{
+  Separator * self = new Separator;
+  getNumber<int>(L, self->boundingBoxCaching, "boundingBoxCaching");
+  getChildren(L, self);
   lua_pushlightuserdata(L, self);
   return 1;
 }
@@ -164,8 +168,8 @@ File::init()
 {
   Lua::registerFunction("Shape", LuaNode<Shape>);
   Lua::registerFunction("Program", LuaProgram);
-  Lua::registerFunction("Group", LuaGroup<Group>);
-  Lua::registerFunction("Separator", LuaGroup<Separator>);
+  Lua::registerFunction("Group", LuaGroup);
+  Lua::registerFunction("Separator", LuaSeparator);
   Lua::registerFunction("Transform", LuaTransform);
   Lua::registerFunction("IndexBuffer", LuaIndexBuffer);
   Lua::registerFunction("VertexAttribute", LuaVertexAttribute);

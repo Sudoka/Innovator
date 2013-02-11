@@ -19,12 +19,12 @@ static void loadSceneGraph()
 
 int main(int argc, char * argv[])
 {
-  Innovator innovator; // initialize file, lua
-
-  viewer.reset(new Viewer(640, 480));
-  loadSceneGraph();
-  viewer->loop();
-
+  {
+    Innovator innovator; // initialize file, lua
+    viewer.reset(new Viewer(640, 480));
+    loadSceneGraph();
+    viewer->loop();
+  }
   cout << "press Return to exit" << endl;
   cin.get();
 
