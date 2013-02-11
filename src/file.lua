@@ -1,24 +1,4 @@
 
-function Program(data)
-   local program = LuaProgram.new()
-   for _, shader in pairs(data.shaders) do
-      LuaProgram.addShader(program, shader)
-   end
-   return program
-end
-
-function VertexShader(data)
-   local shader = LuaVertexShader.new()
-   LuaVertexShader.setSource(shader, data.source)
-   return shader;
-end
-
-function FragmentShader(data)
-   local shader = LuaFragmentShader.new()
-   LuaFragmentShader.setSource(shader, data.source)
-   return shader
-end
-
 function Box(data)
    return Separator {
       children = {
