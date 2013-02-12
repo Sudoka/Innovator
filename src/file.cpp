@@ -99,6 +99,7 @@ static int LuaVertexAttribute(lua_State * L)
 {
   VertexAttribute * self = new VertexAttribute;
   getNumber<unsigned int>(L, self->index, "index");
+  getNumber<unsigned int>(L, self->divisor, "divisor");
   getVector<float>(L, self->values, "values");
   lua_pushlightuserdata(L, self);
   return 1;
@@ -155,10 +156,21 @@ static int LuaSeparator(lua_State * L)
   return 1;
 }
 
-template <typename NodeType>
-static int LuaNode(lua_State * L)
+template <typename ShapeType>
+static int LuaDraw(lua_State * L)
 {
-  NodeType * self = new NodeType;
+  ShapeType * self = new ShapeType;
+  string mode;
+  getString(L, mode, "mode");
+  if (!mode.empty()) {
+    if (mode == "POINTS") {
+      self->mode = Draw::POINTS;
+    } else if (mode == "TRIANGLES") {
+      self->mode = Draw::TRIANGLES;
+    } else {
+      cout << "invalid mode, using default POINTS" << endl;
+    }
+  }
   lua_pushlightuserdata(L, self);
   return 1;
 }
@@ -166,7 +178,10 @@ static int LuaNode(lua_State * L)
 void
 File::init()
 {
-  Lua::registerFunction("Shape", LuaNode<Shape>);
+  Lua::registerFunction("DrawArrays", LuaDraw<DrawArrays>);
+  Lua::registerFunction("DrawArraysInstanced", LuaDraw<DrawArraysInstanced>);
+  Lua::registerFunction("DrawElements", LuaDraw<DrawElements>);
+  Lua::registerFunction("DrawElementsInstanced", LuaDraw<DrawElementsInstanced>);
   Lua::registerFunction("Program", LuaProgram);
   Lua::registerFunction("Group", LuaGroup);
   Lua::registerFunction("Separator", LuaSeparator);
@@ -185,48 +200,18 @@ File::exit()
 
 }
 
-template <typename Type>
-class LuaUserData {
-public:
-  LuaUserData(const char * name = nullptr)
-    : userdata(nullptr)
-  {
-    void * lua_userdata = nullptr;
-    if (name) {
-      lua_getglobal(Lua::L, name);
-      if (!lua_isnil(Lua::L, -1)) {
-        luaL_checktype(Lua::L, -1, LUA_TLIGHTUSERDATA);
-        lua_userdata = lua_touserdata(Lua::L, -1);
-      }
-      lua_pop(Lua::L, -1);
-    } else {
-      if (!lua_isnil(Lua::L, -1) && lua_islightuserdata(Lua::L, -1)) {
-        lua_userdata = lua_touserdata(Lua::L, -1);
-      }
-    }
-    userdata = static_cast<Type*>(lua_userdata);
-  }
-  ~LuaUserData() {
-
-  }
-  Type * get() const {
-    return userdata;
-  }
-
-private:
-  Type * userdata;
-};
-
 shared_ptr<Separator> 
 File::readAll(const string & filename)
 {
-  Lua::dofile(filename);
-  {
-    LuaUserData<Separator> root;
-    if (root.get()) {
-      return std::shared_ptr<Separator>(root.get());
+  shared_ptr<Separator> root(nullptr);
+  if (Lua::dofile(filename)) {
+    root.reset(static_cast<Separator*>(Lua::getglobaluserdata("root")));
+
+    // if there was no global userdata sep named root, see if
+    // there is a separator on top of the stack
+    if (!root.get() && !lua_isnil(Lua::L, -1) && lua_islightuserdata(Lua::L, -1)) {
+      root.reset(static_cast<Separator*>(lua_touserdata(Lua::L, -1)));
     }
   }
-  LuaUserData<Separator> root("root");
-  return std::shared_ptr<Separator>(root.get());
+  return root;
 }

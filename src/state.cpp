@@ -48,7 +48,7 @@ State::pop()
 }
 
 void
-State::flush(Shape * shape)
+State::flush(Draw * draw)
 {
   BindScope program(this->program);
   BindScope attributes(&this->attribelem);
@@ -57,5 +57,5 @@ State::flush(Shape * shape)
   this->projmatrixelem.updateGL(this);
   this->modelmatrixelem.updateGL(this);
 
-  shape->draw(this);
+  draw->execute(this);
 }

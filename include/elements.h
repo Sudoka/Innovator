@@ -24,7 +24,8 @@ public:
   void set(VertexAttribute * attribute);
   void set(IndexBuffer * indices);
 
-  IndexBuffer * get() const;
+  IndexBuffer * getIndexBuffer() const;
+  unsigned int getInstanceCount() const;
   VertexAttribute * get(const int index) const;
 
 private:
@@ -33,6 +34,7 @@ private:
   virtual void unbind();
 
 private:
+  unsigned int instancecount;
   IndexBuffer * indices;
   std::vector<VertexAttribute *> attributes;
 };

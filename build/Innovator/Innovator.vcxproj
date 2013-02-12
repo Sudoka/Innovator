@@ -114,7 +114,6 @@
     <ClCompile Include="..\..\deps\lua-5.2.1\src\lzio.c" />
     <ClCompile Include="..\..\src\actions.cpp" />
     <ClCompile Include="..\..\src\box3.cpp" />
-    <ClCompile Include="..\..\src\canvas.cpp" />
     <ClCompile Include="..\..\src\elements.cpp" />
     <ClCompile Include="..\..\src\file.cpp" />
     <ClCompile Include="..\..\src\innovator.cpp" />
@@ -130,7 +129,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\actions.h" />
     <ClInclude Include="..\..\include\box3.h" />
-    <ClInclude Include="..\..\include\canvas.h" />
     <ClInclude Include="..\..\include\elements.h" />
     <ClInclude Include="..\..\include\file.h" />
     <ClInclude Include="..\..\include\glstate.h" />

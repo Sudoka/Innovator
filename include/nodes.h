@@ -152,14 +152,42 @@ private:
   std::unique_ptr<VertexAttributeP> self;
 };
 
-class Shape : public Node {
+class Draw : public Node {
 public:
-  Shape();
-  ~Shape();
+  Draw();
+  ~Draw();
+
+  enum Mode {
+    POINTS,
+    TRIANGLES,
+    NUM_MODES
+  };
+
+  Mode mode;
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  virtual void draw(State * state);
+  virtual void execute(State * state) = 0;
+};
+
+class DrawArrays : public Draw {
+public:
+  virtual void execute(State * state);
+};
+
+class DrawArraysInstanced : public Draw {
+public:
+  virtual void execute(State * state);
+};
+
+class DrawElements : public Draw {
+public:
+  virtual void execute(State * state);
+};
+
+class DrawElementsInstanced : public Draw {
+public:
+  virtual void execute(State * state);
 };
 
 class InstancedTriangleSet : public Node {

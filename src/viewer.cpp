@@ -16,6 +16,7 @@ public:
     : prev_x(0),
       prev_y(0),
       button(0),
+      redraw(true),
       mousedown(false),
       camera(new Camera),
       renderaction(new RenderAction)  
@@ -25,6 +26,7 @@ public:
   float prev_x;
   float prev_y;
   int button;
+  bool redraw;
   bool mousedown;
   shared_ptr<Group> root;
   shared_ptr<Camera> camera;
@@ -32,8 +34,7 @@ public:
 };
 
 Viewer::Viewer(int width, int height)
-  : Canvas(width, height),
-    self(new ViewerP)
+  : self(new ViewerP)
 {
   self->camera->perspective(45, float(width) / float(height), 0.1f, 100);
 }
@@ -43,10 +44,17 @@ Viewer::~Viewer()
 
 }
 
+bool
+Viewer::needRedraw() const
+{
+  return self->redraw;
+}
+
 void
 Viewer::renderGL()
 {
   self->renderaction->apply(self->root);
+  self->redraw = false;
 }
 
 void
@@ -76,6 +84,7 @@ Viewer::mouseMoved(int x, int y)
       self->camera->zoom(-dy);
       break;
     }
+    self->redraw = true;
   }
   self->prev_x = (float)x;
   self->prev_y = (float)y;

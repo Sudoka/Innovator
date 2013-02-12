@@ -222,15 +222,8 @@ public:
 };
 
 IndexBuffer::IndexBuffer()
-  : self(nullptr)
-{
-
-}
-
-IndexBuffer::~IndexBuffer()
-{
-
-}
+  : self(nullptr) {}
+IndexBuffer::~IndexBuffer() {}
 
 void
 IndexBuffer::traverse(RenderAction * action)
@@ -313,32 +306,27 @@ VertexAttribute::unbind()
 
 // *************************************************************************************************
 
-Shape::Shape() {}
-Shape::~Shape() {}
+static GLenum glMode(Draw::Mode mode) 
+{
+  switch (mode) {
+  case Draw::POINTS: return GL_POINTS;
+  case Draw::TRIANGLES: return GL_TRIANGLES;
+  }
+  assert(0 && "enum out of range");
+  return GL_INVALID_VALUE;
+};
+
+Draw::Draw() : mode(POINTS) {}
+Draw::~Draw() {}
 
 void
-Shape::traverse(RenderAction * action)
+Draw::traverse(RenderAction * action)
 {
   action->state->flush(this);
 }
 
 void
-Shape::draw(State * state)
-{
-  IndexBuffer * indices = state->attribelem.get();
-  if (indices) {
-    GLuint num = indices->values.size() * sizeof(ivec3);
-    glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, 0);
-  } else {
-    VertexAttribute * attrib = state->attribelem.get(0);
-    if (attrib) {
-      glDrawArrays(GL_TRIANGLES, 0, attrib->values.size());
-    }
-  }
-}
-
-void
-Shape::traverse(BoundingBoxAction * action)
+Draw::traverse(BoundingBoxAction * action)
 {
   VertexAttribute * attrib = action->state->attribelem.get(0);
   if (attrib) {
@@ -349,4 +337,45 @@ Shape::traverse(BoundingBoxAction * action)
     bbox.transform(action->state->modelmatrixelem.matrix);
     action->extendBy(bbox);
   }
+}
+
+// *************************************************************************************************
+void
+DrawArrays::execute(State * state)
+{
+  VertexAttribute * attrib = state->attribelem.get(0);
+  assert(attrib);
+  glDrawArrays(glMode(this->mode), 0, attrib->values.size());
+}
+
+// *************************************************************************************************
+void
+DrawElements::execute(State * state)
+{
+  IndexBuffer * indices = state->attribelem.getIndexBuffer();
+  assert(indices);
+  GLuint num = indices->values.size() * sizeof(ivec3);
+  glDrawElements(glMode(this->mode), num, GL_UNSIGNED_INT, 0);
+}
+
+// *************************************************************************************************
+void
+DrawElementsInstanced::execute(State * state)
+{
+  IndexBuffer * indices = state->attribelem.getIndexBuffer();
+  unsigned int primcount = state->attribelem.getInstanceCount();
+  assert(indices && primcount > 0);
+  GLuint count = indices->values.size() * sizeof(ivec3);
+  glDrawElementsInstanced(glMode(this->mode), count, GL_UNSIGNED_INT, 0, primcount);
+}
+
+// *************************************************************************************************
+void
+DrawArraysInstanced::execute(State * state)
+{
+  VertexAttribute * attrib = state->attribelem.get(0);
+  unsigned int primcount = state->attribelem.getInstanceCount();
+  assert(attrib && primcount > 0);
+  GLuint count = attrib->values.size();
+  glDrawArraysInstanced(glMode(this->mode), 0, count, primcount);
 }

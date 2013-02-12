@@ -1,6 +1,6 @@
 
 - lua file format!
-  - probably use tables of table for multi value fields
+  - probably use table of tables for multi value vec3 fields
   - mesh computations in lua?
 
 - debug:

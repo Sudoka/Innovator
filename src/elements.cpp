@@ -7,7 +7,8 @@ using namespace glm;
 using namespace std;
 
 AttributeElement::AttributeElement()
-  : indices(nullptr)
+  : indices(nullptr),
+    instancecount(0)
 {
   this->attributes.resize(8);
   std::fill(this->attributes.begin(), this->attributes.end(), nullptr);
@@ -22,6 +23,13 @@ void
 AttributeElement::set(VertexAttribute * attribute)
 {
   assert(attribute->index >= 0 && attribute->index < this->attributes.size());
+  if (attribute->divisor == 1) {
+    if (this->instancecount > 0) { 
+      assert(this->instancecount == attribute->values.size());
+    } else {
+      this->instancecount = attribute->values.size();
+    }
+  }
   this->attributes[attribute->index] = attribute;
 }
 
@@ -32,9 +40,15 @@ AttributeElement::set(IndexBuffer * indices)
 }
 
 IndexBuffer * 
-AttributeElement::get() const
+AttributeElement::getIndexBuffer() const
 {
   return this->indices;
+}
+
+unsigned int
+AttributeElement::getInstanceCount() const
+{
+  return this->instancecount;
 }
 
 VertexAttribute * 

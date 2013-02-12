@@ -2,6 +2,11 @@
 
 class Innovator {
 public:
-  Innovator();
+  Innovator(int width, int height);
   ~Innovator();
+
+  void loop();
+
+private:
+  bool initialized;
 };
