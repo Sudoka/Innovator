@@ -11,5 +11,4 @@
 
 - nodes
   - text
-  - one "shape" node for each draw call?
   - indirect buffer

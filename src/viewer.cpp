@@ -30,7 +30,7 @@ public:
   bool mousedown;
   shared_ptr<Group> root;
   shared_ptr<Camera> camera;
-  shared_ptr<RenderAction> renderaction;
+  unique_ptr<RenderAction> renderaction;
 };
 
 Viewer::Viewer(int width, int height)
@@ -41,7 +41,6 @@ Viewer::Viewer(int width, int height)
 
 Viewer::~Viewer()
 {
-
 }
 
 void

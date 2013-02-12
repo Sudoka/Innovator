@@ -13,6 +13,7 @@ class BoundingBoxAction;
 
 class Node : public Bindable {
 public:
+  virtual ~Node() {}
   virtual void traverse(RenderAction * action) = 0;
   virtual void traverse(BoundingBoxAction * action) {}
 
@@ -23,7 +24,7 @@ public:
 class Group : public Node {
 public:
   Group();
-  ~Group();
+  virtual ~Group();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   void addChild(std::shared_ptr<Node> child);
@@ -35,7 +36,7 @@ private:
 class Camera : public Node {
 public:
   Camera();
-  ~Camera();
+  virtual ~Camera();
   virtual void traverse(RenderAction * action);
   void zoom(float dz);
   void pan(const glm::vec2 & dx);
@@ -54,7 +55,7 @@ private:
 class Separator : public Group {
 public:
   Separator();
-  ~Separator();
+  virtual ~Separator();
   int boundingBoxCaching;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
@@ -84,7 +85,7 @@ public:
 class Program : public Node {
 public:
   Program();
-  ~Program();
+  virtual ~Program();
 
   std::string fileName;
   std::vector<ShaderObject*> shaders;
@@ -104,7 +105,7 @@ private:
 class Transform : public Node {
 public:
   Transform();
-  ~Transform();
+  virtual ~Transform();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   glm::vec3 translation;
@@ -116,7 +117,7 @@ private:
 class IndexBuffer : public Node {
 public:
   IndexBuffer();
-  ~IndexBuffer();
+  virtual ~IndexBuffer();
 
   virtual void traverse(RenderAction * action);
   std::vector<glm::ivec3> values;
@@ -133,7 +134,7 @@ private:
 class VertexAttribute : public Node {
 public:
   VertexAttribute();
-  ~VertexAttribute();
+  virtual ~VertexAttribute();
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
@@ -155,7 +156,7 @@ private:
 class Draw : public Node {
 public:
   Draw();
-  ~Draw();
+  virtual ~Draw();
 
   enum Mode {
     POINTS,
@@ -193,7 +194,7 @@ public:
 class InstancedTriangleSet : public Node {
 public:
   InstancedTriangleSet();
-  ~InstancedTriangleSet();
+  virtual ~InstancedTriangleSet();
 
   std::vector<glm::ivec3> indices;
   std::vector<glm::vec3> vertices;

@@ -45,6 +45,9 @@ Innovator::Innovator(int width, int height)
     return;
   }
   glfwDisable(GLFW_AUTO_POLL_EVENTS);
+  glfwSetWindowSizeCallback(resizeCB);
+  glfwSetMousePosCallback(mouseMovedCB);
+  glfwSetMouseButtonCallback(mouseButtonCB);
 
   if (glewInit() != GLEW_OK) {
     cout << "failed to initialize GLEW." << endl;
@@ -54,10 +57,6 @@ Innovator::Innovator(int width, int height)
     cout << "OpenGL 4.2 not supported.\n" << endl;
     return;
   }
-
-  glfwSetWindowSizeCallback(resizeCB);
-  glfwSetMousePosCallback(mouseMovedCB);
-  glfwSetMouseButtonCallback(mouseButtonCB);
 
   Lua::init();
   File::init();

@@ -22,6 +22,7 @@ Lua::registerFunction(const std::string & name, lua_CFunction f)
 {
   lua_pushcfunction(L, f);
   lua_setglobal(L, name.c_str());
+  lua_pop(L, -1);
 }
 
 bool

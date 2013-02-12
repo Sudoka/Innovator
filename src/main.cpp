@@ -4,8 +4,10 @@
 
 int main(int argc, char * argv[])
 {
-  Innovator app(640, 480);
-  app.loop();
+  {
+    Innovator app(640, 480);
+    app.loop();
+  }
 
   std::cout << "press Return to exit" << std::endl;
   std::cin.get();

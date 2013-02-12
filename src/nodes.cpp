@@ -35,7 +35,6 @@ Camera::Camera()
 
 Camera::~Camera()
 {
-  
 }
 
 void 
@@ -263,9 +262,7 @@ VertexAttribute::VertexAttribute()
 {
 }
 
-VertexAttribute::~VertexAttribute()
-{
-}
+VertexAttribute::~VertexAttribute() {}
 
 void
 VertexAttribute::doAction(Action * action)
