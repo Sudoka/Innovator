@@ -19,7 +19,12 @@ class RenderAction : public Action {
 public:
   RenderAction();
   ~RenderAction();
+
+  void resize(int width, int height);
   void apply(std::shared_ptr<Node> node);
+
+private:
+  int width, height;
 };
 
 class BoundingBoxAction : public Action {

@@ -19,7 +19,7 @@ public:
       redraw(true),
       mousedown(false),
       camera(new Camera),
-      renderaction(new RenderAction)  
+      renderaction(new RenderAction)
   {}
   ~ViewerP() {}
 
@@ -36,7 +36,7 @@ public:
 Viewer::Viewer(int width, int height)
   : self(new ViewerP)
 {
-  self->camera->perspective(45, float(width) / float(height), 0.1f, 100);
+  this->resize(width, height);
 }
 
 Viewer::~Viewer()
@@ -44,10 +44,23 @@ Viewer::~Viewer()
 
 }
 
+void
+Viewer::scheduleRedraw()
+{
+  self->redraw = true;
+}
+
 bool
 Viewer::needRedraw() const
 {
   return self->redraw;
+}
+
+void
+Viewer::resize(int width, int height)
+{
+  self->camera->perspective(45, float(width) / float(height), 0.1f, 100);
+  self->renderaction->resize(width, height);
 }
 
 void

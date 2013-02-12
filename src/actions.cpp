@@ -9,12 +9,24 @@ Action::Action()
 Action::~Action() {}
 
 RenderAction::RenderAction()
-  : Action() {}
+  : Action(),
+    width(-1),
+    height(-1)
+{}
+
 RenderAction::~RenderAction() {}
+
+void
+RenderAction::resize(int width, int height)
+{
+  this->width = width;
+  this->height = height;
+}
 
 void
 RenderAction::apply(shared_ptr<Node> node)
 {
+  glViewport(0, 0, this->width, this->height);
   glEnable(GL_DEPTH_TEST);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

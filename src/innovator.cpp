@@ -11,9 +11,12 @@
 using namespace std;
 static unique_ptr<Viewer> viewer = nullptr;
 
-static void resizeCB(int size_x, int size_y)
+static void resizeCB(int width, int height)
 {
-  cout << "resizeCB" << endl;
+  if (viewer) {
+    viewer->resize(width, height);
+    viewer->scheduleRedraw();
+  }
 }
 
 static void mouseMovedCB(int x, int y)

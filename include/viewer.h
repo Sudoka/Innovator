@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <canvas.h>
 
 class Node;
 
@@ -13,10 +12,12 @@ public:
   void setSceneGraph(std::shared_ptr<Node> root);
   void renderGL();
 
+  void resize(int width, int height);
   void mouseMoved(int x, int y);
   void mouseButton(int button, int action);
   void keyboard(int button);
 
+  void scheduleRedraw();
   bool needRedraw() const;
   
 private:
