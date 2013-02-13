@@ -19,6 +19,8 @@ public:
 
   virtual void bind() {}
   virtual void unbind() {}
+
+  typedef std::shared_ptr<Node> ptr;
 };
 
 class Group : public Node {
@@ -27,7 +29,8 @@ public:
   virtual ~Group();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  void addChild(std::shared_ptr<Node> child);
+  void addChild(Node::ptr child);
+  typedef std::shared_ptr<Group> ptr;
 private:
   class GroupP;
   std::unique_ptr<GroupP> self;
@@ -43,10 +46,10 @@ public:
   void orbit(const glm::vec2 & dx);
   void moveTo(const glm::vec3 & position);
   void lookAt(const glm::vec3 & focalpoint);
-  void viewAll(std::shared_ptr<Node> root);
+  void viewAll(Node::ptr root);
   glm::vec3 getFocalDir() const;
   void perspective(float fovy, float aspect, float near, float far);
-
+  typedef std::shared_ptr<Camera> ptr;
 private:
   class CameraP;
   std::unique_ptr<CameraP> self;

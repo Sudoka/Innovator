@@ -2,12 +2,11 @@
 
 #include <memory>
 #include <string>
-
-class Separator;
+#include <nodes.h>
 
 class File {
 public:
   static void init();
   static void exit();
-  static std::shared_ptr<Separator> readAll(const std::string & filename);
+  static Separator::ptr readAll(const std::string & filename);
 };

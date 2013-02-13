@@ -28,8 +28,8 @@ public:
   int button;
   bool redraw;
   bool mousedown;
-  shared_ptr<Group> root;
-  shared_ptr<Camera> camera;
+  Group::ptr root;
+  Camera::ptr camera;
   unique_ptr<RenderAction> renderaction;
 };
 
@@ -70,7 +70,7 @@ Viewer::renderGL()
 }
 
 void
-Viewer::setSceneGraph(std::shared_ptr<Node> root)
+Viewer::setSceneGraph(Node::ptr root)
 {
   self->root.reset(new Group);
   self->root->addChild(self->camera);

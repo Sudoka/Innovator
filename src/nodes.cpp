@@ -66,7 +66,7 @@ Camera::lookAt(const vec3 & focalpoint)
 }
 
 void
-Camera::viewAll(std::shared_ptr<Node> root)
+Camera::viewAll(Node::ptr root)
 {
   BoundingBoxAction action;
   action.apply(root);
@@ -126,7 +126,7 @@ Camera::perspective(float fovy, float aspect, float near, float far)
 
 class Group::GroupP {
 public:
-  vector<shared_ptr<Node>> children;
+  vector<Node::ptr> children;
 };
 
 Group::Group() : self(new GroupP) {}
@@ -151,7 +151,7 @@ Group::traverse(BoundingBoxAction * action)
 }
 
 void 
-Group::addChild(std::shared_ptr<Node> child)
+Group::addChild(Node::ptr child)
 {
   self->children.push_back(child);
 }

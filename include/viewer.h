@@ -1,15 +1,14 @@
 #pragma once
 
 #include <memory>
-
-class Node;
+#include <nodes.h>
 
 class Viewer {
 public:
   Viewer(int width, int height);
   ~Viewer();
 
-  void setSceneGraph(std::shared_ptr<Node> root);
+  void setSceneGraph(Node::ptr root);
   void renderGL();
 
   void resize(int width, int height);

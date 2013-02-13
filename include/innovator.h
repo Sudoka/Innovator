@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 class Innovator {
 public:
@@ -8,5 +9,6 @@ public:
   void loop();
 
 private:
-  bool initialized;
+  class InnovatorP;
+  std::unique_ptr<InnovatorP> self;
 };

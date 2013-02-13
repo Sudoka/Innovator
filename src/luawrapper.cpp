@@ -25,15 +25,13 @@ Lua::registerFunction(const std::string & name, lua_CFunction f)
   lua_pop(L, -1);
 }
 
-bool
+void
 Lua::dofile(const std::string & file)
 {
-  int error = luaL_dofile(L, file.c_str());
-  if (error) {
-    cout << "Lua error: " << luaL_checkstring(L, -1) << endl;
-    return false;
+  if (luaL_dofile(L, file.c_str()) != LUA_OK) {
+    string message = luaL_checkstring(L, -1);
+    throw std::runtime_error("Failed to open file: " + message);
   }
-  return true;
 }
 
 void * 

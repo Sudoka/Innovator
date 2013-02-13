@@ -33,53 +33,69 @@ static void mouseButtonCB(int button, int action)
   }
 }
 
+class glfwScope {
+public:
+  glfwScope() {
+    if (!glfwInit()) {
+      throw std::runtime_error("failed to initialize GLFW.");
+    }
+  }
+  ~glfwScope() {
+    glfwTerminate();
+  }
+};
+
+template<typename T>
+class InitScope {
+public:
+  InitScope() { T::init(); }
+  ~InitScope() { T::exit(); }
+};
+
+class Innovator::InnovatorP {
+public:
+  InnovatorP()
+    : lua(new InitScope<Lua>),
+      file(new InitScope<File>),
+      glfw(new glfwScope)
+  {}
+  ~InnovatorP() {}
+
+  unique_ptr<InitScope<Lua>> lua;
+  unique_ptr<InitScope<File>> file;
+  unique_ptr<glfwScope> glfw;
+};
+
 Innovator::Innovator(int width, int height)
-  : initialized(false)
+  : self(new InnovatorP)
 {
-  if (!glfwInit()) {
-    cout << "failed to initialize GLFW." << endl;
-    return;
-  }
   if (!glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW)) {
-    cout << "failed to open window." << endl;
-    return;
+    throw std::runtime_error("failed to open GLFW window.");
   }
+  if (glewInit() != GLEW_OK) {
+    throw std::runtime_error("failed to initialize GLEW.");
+  }
+  if (!GLEW_VERSION_4_2) {
+    throw std::runtime_error("OpenGL 4.2 not supported.");
+  }
+
   glfwDisable(GLFW_AUTO_POLL_EVENTS);
   glfwSetWindowSizeCallback(resizeCB);
   glfwSetMousePosCallback(mouseMovedCB);
   glfwSetMouseButtonCallback(mouseButtonCB);
 
-  if (glewInit() != GLEW_OK) {
-    cout << "failed to initialize GLEW." << endl;
-    return;
-  }
-  if (!GLEW_VERSION_4_2) {
-    cout << "OpenGL 4.2 not supported.\n" << endl;
-    return;
-  }
-
-  Lua::init();
-  File::init();
-
   viewer.reset(new Viewer(width, height));
   viewer->setSceneGraph(File::readAll("../../src/scene.lua"));
-
-  this->initialized = true;
 }
 
 Innovator::~Innovator()
 {
   viewer.reset(nullptr);
-  glfwTerminate();
-  Lua::exit();
-  File::exit();
 }
 
 void 
 Innovator::loop()
 {
-  if (!this->initialized) return;
-
   while (true) {
     glfwWaitEvents();
     if (glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))

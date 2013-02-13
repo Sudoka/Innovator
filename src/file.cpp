@@ -156,21 +156,28 @@ static int LuaSeparator(lua_State * L)
   return 1;
 }
 
+static Draw::Mode
+DrawMode(lua_State * L) {
+  string name;
+  getString(L, name, "mode");
+  if (!name.empty()) {
+    if (name == "POINTS") {
+      return Draw::POINTS;
+    } else if (name == "TRIANGLES") {
+      return Draw::TRIANGLES;
+    } else {
+      throw std::runtime_error("Invalid Draw mode");
+    }
+  }
+  return Draw::POINTS;
+}
+
 template <typename ShapeType>
 static int LuaDraw(lua_State * L)
 {
+  Draw::Mode mode = DrawMode(L);
   ShapeType * self = new ShapeType;
-  string mode;
-  getString(L, mode, "mode");
-  if (!mode.empty()) {
-    if (mode == "POINTS") {
-      self->mode = Draw::POINTS;
-    } else if (mode == "TRIANGLES") {
-      self->mode = Draw::TRIANGLES;
-    } else {
-      cout << "invalid mode, using default POINTS" << endl;
-    }
-  }
+  self->mode = mode;
   lua_pushlightuserdata(L, self);
   return 1;
 }
@@ -200,18 +207,18 @@ File::exit()
 
 }
 
-shared_ptr<Separator> 
+Separator::ptr
 File::readAll(const string & filename)
 {
-  shared_ptr<Separator> root(nullptr);
-  if (Lua::dofile(filename)) {
-    root.reset(static_cast<Separator*>(Lua::getglobaluserdata("root")));
+  Lua::dofile(filename);
+   
+  Separator::ptr root(static_cast<Separator*>(Lua::getglobaluserdata("root")));
 
-    // if there was no global userdata sep named root, see if
-    // there is a separator on top of the stack
-    if (!root.get() && !lua_isnil(Lua::L, -1) && lua_islightuserdata(Lua::L, -1)) {
-      root.reset(static_cast<Separator*>(lua_touserdata(Lua::L, -1)));
-    }
+  // if there was no global userdata sep named root, see if
+  // there is a separator on top of the stack
+  if (!root.get() && !lua_isnil(Lua::L, -1) && lua_islightuserdata(Lua::L, -1)) {
+    root.reset(static_cast<Separator*>(lua_touserdata(Lua::L, -1)));
   }
+
   return root;
 }
