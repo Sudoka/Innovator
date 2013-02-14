@@ -41,6 +41,7 @@ public:
     }
   }
   ~glfwScope() {
+    cout << "~glfwScope()" << endl;
     glfwTerminate();
   }
 };
@@ -75,8 +76,8 @@ Innovator::Innovator(int width, int height)
   if (glewInit() != GLEW_OK) {
     throw std::runtime_error("failed to initialize GLEW.");
   }
-  if (!GLEW_VERSION_4_2) {
-    throw std::runtime_error("OpenGL 4.2 not supported.");
+  if (!GLEW_VERSION_3_3) {
+    throw std::runtime_error("OpenGL 3.3 not supported.");
   }
 
   glfwDisable(GLFW_AUTO_POLL_EVENTS);
@@ -109,5 +110,11 @@ Innovator::loop()
       glfwSwapBuffers();
     }
   }
+}
+
+void
+Innovator::postError(const string & msg)
+{
+  cout << "Innovator error: " << msg << endl;
 }
   

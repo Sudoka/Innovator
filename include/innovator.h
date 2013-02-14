@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <string>
 
 class Innovator {
 public:
@@ -7,6 +8,8 @@ public:
   ~Innovator();
 
   void loop();
+
+  static void postError(const std::string & msg);
 
 private:
   class InnovatorP;

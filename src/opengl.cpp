@@ -1,4 +1,5 @@
 #include <opengl.h>
+#include <innovator.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <string>
@@ -140,7 +141,7 @@ ShaderProgram::attach(const char * source, GLenum type)
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
     GLchar * log = new GLchar[length + 1];
     glGetShaderInfoLog(shader, length, NULL, log);
-    cout << "Shader::attach" << "failed to compile shader: " << log << endl;
+    Innovator::postError("Shader::attach: failed to compile shader: " + string(log));
     delete [] log;
   } else {
     glAttachShader(this->id, shader);
@@ -160,19 +161,7 @@ ShaderProgram::link()
     glGetProgramiv(this->id, GL_INFO_LOG_LENGTH, &length);
     GLchar * log = new GLchar[length + 1];
     glGetProgramInfoLog(this->id, length, NULL, log);
-    cout << "Shader::link()" << "failed to link program: " <<  log << endl;
+    Innovator::postError("Shader::link(): failed to link program: " + string(log));
     delete [] log;
   }
-}
-
-void
-ShaderProgram::bind()
-{
-  glUseProgram(this->id);
-}
-
-void
-ShaderProgram::unbind()
-{
-  glUseProgram(0);
 }

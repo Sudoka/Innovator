@@ -2,10 +2,13 @@
 #include <lua.hpp>
 #include <luawrapper.h>
 #include <nodes.h>
+#include <innovator.h>
 #include <iostream>
 
 using namespace std;
 using namespace glm;
+
+File::DrawModeMap File::drawmodes;
 
 template <typename T>
 static void getVec3(lua_State * L, detail::tvec3<T> & vec, const char * name)
@@ -156,28 +159,24 @@ static int LuaSeparator(lua_State * L)
   return 1;
 }
 
-static Draw::Mode
-DrawMode(lua_State * L) {
+template <typename ShapeType>
+static void getDrawMode(lua_State * L, ShapeType * shape) {
   string name;
   getString(L, name, "mode");
-  if (!name.empty()) {
-    if (name == "POINTS") {
-      return Draw::POINTS;
-    } else if (name == "TRIANGLES") {
-      return Draw::TRIANGLES;
-    } else {
-      throw std::runtime_error("Invalid Draw mode");
-    }
+  if (name.empty()) return;
+
+  if (File::drawmodes.find(name) == File::drawmodes.end()) {
+    Innovator::postError("Invalid Draw mode: " + name);
+    return;
   }
-  return Draw::POINTS;
+  shape->mode = File::drawmodes[name];
 }
 
 template <typename ShapeType>
 static int LuaDraw(lua_State * L)
 {
-  Draw::Mode mode = DrawMode(L);
   ShapeType * self = new ShapeType;
-  self->mode = mode;
+  getDrawMode(L, self);
   lua_pushlightuserdata(L, self);
   return 1;
 }
@@ -199,19 +198,22 @@ File::init()
   Lua::registerFunction("GeometryShader", LuaShader<GeometryShader>);
   Lua::registerFunction("FragmentShader", LuaShader<FragmentShader>);
   Lua::dofile("../../src/file.lua");
+
+  File::drawmodes["POINTS"] = Draw::POINTS;
+  File::drawmodes["TRIANGLES"] = Draw::TRIANGLES;
 }
 
 void
 File::exit()
 {
-
+  File::drawmodes.clear();
+  cout << "File::exit()" << endl;
 }
 
 Separator::ptr
 File::readAll(const string & filename)
 {
   Lua::dofile(filename);
-   
   Separator::ptr root(static_cast<Separator*>(Lua::getglobaluserdata("root")));
 
   // if there was no global userdata sep named root, see if

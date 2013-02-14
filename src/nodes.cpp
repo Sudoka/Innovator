@@ -6,6 +6,7 @@
 #include <box3.h>
 #include <vector>
 #include <math.h>
+#include <string>
 #include <iostream>
 
 #include <glm/glm.hpp>
@@ -120,6 +121,24 @@ void
 Camera::perspective(float fovy, float aspect, float near, float far)
 {
   self->projmatrix = glm::perspective(fovy, aspect, near, far);
+}
+
+// *************************************************************************************************
+
+Viewport::Viewport()
+  : origin(0), size(100)
+{
+}
+
+Viewport::~Viewport()
+{
+}
+
+void
+Viewport::traverse(RenderAction * action)
+{
+  action->state->viewportelem.size = this->size;
+  action->state->viewportelem.origin = this->origin;
 }
 
 // *************************************************************************************************
@@ -305,12 +324,12 @@ VertexAttribute::unbind()
 
 static GLenum glMode(Draw::Mode mode) 
 {
+
   switch (mode) {
   case Draw::POINTS: return GL_POINTS;
   case Draw::TRIANGLES: return GL_TRIANGLES;
   }
-  assert(0 && "enum out of range");
-  return GL_INVALID_VALUE;
+  throw std::runtime_error("invalid draw mode: " + std::to_string((__int64)mode));
 };
 
 Draw::Draw() : mode(POINTS) {}

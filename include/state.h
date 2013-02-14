@@ -34,6 +34,7 @@ public:
   MatrixElement viewmatrixelem;
   MatrixElement modelmatrixelem;
   MatrixElement projmatrixelem;
+  ViewportElement viewportelem;
 
 private:
   class StateP;

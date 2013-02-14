@@ -26,14 +26,12 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
-class ShaderProgram : public Bindable {
+class ShaderProgram {
 public:
   ShaderProgram();
   ~ShaderProgram();
   void attach(const char * shader, GLenum type);
   void link();
-  virtual void bind();
-  virtual void unbind();
   GLuint id;
 };
 

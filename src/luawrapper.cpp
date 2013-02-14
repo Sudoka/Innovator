@@ -14,6 +14,7 @@ Lua::init()
 void
 Lua::exit()
 {
+  cout << "Lua::exit()" << endl;
   lua_close(L);
 }
 

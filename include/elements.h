@@ -17,6 +17,14 @@ public:
   glm::mat4 matrix;
 };
 
+class ViewportElement {
+public:
+  ViewportElement();
+  void updateGL(State * state);
+  glm::ivec2 size;
+  glm::ivec2 origin;
+};
+
 class AttributeElement : public Bindable {
 public:
   AttributeElement();

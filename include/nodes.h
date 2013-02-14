@@ -55,6 +55,16 @@ private:
   std::unique_ptr<CameraP> self;
 };
 
+class Viewport : public Node {
+public:
+  Viewport();
+  glm::ivec2 origin;
+  glm::ivec2 size;
+  virtual ~Viewport();
+  virtual void traverse(RenderAction * action);
+  typedef std::shared_ptr<Viewport> ptr;
+};
+
 class Separator : public Group {
 public:
   Separator();

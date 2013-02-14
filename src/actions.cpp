@@ -9,24 +9,14 @@ Action::Action()
 Action::~Action() {}
 
 RenderAction::RenderAction()
-  : Action(),
-    width(-1),
-    height(-1)
+  : Action()
 {}
 
 RenderAction::~RenderAction() {}
 
 void
-RenderAction::resize(int width, int height)
+RenderAction::apply(Node::ptr node)
 {
-  this->width = width;
-  this->height = height;
-}
-
-void
-RenderAction::apply(shared_ptr<Node> node)
-{
-  glViewport(0, 0, this->width, this->height);
   glEnable(GL_DEPTH_TEST);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -48,7 +38,7 @@ BoundingBoxAction::extendBy(const box3 & box)
 }
 
 void
-BoundingBoxAction::apply(shared_ptr<Node> node)
+BoundingBoxAction::apply(Node::ptr node)
 {
   state.reset(new State);
   this->box.makeEmpty();

@@ -19,6 +19,7 @@ public:
       redraw(true),
       mousedown(false),
       camera(new Camera),
+      viewport(new Viewport),
       renderaction(new RenderAction)
   {}
   ~ViewerP() {}
@@ -30,6 +31,7 @@ public:
   bool mousedown;
   Group::ptr root;
   Camera::ptr camera;
+  Viewport::ptr viewport;
   unique_ptr<RenderAction> renderaction;
 };
 
@@ -59,7 +61,8 @@ void
 Viewer::resize(int width, int height)
 {
   self->camera->perspective(45, float(width) / float(height), 0.1f, 100);
-  self->renderaction->resize(width, height);
+  self->viewport->origin = ivec2(0);
+  self->viewport->size = ivec2(width, height);
 }
 
 void
@@ -72,8 +75,9 @@ Viewer::renderGL()
 void
 Viewer::setSceneGraph(Node::ptr root)
 {
-  self->root.reset(new Group);
+  self->root.reset(new Separator);
   self->root->addChild(self->camera);
+  self->root->addChild(self->viewport);
   self->root->addChild(root);
   self->camera->viewAll(root);
 }

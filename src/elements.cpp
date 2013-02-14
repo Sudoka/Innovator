@@ -6,6 +6,27 @@
 using namespace glm;
 using namespace std;
 
+ViewportElement::ViewportElement()
+  : origin(-1), size(-1)
+{
+}
+
+void
+ViewportElement::updateGL(State * state)
+{
+  if (size == ivec2(-1) || origin == ivec2(-1)) {
+    throw std::invalid_argument("invalid viewport");
+  }
+  glViewport(origin.x, origin.y, size.x, size.y);
+}
+
+void
+MatrixElement::updateGL(State * state)
+{
+  GLuint loc = glGetUniformLocation(state->program->getProgramId(), this->name.c_str());
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
+}
+
 AttributeElement::AttributeElement()
   : indices(nullptr),
     instancecount(0)
@@ -82,11 +103,4 @@ AttributeElement::unbind()
       this->attributes[i]->unbind();
     }
   }
-}
-
-void
-MatrixElement::updateGL(State * state)
-{
-  GLuint loc = glGetUniformLocation(state->program->getProgramId(), this->name.c_str());
-  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
 }
