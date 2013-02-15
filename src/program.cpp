@@ -6,22 +6,43 @@
 
 using namespace std;
 
+LUA_NODE_SOURCE(VertexShader);
+
+VertexShader::VertexShader()
+{
+  LUA_NODE_ADD_FIELD(&this->source, "source");
+}
+
 void
 VertexShader::attach(ShaderProgram * program)
 {
-  program->attach(this->source.c_str(), GL_VERTEX_SHADER);
+  program->attach(this->source.value.c_str(), GL_VERTEX_SHADER);
+}
+
+LUA_NODE_SOURCE(GeometryShader);
+
+GeometryShader::GeometryShader()
+{
+  LUA_NODE_ADD_FIELD(&this->source, "source");
 }
 
 void
 GeometryShader::attach(ShaderProgram * program)
 {
-  program->attach(this->source.c_str(), GL_GEOMETRY_SHADER);
+  program->attach(this->source.value.c_str(), GL_GEOMETRY_SHADER);
+}
+
+LUA_NODE_SOURCE(FragmentShader);
+
+FragmentShader::FragmentShader()
+{
+  LUA_NODE_ADD_FIELD(&this->source, "source");
 }
 
 void
 FragmentShader::attach(ShaderProgram * program)
 {
-  program->attach(this->source.c_str(), GL_FRAGMENT_SHADER);
+  program->attach(this->source.value.c_str(), GL_FRAGMENT_SHADER);
 }
 
 class Program::ProgramP {

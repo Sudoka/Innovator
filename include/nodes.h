@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <glstate.h>
+#include <luanode.h>
+#include <fields.h>
 
 class State;
 class Action;
@@ -11,7 +13,12 @@ class RenderAction;
 class ShaderProgram;
 class BoundingBoxAction;
 
-class Node : public Bindable {
+class FieldContainer {
+protected:
+  std::vector<Field*> fields;
+};
+
+class Node : public Bindable, public FieldContainer {
 public:
   virtual ~Node() {}
   virtual void traverse(RenderAction * action) = 0;
@@ -72,26 +79,33 @@ public:
   int boundingBoxCaching;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
+  typedef std::shared_ptr<Separator> ptr;
 };
 
-class ShaderObject {
+class ShaderObject : public FieldContainer {
 public:
   virtual void attach(ShaderProgram * program) = 0;
-  std::string source;
+  StringField source;
 };
 
 class VertexShader : public ShaderObject {
+  LUA_NODE_HEADER(VertexShader);
 public:
+  VertexShader();
   virtual void attach(ShaderProgram * program);
 };
 
 class GeometryShader : public ShaderObject {
+  LUA_NODE_HEADER(GeometryShader);
 public:
+  GeometryShader();
   virtual void attach(ShaderProgram * program);
 };
 
 class FragmentShader : public ShaderObject {
+  LUA_NODE_HEADER(FragmentShader);
 public:
+FragmentShader();
   virtual void attach(ShaderProgram * program);
 };
 
@@ -202,22 +216,4 @@ public:
 class DrawElementsInstanced : public Draw {
 public:
   virtual void execute(State * state);
-};
-
-class InstancedTriangleSet : public Node {
-public:
-  InstancedTriangleSet();
-  virtual ~InstancedTriangleSet();
-
-  std::vector<glm::ivec3> indices;
-  std::vector<glm::vec3> vertices;
-  std::vector<glm::vec3> normals;
-  std::vector<glm::vec3> instances;
-
-  virtual void traverse(RenderAction * action);
-  virtual void traverse(BoundingBoxAction * action);
-
-private:
-  class InstancedTriangleSetP;
-  std::unique_ptr<InstancedTriangleSetP> self;
 };

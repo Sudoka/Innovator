@@ -2,16 +2,24 @@
 #include <memory>
 #include <string>
 
+class Lua;
+
 class Innovator {
 public:
   Innovator(int width, int height);
   ~Innovator();
 
+  static void resizeCB(int width, int height);
+  static void mouseMovedCB(int x, int y);
+  static void mouseButtonCB(int button, int action);
+
   void loop();
 
   static void postError(const std::string & msg);
 
-private:
+  static Lua * lua();
+
   class InnovatorP;
-  std::unique_ptr<InnovatorP> self;
+private:
+  static std::unique_ptr<InnovatorP> self;
 };

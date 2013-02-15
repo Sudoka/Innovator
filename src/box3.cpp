@@ -11,9 +11,7 @@ box3::box3()
 box3::box3(const vec3 & min, const vec3 & max)
   : min(min), max(max) {}
  
-box3::~box3()
-{
-}
+box3::~box3() {}
 
 void
 box3::makeEmpty()

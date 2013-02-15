@@ -1,16 +1,21 @@
 #pragma once
 #include <string>
+#include <map>
 #include <lua.hpp>
-
-class Separator;
+#include <nodes.h>
 
 class Lua {
 public:
-  static void init();
-  static void exit();
+  Lua();
+  ~Lua();
 
-  static void dofile(const std::string & file);
-  static void registerFunction(const std::string & name, lua_CFunction f);
-  static void * getglobaluserdata(const char * name);
-  static lua_State * L;
+  void dofile(const std::string & file);
+  void registerFunction(const std::string & name, lua_CFunction f);
+  void * getglobaluserdata(const char * name);
+
+  std::shared_ptr<Separator> readAll(const std::string & filename);
+
+  lua_State * L;
+  typedef std::map<std::string, Draw::Mode> DrawModeMap;
+  DrawModeMap drawmodes;
 };

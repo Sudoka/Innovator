@@ -324,12 +324,12 @@ VertexAttribute::unbind()
 
 static GLenum glMode(Draw::Mode mode) 
 {
-
   switch (mode) {
   case Draw::POINTS: return GL_POINTS;
   case Draw::TRIANGLES: return GL_TRIANGLES;
+  default: 
+    throw std::runtime_error("invalid draw mode: " + std::to_string((__int64)mode));
   }
-  throw std::runtime_error("invalid draw mode: " + std::to_string((__int64)mode));
 };
 
 Draw::Draw() : mode(POINTS) {}
