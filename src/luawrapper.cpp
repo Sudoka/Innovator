@@ -111,15 +111,6 @@ static int LuaIndexBuffer(lua_State * L)
   return 1;
 }
 
-static int LuaTransform(lua_State * L)
-{
-  Transform * self = new Transform;
-  getField(L, self->translation, "translation");
-  getField(L, self->scaleFactor, "scaleFactor");
-  lua_pushlightuserdata(L, self);
-  return 1;
-}
-
 static int LuaProgram(lua_State * L)
 {
   Program * self = new Program;
@@ -128,10 +119,10 @@ static int LuaProgram(lua_State * L)
   return 1;
 }
 
-template <typename ShaderType>
-static int LuaShader(lua_State * L)
+template <typename NodeType>
+static int LuaNode(lua_State * L)
 {
-  lua_pushlightuserdata(L, ShaderType::createInstance(L));
+  lua_pushlightuserdata(L, NodeType::createInstance(L));
   return 1;
 }
 
@@ -187,12 +178,12 @@ Lua::Lua()
   this->registerFunction("Program", LuaProgram);
   this->registerFunction("Group", LuaGroup);
   this->registerFunction("Separator", LuaSeparator);
-  this->registerFunction("Transform", LuaTransform);
+  this->registerFunction("Transform", LuaNode<Transform>);
   this->registerFunction("IndexBuffer", LuaIndexBuffer);
   this->registerFunction("VertexAttribute", LuaVertexAttribute);
-  this->registerFunction("VertexShader", LuaShader<VertexShader>);
-  this->registerFunction("GeometryShader", LuaShader<GeometryShader>);
-  this->registerFunction("FragmentShader", LuaShader<FragmentShader>);
+  this->registerFunction("VertexShader", LuaNode<VertexShader>);
+  this->registerFunction("GeometryShader", LuaNode<GeometryShader>);
+  this->registerFunction("FragmentShader", LuaNode<FragmentShader>);
   this->dofile("../../src/file.lua");
 
   this->drawmodes["POINTS"] = Draw::POINTS;

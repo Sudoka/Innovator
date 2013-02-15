@@ -201,10 +201,13 @@ Separator::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+LUA_NODE_SOURCE(Transform);
+
 Transform::Transform()
-  : translation(0, 0, 0),
-    scaleFactor(1, 1, 1) 
-{}
+{
+  LUA_NODE_ADD_FIELD(&this->translation, "translation");
+  LUA_NODE_ADD_FIELD(&this->scaleFactor, "scaleFactor");
+}
 
 Transform::~Transform() {}
 
@@ -212,8 +215,8 @@ void
 Transform::doAction(Action * action)
 {
   mat4 & matrix = action->state->modelmatrixelem.matrix;
-  matrix = glm::scale(matrix, this->scaleFactor);
-  matrix = glm::translate(matrix, this->translation);
+  matrix = glm::scale(matrix, this->scaleFactor.value);
+  matrix = glm::translate(matrix, this->translation.value);
 }
 
 void

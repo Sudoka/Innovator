@@ -85,7 +85,7 @@ public:
 class ShaderObject : public FieldContainer {
 public:
   virtual void attach(ShaderProgram * program) = 0;
-  StringField source;
+  SFString source;
 };
 
 class VertexShader : public ShaderObject {
@@ -130,13 +130,14 @@ private:
 };
 
 class Transform : public Node {
+  LUA_NODE_HEADER(Transform);
 public:
   Transform();
   virtual ~Transform();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  glm::vec3 translation;
-  glm::vec3 scaleFactor;
+  SFVec3f translation;
+  SFVec3f scaleFactor;
 private:
   void doAction(Action * action);
 };

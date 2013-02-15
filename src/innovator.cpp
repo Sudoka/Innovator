@@ -5,7 +5,6 @@
 #include <luawrapper.h>
 #include <iostream>
 #include <nodes.h>
-#include <assert.h>
 
 using namespace std;
 
