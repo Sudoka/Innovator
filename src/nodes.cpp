@@ -269,19 +269,27 @@ IndexBuffer::unbind()
 
 // *************************************************************************************************
 
+LUA_NODE_SOURCE(VertexAttribute);
+
 class VertexAttribute::VertexAttributeP {
 public:
   VertexAttributeP(VertexAttribute * self) 
-    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, sizeof(vec3) * self->values.size(), self->values.data())) {}
+    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, 
+                                sizeof(vec3) * self->values.vec.size(), 
+                                self->values.vec.data())) {}
   ~VertexAttributeP() {}
   unique_ptr<GLBufferObject> buffer;
 };
 
 VertexAttribute::VertexAttribute()
-  : index(0),
-    divisor(0),
-    self(nullptr)
+  : self(nullptr)
 {
+  // TODO: default value for fields when registering
+  this->index.value = 0;
+  this->divisor.value = 0;
+  LUA_NODE_ADD_FIELD(&this->values, "values");
+  LUA_NODE_ADD_FIELD(&this->index, "index");
+  LUA_NODE_ADD_FIELD(&this->divisor, "divisor");
 }
 
 VertexAttribute::~VertexAttribute() {}
@@ -311,16 +319,16 @@ void
 VertexAttribute::bind()
 {
   self->buffer->bind();
-  glEnableVertexAttribArray(this->index);
-  glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glVertexAttribDivisor(this->index, this->divisor);
+  glEnableVertexAttribArray(this->index.value);
+  glVertexAttribPointer(this->index.value, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(this->index.value, this->divisor.value);
 }
 
 void
 VertexAttribute::unbind()
 {
   self->buffer->unbind();
-  glDisableVertexAttribArray(this->index);
+  glDisableVertexAttribArray(this->index.value);
 }
 
 // *************************************************************************************************
@@ -350,8 +358,8 @@ Draw::traverse(BoundingBoxAction * action)
   VertexAttribute * attrib = action->state->attribelem.get(0);
   if (attrib) {
     box3 bbox;
-    for (size_t i = 0; i < attrib->values.size(); i++) {
-      bbox.extendBy(attrib->values[i]);
+    for (size_t i = 0; i < attrib->values.vec.size(); i++) {
+      bbox.extendBy(attrib->values.vec[i]);
     }
     bbox.transform(action->state->modelmatrixelem.matrix);
     action->extendBy(bbox);
@@ -364,7 +372,7 @@ DrawArrays::execute(State * state)
 {
   VertexAttribute * attrib = state->attribelem.get(0);
   assert(attrib);
-  glDrawArrays(glMode(this->mode), 0, attrib->values.size());
+  glDrawArrays(glMode(this->mode), 0, attrib->values.vec.size());
 }
 
 // *************************************************************************************************
@@ -395,6 +403,6 @@ DrawArraysInstanced::execute(State * state)
   VertexAttribute * attrib = state->attribelem.get(0);
   unsigned int primcount = state->attribelem.getInstanceCount();
   assert(attrib && primcount > 0);
-  GLuint count = attrib->values.size();
+  GLuint count = attrib->values.vec.size();
   glDrawArraysInstanced(glMode(this->mode), 0, count, primcount);
 }

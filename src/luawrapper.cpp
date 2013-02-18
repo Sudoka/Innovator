@@ -93,16 +93,6 @@ static void getField(lua_State * L, vector<detail::tvec3<T>> & values, const cha
   lua_pop(L, 1);
 }
 
-static int LuaVertexAttribute(lua_State * L)
-{
-  VertexAttribute * self = new VertexAttribute;
-  getField<unsigned int>(L, self->index, "index");
-  getField<unsigned int>(L, self->divisor, "divisor");
-  getField<float>(L, self->values, "values");
-  lua_pushlightuserdata(L, self);
-  return 1;
-}
-
 static int LuaIndexBuffer(lua_State * L)
 {
   IndexBuffer * self = new IndexBuffer;
@@ -180,7 +170,7 @@ Lua::Lua()
   this->registerFunction("Separator", LuaSeparator);
   this->registerFunction("Transform", LuaNode<Transform>);
   this->registerFunction("IndexBuffer", LuaIndexBuffer);
-  this->registerFunction("VertexAttribute", LuaVertexAttribute);
+  this->registerFunction("VertexAttribute", LuaNode<VertexAttribute>);
   this->registerFunction("VertexShader", LuaNode<VertexShader>);
   this->registerFunction("GeometryShader", LuaNode<GeometryShader>);
   this->registerFunction("FragmentShader", LuaNode<FragmentShader>);

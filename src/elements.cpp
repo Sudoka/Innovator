@@ -43,15 +43,15 @@ AttributeElement::~AttributeElement()
 void
 AttributeElement::set(VertexAttribute * attribute)
 {
-  assert(attribute->index >= 0 && attribute->index < this->attributes.size());
-  if (attribute->divisor == 1) {
+  assert(attribute->index.value >= 0 && attribute->index.value < this->attributes.size());
+  if (attribute->divisor.value == 1) {
     if (this->instancecount > 0) { 
-      assert(this->instancecount == attribute->values.size());
+      assert(this->instancecount == attribute->values.vec.size());
     } else {
-      this->instancecount = attribute->values.size();
+      this->instancecount = attribute->values.vec.size();
     }
   }
-  this->attributes[attribute->index] = attribute;
+  this->attributes[attribute->index.value] = attribute;
 }
 
 void

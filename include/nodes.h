@@ -160,15 +160,17 @@ private:
 };
 
 class VertexAttribute : public Node {
+  LUA_NODE_HEADER(VertexAttribute);
 public:
   VertexAttribute();
   virtual ~VertexAttribute();
 
+  MFVec3f values;
+  SFUint32 index;
+  SFUint32 divisor;
+
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  std::vector<glm::vec3> values;
-  unsigned int index;
-  unsigned int divisor;
 
 private:
   void doAction(Action * action);
