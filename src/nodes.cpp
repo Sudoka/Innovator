@@ -143,12 +143,18 @@ Viewport::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-class Group::GroupP {
-public:
-  vector<Node::ptr> children;
-};
+LUA_NODE_SOURCE(Group);
 
-Group::Group() : self(new GroupP) {}
+void
+Group::initClass()
+{
+  LUA_NODE_INIT_CLASS(Group, "Group");
+}
+
+Group::Group() 
+{
+  LUA_NODE_ADD_FIELD_1(this->children);
+}
 Group::~Group() {}
 
 // *************************************************************************************************
@@ -156,30 +162,40 @@ Group::~Group() {}
 void
 Group::traverse(RenderAction * action)
 {
-  for (size_t i = 0; i < self->children.size(); i++) {
-    self->children[i]->traverse(action);
+  for (size_t i = 0; i < this->children.values.size(); i++) {
+    this->children.values[i]->traverse(action);
   }
 }
 
 void
 Group::traverse(BoundingBoxAction * action)
 {
-  for (size_t i = 0; i < self->children.size(); i++) {
-    self->children[i]->traverse(action);
+  for (size_t i = 0; i < this->children.values.size(); i++) {
+    this->children.values[i]->traverse(action);
   }
 }
 
 void 
 Group::addChild(Node::ptr child)
 {
-  self->children.push_back(child);
+  this->children.values.push_back(child);
 }
 
 // *************************************************************************************************
 
+LUA_NODE_SOURCE(Separator);
+
+void
+Separator::initClass()
+{
+  LUA_NODE_INIT_CLASS(Separator, "Separator");
+}
+
 Separator::Separator() 
   : boundingBoxCaching(0)
-{}
+{
+  LUA_NODE_ADD_FIELD_1(this->children);
+}
 
 Separator::~Separator() {}
 
@@ -203,10 +219,16 @@ Separator::traverse(BoundingBoxAction * action)
 
 LUA_NODE_SOURCE(Transform);
 
+void
+Transform::initClass()
+{
+  LUA_NODE_INIT_CLASS(Transform, "Transform");
+}
+
 Transform::Transform()
 {
-  LUA_NODE_ADD_FIELD(&this->translation, "translation");
-  LUA_NODE_ADD_FIELD(&this->scaleFactor, "scaleFactor");
+  LUA_NODE_ADD_FIELD_3(this->translation, "translation", vec3(0));
+  LUA_NODE_ADD_FIELD_3(this->scaleFactor, "scaleFactor", vec3(1));
 }
 
 Transform::~Transform() {}
@@ -233,17 +255,33 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+LUA_NODE_SOURCE(IndexBuffer);
+
+void
+IndexBuffer::initClass()
+{
+  LUA_NODE_INIT_CLASS(IndexBuffer, "IndexBuffer");
+}
+
+
 class IndexBuffer::IndexBufferP {
 public:
   IndexBufferP(IndexBuffer * self) 
-    : buffer(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, sizeof(ivec3) * self->values.size(), self->values.data()))  {}
+    : buffer(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, 
+                                GL_STATIC_DRAW, 
+                                sizeof(ivec3) * self->indices.vec.size(), 
+                                self->indices.vec.data()))  {}
   ~IndexBufferP() {}
 
   unique_ptr<GLBufferObject> buffer;
 };
 
 IndexBuffer::IndexBuffer()
-  : self(nullptr) {}
+  : self(nullptr) 
+{
+  LUA_NODE_ADD_FIELD_2(this->indices, "indices");
+}
+
 IndexBuffer::~IndexBuffer() {}
 
 void
@@ -271,6 +309,13 @@ IndexBuffer::unbind()
 
 LUA_NODE_SOURCE(VertexAttribute);
 
+void
+VertexAttribute::initClass()
+{
+  LUA_NODE_INIT_CLASS(VertexAttribute, "VertexAttribute");
+}
+
+
 class VertexAttribute::VertexAttributeP {
 public:
   VertexAttributeP(VertexAttribute * self) 
@@ -284,12 +329,9 @@ public:
 VertexAttribute::VertexAttribute()
   : self(nullptr)
 {
-  // TODO: default value for fields when registering
-  this->index.value = 0;
-  this->divisor.value = 0;
-  LUA_NODE_ADD_FIELD(&this->values, "values");
-  LUA_NODE_ADD_FIELD(&this->index, "index");
-  LUA_NODE_ADD_FIELD(&this->divisor, "divisor");
+  LUA_NODE_ADD_FIELD_2(this->values, "values");
+  LUA_NODE_ADD_FIELD_3(this->index, "index", 0);
+  LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
 }
 
 VertexAttribute::~VertexAttribute() {}
@@ -333,7 +375,7 @@ VertexAttribute::unbind()
 
 // *************************************************************************************************
 
-static GLenum glMode(Draw::Mode mode) 
+static GLenum glMode(int mode) 
 {
   switch (mode) {
   case Draw::POINTS: return GL_POINTS;
@@ -343,7 +385,11 @@ static GLenum glMode(Draw::Mode mode)
   }
 };
 
-Draw::Draw() : mode(POINTS) {}
+Draw::Draw() 
+{
+  LUA_NODE_ADD_FIELD_3(this->mode, "mode", Draw::POINTS);
+}
+
 Draw::~Draw() {}
 
 void
@@ -367,36 +413,72 @@ Draw::traverse(BoundingBoxAction * action)
 }
 
 // *************************************************************************************************
+
+LUA_NODE_SOURCE(DrawArrays);
+
+void
+DrawArrays::initClass()
+{
+  LUA_NODE_INIT_CLASS(DrawArrays, "DrawArrays");
+}
+
 void
 DrawArrays::execute(State * state)
 {
   VertexAttribute * attrib = state->attribelem.get(0);
   assert(attrib);
-  glDrawArrays(glMode(this->mode), 0, attrib->values.vec.size());
+  glDrawArrays(glMode(this->mode.value), 0, attrib->values.vec.size());
 }
 
 // *************************************************************************************************
+
+LUA_NODE_SOURCE(DrawElements);
+
+void
+DrawElements::initClass()
+{
+  LUA_NODE_INIT_CLASS(DrawElements, "DrawElements");
+}
+
 void
 DrawElements::execute(State * state)
 {
-  IndexBuffer * indices = state->attribelem.getIndexBuffer();
-  assert(indices);
-  GLuint num = indices->values.size() * sizeof(ivec3);
-  glDrawElements(glMode(this->mode), num, GL_UNSIGNED_INT, 0);
+  IndexBuffer * indexbuffer = state->attribelem.getIndexBuffer();
+  assert(indexbuffer);
+  GLuint num = indexbuffer->indices.vec.size() * sizeof(ivec3);
+  glDrawElements(glMode(this->mode.value), num, GL_UNSIGNED_INT, 0);
 }
 
 // *************************************************************************************************
+
+LUA_NODE_SOURCE(DrawElementsInstanced);
+
+void
+DrawElementsInstanced::initClass()
+{
+  LUA_NODE_INIT_CLASS(DrawElementsInstanced, "DrawElementsInstanced");
+}
+
 void
 DrawElementsInstanced::execute(State * state)
 {
-  IndexBuffer * indices = state->attribelem.getIndexBuffer();
+  IndexBuffer * indexbuffer = state->attribelem.getIndexBuffer();
   unsigned int primcount = state->attribelem.getInstanceCount();
-  assert(indices && primcount > 0);
-  GLuint count = indices->values.size() * sizeof(ivec3);
-  glDrawElementsInstanced(glMode(this->mode), count, GL_UNSIGNED_INT, 0, primcount);
+  assert(indexbuffer && primcount > 0);
+  GLuint count = indexbuffer->indices.vec.size() * sizeof(ivec3);
+  glDrawElementsInstanced(glMode(this->mode.value), count, GL_UNSIGNED_INT, 0, primcount);
 }
 
 // *************************************************************************************************
+
+LUA_NODE_SOURCE(DrawArraysInstanced);
+
+void
+DrawArraysInstanced::initClass()
+{
+  LUA_NODE_INIT_CLASS(DrawArraysInstanced, "DrawArraysInstanced");
+}
+
 void
 DrawArraysInstanced::execute(State * state)
 {
@@ -404,5 +486,5 @@ DrawArraysInstanced::execute(State * state)
   unsigned int primcount = state->attribelem.getInstanceCount();
   assert(attrib && primcount > 0);
   GLuint count = attrib->values.vec.size();
-  glDrawArraysInstanced(glMode(this->mode), 0, count, primcount);
+  glDrawArraysInstanced(glMode(this->mode.value), 0, count, primcount);
 }

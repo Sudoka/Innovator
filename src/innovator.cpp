@@ -55,6 +55,20 @@ Innovator::Innovator(int width, int height)
   glfwSetMousePosCallback(Innovator::mouseMovedCB);
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
 
+  DrawArrays::initClass();
+  DrawArraysInstanced::initClass();
+  DrawElements::initClass();
+  DrawElementsInstanced::initClass();
+  Program::initClass();
+  Group::initClass();
+  Separator::initClass();
+  Transform::initClass();
+  IndexBuffer::initClass();
+  VertexAttribute::initClass();
+  VertexShader::initClass();
+  GeometryShader::initClass();
+  FragmentShader::initClass();
+
   self->viewer->setSceneGraph(self->lua->readAll("../../src/scene.lua"));
 }
 
@@ -109,5 +123,4 @@ Lua *
 Innovator::lua()
 {
   return self->lua.get();
-}
-  
+}  

@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
-#include <glstate.h>
 #include <luanode.h>
 #include <fields.h>
 
@@ -13,40 +12,24 @@ class RenderAction;
 class ShaderProgram;
 class BoundingBoxAction;
 
-class FieldContainer {
-protected:
-  std::vector<Field*> fields;
-};
-
-class Node : public Bindable, public FieldContainer {
-public:
-  virtual ~Node() {}
-  virtual void traverse(RenderAction * action) = 0;
-  virtual void traverse(BoundingBoxAction * action) {}
-
-  virtual void bind() {}
-  virtual void unbind() {}
-
-  typedef std::shared_ptr<Node> ptr;
-};
-
 class Group : public Node {
+  LUA_NODE_HEADER(Group);
 public:
   Group();
   virtual ~Group();
+  static void initClass();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   void addChild(Node::ptr child);
   typedef std::shared_ptr<Group> ptr;
-private:
-  class GroupP;
-  std::unique_ptr<GroupP> self;
+  MFNode children;
 };
 
 class Camera : public Node {
 public:
   Camera();
   virtual ~Camera();
+  static void initClass();
   virtual void traverse(RenderAction * action);
   void zoom(float dz);
   void pan(const glm::vec2 & dx);
@@ -65,57 +48,63 @@ private:
 class Viewport : public Node {
 public:
   Viewport();
+  virtual ~Viewport();
+  static void initClass();
   glm::ivec2 origin;
   glm::ivec2 size;
-  virtual ~Viewport();
   virtual void traverse(RenderAction * action);
   typedef std::shared_ptr<Viewport> ptr;
 };
 
 class Separator : public Group {
+  LUA_NODE_HEADER(Separator);
 public:
   Separator();
   virtual ~Separator();
+  static void initClass();
   int boundingBoxCaching;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   typedef std::shared_ptr<Separator> ptr;
 };
 
-class ShaderObject : public FieldContainer {
+class ShaderObject : public Node {
 public:
-  virtual void attach(ShaderProgram * program) = 0;
+  ShaderObject(unsigned int type);
+  static void initClass();
   SFString source;
+  unsigned int type;
 };
 
 class VertexShader : public ShaderObject {
   LUA_NODE_HEADER(VertexShader);
 public:
   VertexShader();
-  virtual void attach(ShaderProgram * program);
+  static void initClass();
 };
 
 class GeometryShader : public ShaderObject {
   LUA_NODE_HEADER(GeometryShader);
 public:
   GeometryShader();
-  virtual void attach(ShaderProgram * program);
+  static void initClass();
 };
 
 class FragmentShader : public ShaderObject {
   LUA_NODE_HEADER(FragmentShader);
 public:
-FragmentShader();
-  virtual void attach(ShaderProgram * program);
+  FragmentShader();
+  static void initClass();
 };
 
 class Program : public Node {
+  LUA_NODE_HEADER(Program);
 public:
   Program();
   virtual ~Program();
-
-  std::string fileName;
-  std::vector<ShaderObject*> shaders;
+  static void initClass();
+  SFString fileName;
+  MFNode shaders;
 
   virtual void traverse(RenderAction * action);
   unsigned int getProgramId() const;
@@ -134,6 +123,7 @@ class Transform : public Node {
 public:
   Transform();
   virtual ~Transform();
+  static void initClass();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   SFVec3f translation;
@@ -143,12 +133,13 @@ private:
 };
 
 class IndexBuffer : public Node {
+  LUA_NODE_HEADER(IndexBuffer);
 public:
   IndexBuffer();
   virtual ~IndexBuffer();
-
+  static void initClass();
   virtual void traverse(RenderAction * action);
-  std::vector<glm::ivec3> values;
+  MFVec3i indices;
 
 private:
   friend class AttributeElement;
@@ -164,7 +155,7 @@ class VertexAttribute : public Node {
 public:
   VertexAttribute();
   virtual ~VertexAttribute();
-
+  static void initClass();
   MFVec3f values;
   SFUint32 index;
   SFUint32 divisor;
@@ -194,7 +185,7 @@ public:
     NUM_MODES
   };
 
-  Mode mode;
+  SFEnum mode;
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
@@ -202,21 +193,29 @@ public:
 };
 
 class DrawArrays : public Draw {
+  LUA_NODE_HEADER(DrawArrays);
 public:
+  static void initClass();
   virtual void execute(State * state);
 };
 
 class DrawArraysInstanced : public Draw {
+  LUA_NODE_HEADER(DrawArraysInstanced);
 public:
+  static void initClass();
   virtual void execute(State * state);
 };
 
 class DrawElements : public Draw {
+  LUA_NODE_HEADER(DrawElements);
 public:
+  static void initClass();
   virtual void execute(State * state);
 };
 
 class DrawElementsInstanced : public Draw {
+  LUA_NODE_HEADER(DrawElementsInstanced);
 public:
+  static void initClass();
   virtual void execute(State * state);
 };

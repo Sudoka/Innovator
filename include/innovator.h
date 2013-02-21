@@ -16,9 +16,7 @@ public:
   void loop();
 
   static void postError(const std::string & msg);
-
   static Lua * lua();
-
   class InnovatorP;
 private:
   static std::unique_ptr<InnovatorP> self;

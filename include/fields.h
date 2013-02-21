@@ -4,6 +4,7 @@
 #include <vector>
 #include <lua.hpp>
 #include <glm/glm.hpp>
+#include <node.h>
 
 class Field {
 public:
@@ -23,20 +24,51 @@ public:
   glm::vec3 value;
 };
 
-class SFFloat : public Field {
+template <typename T>
+class SFNumber : public Field {
 public:
-  virtual void read(lua_State * L);
-  float value;
+  T value;
 };
 
-class SFUint32 : public Field {
+class SFFloat : public SFNumber<float> {
 public:
   virtual void read(lua_State * L);
-  unsigned int value;
 };
 
-class MFVec3f : public Field {
+class SFUint32 : public SFNumber<unsigned int> {
 public:
   virtual void read(lua_State * L);
-  std::vector<glm::vec3> vec;
+};
+
+template <typename T>
+class MFVec3 : public Field {
+public:
+  std::vector<glm::detail::tvec3<T>> vec;
+};
+
+class MFVec3f : public MFVec3<float> {
+public:
+  virtual void read(lua_State * L);
+};
+
+class MFVec3i : public MFVec3<int> {
+public:
+  virtual void read(lua_State * L);
+};
+
+template <typename NodeType>
+class MFChild : public Field {
+public:
+  std::vector<std::shared_ptr<NodeType>> values;
+};
+
+class MFNode : public MFChild<Node> {
+public:
+  virtual void read(lua_State * L);
+};
+
+class SFEnum : public Field {
+public:
+  virtual void read(lua_State * L);
+  int value;
 };

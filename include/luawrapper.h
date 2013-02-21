@@ -2,7 +2,8 @@
 #include <string>
 #include <map>
 #include <lua.hpp>
-#include <nodes.h>
+
+class Separator;
 
 class Lua {
 public:
@@ -16,6 +17,6 @@ public:
   std::shared_ptr<Separator> readAll(const std::string & filename);
 
   lua_State * L;
-  typedef std::map<std::string, Draw::Mode> DrawModeMap;
+  typedef std::map<std::string, int> DrawModeMap;
   DrawModeMap drawmodes;
 };
