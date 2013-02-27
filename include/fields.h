@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <lua.hpp>
 #include <glm/glm.hpp>
 #include <node.h>
@@ -67,8 +68,9 @@ public:
   virtual void read(lua_State * L);
 };
 
-class SFEnum : public Field {
+class SFEnum : public SFNumber<int> {
 public:
   virtual void read(lua_State * L);
-  int value;
+  typedef std::map<std::string, int> Enums;
+  Enums enums;
 };

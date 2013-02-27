@@ -1,6 +1,6 @@
 #pragma once
+#include <memory>
 #include <string>
-#include <map>
 #include <lua.hpp>
 
 class Separator;
@@ -17,6 +17,4 @@ public:
   std::shared_ptr<Separator> readAll(const std::string & filename);
 
   lua_State * L;
-  typedef std::map<std::string, int> DrawModeMap;
-  DrawModeMap drawmodes;
 };

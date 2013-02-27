@@ -13,9 +13,6 @@ Lua::Lua()
   luaL_openlibs(L);
 
   this->dofile("../../src/file.lua");
-
-  this->drawmodes["POINTS"] = Draw::POINTS;
-  this->drawmodes["TRIANGLES"] = Draw::TRIANGLES;
 }
 
 Lua::~Lua()

@@ -1,6 +1,4 @@
 
-- lua viewer, renderaction apply?
-  - if so, lua owns the scene graph...
 
 - lua file format!
   - probably use table of tables for multi value vec3 fields

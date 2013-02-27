@@ -43,7 +43,9 @@ _class_ * _class_::createInstance(lua_State * L) \
   _field_.value = _value_; \
   fields.push_back(&_field_); \
 
-
 #define LUA_NODE_INIT_CLASS(_class_, _name_) \
   RegisterClass<_class_>(_name_); \
+
+#define LUA_ENUM_DEFINE_VALUE(_field_, _name_, _value_) \
+  _field_.enums[_name_] = _value_; \
 

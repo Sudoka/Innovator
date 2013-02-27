@@ -128,10 +128,9 @@ SFEnum::read(lua_State * L)
   ReadString(L, name, "mode");
   if (name.empty()) return;
   
-  Lua * lua = Innovator::lua();
-  if (lua->drawmodes.find(name) == lua->drawmodes.end()) {
-    Innovator::postError("Invalid Draw mode: " + name);
+  if (this->enums.find(name) == this->enums.end()) {
+    Innovator::postError("Invalid Enum: " + name);
     return;
   }
-  this->value = lua->drawmodes[name];
+  this->value = this->enums[name];
 }

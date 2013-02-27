@@ -388,6 +388,8 @@ static GLenum glMode(int mode)
 Draw::Draw() 
 {
   LUA_NODE_ADD_FIELD_3(this->mode, "mode", Draw::POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", Draw::POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", Draw::TRIANGLES);
 }
 
 Draw::~Draw() {}
