@@ -80,12 +80,6 @@ static void ReadChildren(lua_State * L, vector<shared_ptr<ChildType>> & children
   }
 }
 
-static void ReadBuffer(lua_State * L, shared_ptr<Buffer> & buffer)
-{
-  luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
-
-}
-
 void
 SFString::read(lua_State * L)
 {
@@ -123,15 +117,16 @@ MFVec3i::read(lua_State * L)
 }
 
 void
-SFBuffer::read(lua_State * L)
+SFNode::read(lua_State * L)
 {
   luaL_checktype(L, -1, LUA_TTABLE);
-  lua_getfield(L, -1, this->name.c_str());
+  int n = luaL_len(L, -1);
+  assert(n == 1);
+  lua_rawgeti(L, -1, 1);
   if (!lua_isnil(L, -1)) {
     luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
-    Buffer * buffer = static_cast<Buffer *>(lua_touserdata(L, -1));
-    assert(buffer);
-    this->value.reset(buffer);
+    Node * node = static_cast<Node *>(lua_touserdata(L, -1));
+    this->value.reset(node);
   }
   lua_pop(L, 1);
 }

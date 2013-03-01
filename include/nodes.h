@@ -171,8 +171,7 @@ public:
   VertexAttribute();
   virtual ~VertexAttribute();
   static void initClass();
-  MFVec3f values;
-  SFBuffer buffer;
+  SFNode buffer;
   SFUint32 index;
   SFUint32 divisor;
 
@@ -184,10 +183,6 @@ private:
   friend class AttributeElement;
   virtual void bind();
   virtual void unbind();
-
-private:
-  class VertexAttributeP;
-  std::unique_ptr<VertexAttributeP> self;
 };
 
 class Draw : public Node {

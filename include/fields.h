@@ -59,10 +59,10 @@ public:
   virtual void read(lua_State * L);
 };
 
-class SFBuffer : public Field {
+class SFNode : public Field {
 public:
   virtual void read(lua_State * L);
-  std::shared_ptr<Buffer> value;
+  std::shared_ptr<Node> value;
 };
 
 template <typename NodeType>

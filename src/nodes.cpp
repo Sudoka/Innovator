@@ -264,8 +264,9 @@ Buffer::initClass()
 
 class Buffer::BufferP {
 public:
-  BufferP(Buffer * self) 
-    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, self->values.vec)) {}
+  BufferP(Buffer * self) {
+    buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, self->values.vec));
+  }
   ~BufferP() {}
 
   unique_ptr<GLBufferObject> buffer;
@@ -273,7 +274,6 @@ public:
 
 Buffer::Buffer()
 {
-  self.reset(new BufferP(this));
   LUA_NODE_ADD_FIELD_2(this->values, "values");
 }
 
@@ -284,6 +284,9 @@ Buffer::~Buffer()
 void
 Buffer::bind()
 {
+  if (self.get() == nullptr) {
+    self.reset(new BufferP(this));
+  }
   self->buffer->bind();
 }
 
@@ -353,23 +356,9 @@ VertexAttribute::initClass()
 }
 
 
-class VertexAttribute::VertexAttributeP {
-public:
-  VertexAttributeP(VertexAttribute * self) 
-  {
-    if (self->values.vec.size() > 0) {
-      this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, self->values.vec));
-    }
-  }
-  ~VertexAttributeP() {}
-  unique_ptr<GLBufferObject> buffer;
-};
-
 VertexAttribute::VertexAttribute()
-  : self(nullptr)
 {
-  LUA_NODE_ADD_FIELD_2(this->values, "values");
-  LUA_NODE_ADD_FIELD_2(this->buffer, "buffer");
+  LUA_NODE_ADD_FIELD_1(this->buffer);
   LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
   LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
 }
@@ -379,9 +368,6 @@ VertexAttribute::~VertexAttribute() {}
 void
 VertexAttribute::doAction(Action * action)
 {
-  if (self.get() == nullptr) {
-    self.reset(new VertexAttributeP(this));
-  }
   action->state->attribelem.set(this);
 }
 
@@ -400,12 +386,7 @@ VertexAttribute::traverse(BoundingBoxAction * action)
 void
 VertexAttribute::bind()
 {
-  if (this->buffer.value.get()) {
-    this->buffer.value->bind();
-  } else {
-    self->buffer->bind();
-  }
-
+  this->buffer.value->bind();
   glEnableVertexAttribArray(this->index.value);
   glVertexAttribPointer(this->index.value, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glVertexAttribDivisor(this->index.value, this->divisor.value);
@@ -414,11 +395,7 @@ VertexAttribute::bind()
 void
 VertexAttribute::unbind()
 {
-  if (this->buffer.value.get()) {
-    this->buffer.value->unbind();
-  } else {
-    self->buffer->unbind();
-  }
+  this->buffer.value->unbind();
   glDisableVertexAttribArray(this->index.value);
 }
 
@@ -443,9 +420,11 @@ void
 Draw::traverse(BoundingBoxAction * action)
 {
   VertexAttribute * attrib = action->state->attribelem.get(0);
+  Buffer * buffer = static_cast<Buffer*>(attrib->buffer.value.get());
+  assert(buffer);
   box3 bbox;
-  for (size_t i = 0; i < attrib->values.vec.size(); i++) {
-    bbox.extendBy(attrib->values.vec[i]);
+  for (size_t i = 0; i < buffer->values.vec.size(); i++) {
+    bbox.extendBy(buffer->values.vec[i]);
   }
   bbox.transform(action->state->modelmatrixelem.matrix);
   action->extendBy(bbox);

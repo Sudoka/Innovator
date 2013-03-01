@@ -29,7 +29,7 @@ public:
   int button;
   bool redraw;
   bool mousedown;
-  Group::ptr root;
+  Separator::ptr root;
   Camera::ptr camera;
   Viewport::ptr viewport;
   unique_ptr<RenderAction> renderaction;

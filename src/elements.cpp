@@ -45,10 +45,11 @@ AttributeElement::set(VertexAttribute * attribute)
 {
   assert(attribute->index.value >= 0 && attribute->index.value < this->attributes.size());
   if (attribute->divisor.value == 1) {
+    Buffer * buffer = static_cast<Buffer*>(attribute->buffer.value.get());
     if (this->instancecount > 0) { 
-      assert(this->instancecount == attribute->values.vec.size());
+      assert(this->instancecount == buffer->values.vec.size());
     } else {
-      this->instancecount = attribute->values.vec.size();
+      this->instancecount = buffer->values.vec.size();
     }
   }
   this->attributes[attribute->index.value] = attribute;
@@ -83,8 +84,9 @@ AttributeElement::getInstanceCount() const
 unsigned int 
 AttributeElement::getAttributeCount() const
 {
-  VertexAttribute * attrib = this->get(0);
-  return attrib->values.vec.size();  
+  VertexAttribute * attribute = this->get(0);
+  Buffer * buffer = static_cast<Buffer*>(attribute->buffer.value.get());
+  return buffer->values.vec.size();
 }
 
 void
