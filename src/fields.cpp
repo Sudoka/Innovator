@@ -1,6 +1,7 @@
 #include <fields.h>
 #include <innovator.h>
 #include <luawrapper.h>
+#include <nodes.h>
 
 using namespace std;
 using namespace glm;
@@ -79,6 +80,12 @@ static void ReadChildren(lua_State * L, vector<shared_ptr<ChildType>> & children
   }
 }
 
+static void ReadBuffer(lua_State * L, shared_ptr<Buffer> & buffer)
+{
+  luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
+
+}
+
 void
 SFString::read(lua_State * L)
 {
@@ -113,6 +120,20 @@ void
 MFVec3i::read(lua_State * L)
 {
   ReadMFVec3<int>(L, this->vec, this->name.c_str());
+}
+
+void
+SFBuffer::read(lua_State * L)
+{
+  luaL_checktype(L, -1, LUA_TTABLE);
+  lua_getfield(L, -1, this->name.c_str());
+  if (!lua_isnil(L, -1)) {
+    luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
+    Buffer * buffer = static_cast<Buffer *>(lua_touserdata(L, -1));
+    assert(buffer);
+    this->value.reset(buffer);
+  }
+  lua_pop(L, 1);
 }
 
 void

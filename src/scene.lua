@@ -83,6 +83,13 @@ void main()
 
 local t = (1 + 5^0.5) / 2; -- golden ratio
 
+local normalbuffer = Buffer {
+   values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
+              0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
+              t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
+}
+
+
 root = Separator {
    
    IndexBuffer {
@@ -103,8 +110,10 @@ root = Separator {
    VertexAttribute {
       location = 1,
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
-                  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
-                  t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
+                 0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
+                 t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 },
+
+      buffer = normalbuffer
    },
    -- instances
    VertexAttribute {

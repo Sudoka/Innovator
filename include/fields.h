@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <node.h>
 
+class Buffer;
+
 class Field {
 public:
   virtual void read(lua_State * L) = 0;
@@ -55,6 +57,12 @@ public:
 class MFVec3i : public MFVec3<int> {
 public:
   virtual void read(lua_State * L);
+};
+
+class SFBuffer : public Field {
+public:
+  virtual void read(lua_State * L);
+  std::shared_ptr<Buffer> value;
 };
 
 template <typename NodeType>

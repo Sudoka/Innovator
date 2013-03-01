@@ -254,6 +254,47 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+LUA_NODE_SOURCE(Buffer);
+
+void
+Buffer::initClass()
+{
+  LUA_NODE_INIT_CLASS(Buffer, "Buffer");
+}
+
+class Buffer::BufferP {
+public:
+  BufferP(Buffer * self) 
+    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, self->values.vec)) {}
+  ~BufferP() {}
+
+  unique_ptr<GLBufferObject> buffer;
+};
+
+Buffer::Buffer()
+{
+  self.reset(new BufferP(this));
+  LUA_NODE_ADD_FIELD_2(this->values, "values");
+}
+
+Buffer::~Buffer()
+{
+}
+
+void
+Buffer::bind()
+{
+  self->buffer->bind();
+}
+
+void
+Buffer::unbind()
+{
+  self->buffer->unbind();
+}
+
+// *************************************************************************************************
+
 LUA_NODE_SOURCE(IndexBuffer);
 
 void
@@ -315,7 +356,11 @@ VertexAttribute::initClass()
 class VertexAttribute::VertexAttributeP {
 public:
   VertexAttributeP(VertexAttribute * self) 
-    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, self->values.vec)) {}
+  {
+    if (self->values.vec.size() > 0) {
+      this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, self->values.vec));
+    }
+  }
   ~VertexAttributeP() {}
   unique_ptr<GLBufferObject> buffer;
 };
@@ -324,6 +369,7 @@ VertexAttribute::VertexAttribute()
   : self(nullptr)
 {
   LUA_NODE_ADD_FIELD_2(this->values, "values");
+  LUA_NODE_ADD_FIELD_2(this->buffer, "buffer");
   LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
   LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
 }
@@ -354,7 +400,12 @@ VertexAttribute::traverse(BoundingBoxAction * action)
 void
 VertexAttribute::bind()
 {
-  self->buffer->bind();
+  if (this->buffer.value.get()) {
+    this->buffer.value->bind();
+  } else {
+    self->buffer->bind();
+  }
+
   glEnableVertexAttribArray(this->index.value);
   glVertexAttribPointer(this->index.value, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glVertexAttribDivisor(this->index.value, this->divisor.value);
@@ -363,7 +414,11 @@ VertexAttribute::bind()
 void
 VertexAttribute::unbind()
 {
-  self->buffer->unbind();
+  if (this->buffer.value.get()) {
+    this->buffer.value->unbind();
+  } else {
+    self->buffer->unbind();
+  }
   glDisableVertexAttribArray(this->index.value);
 }
 

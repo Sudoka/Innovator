@@ -130,6 +130,23 @@ private:
   void doAction(Action * action);
 };
 
+class Buffer : public Node {
+  LUA_NODE_HEADER(Buffer);
+public:
+  Buffer();
+  virtual ~Buffer();
+  static void initClass();
+  MFVec3f values;
+
+private:
+  friend class VertexAttribute;
+  virtual void bind();
+  virtual void unbind();
+
+  class BufferP;
+  std::unique_ptr<BufferP> self;
+};
+
 class IndexBuffer : public Node {
   LUA_NODE_HEADER(IndexBuffer);
 public:
@@ -155,6 +172,7 @@ public:
   virtual ~VertexAttribute();
   static void initClass();
   MFVec3f values;
+  SFBuffer buffer;
   SFUint32 index;
   SFUint32 divisor;
 
