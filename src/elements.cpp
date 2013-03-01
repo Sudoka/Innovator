@@ -54,16 +54,24 @@ AttributeElement::set(VertexAttribute * attribute)
   this->attributes[attribute->index.value] = attribute;
 }
 
+VertexAttribute * 
+AttributeElement::get(const int index) const
+{
+  assert(this->attributes.size() > (size_t) index);
+  return this->attributes[index];
+}
+
 void
 AttributeElement::set(IndexBuffer * indices)
 {
   this->indices = indices;
 }
 
-IndexBuffer * 
-AttributeElement::getIndexBuffer() const
+unsigned int
+AttributeElement::getIndexCount() const
 {
-  return this->indices;
+  assert(this->indices);
+  return this->indices->indices.vec.size() * sizeof(ivec3);
 }
 
 unsigned int
@@ -72,11 +80,11 @@ AttributeElement::getInstanceCount() const
   return this->instancecount;
 }
 
-VertexAttribute * 
-AttributeElement::get(const int index) const
+unsigned int 
+AttributeElement::getAttributeCount() const
 {
-  assert (this->attributes.size() > (size_t) index);
-  return this->attributes[index];
+  VertexAttribute * attrib = this->get(0);
+  return attrib->values.vec.size();  
 }
 
 void

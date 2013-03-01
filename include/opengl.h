@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <vector>
-#include <glstate.h>
+#include <node.h>
 
 struct DrawElementsIndirectBuffer
 {
@@ -35,59 +35,21 @@ public:
   GLuint id;
 };
 
-class BindBufferBase {
-public:
-  BindBufferBase(GLenum target, GLuint index, GLuint buffer)
-    : target(target) {
-    glBindBufferBase(this->target, index, buffer);
-  }
-  ~BindBufferBase() {
-    glBindBuffer(this->target, 0);
-  }
-private:
-  GLenum target;
-};
-
-class BindBufferRange {
-public:
-  BindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)
-    : target(target) {
-    glBindBufferRange(this->target, index, buffer, offset, size);
-  }
-  ~BindBufferRange() {
-    glBindBuffer(this->target, 0);
-  }
-private:
-  GLenum target;
-};
-
 class GLBufferObject : public Bindable {
 public:
   GLBufferObject(GLenum target);
   GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
+  GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data);
+  GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data);
   ~GLBufferObject();
 
-  void setValues(GLenum usage, GLsizeiptr size, const GLvoid * data);
-  void set1Value(int index, GLuint value);
+  void construct(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data);
 
   virtual void bind();
   virtual void unbind();
 
   GLenum target;
   GLuint buffer;
-};
-
-class GLVertexAttribute : public GLBufferObject {
-public:
-  GLVertexAttribute(const std::vector<glm::vec3> & data, GLuint index, GLuint divisor = 0);
-  ~GLVertexAttribute();
-
-  virtual void bind();
-  virtual void unbind();
-
-private:
-  GLuint index;
-  GLuint divisor;
 };
 
 class TransformFeedback : public Bindable {

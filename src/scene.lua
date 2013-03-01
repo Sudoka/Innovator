@@ -94,21 +94,21 @@ root = Separator {
 
    -- vertices
    VertexAttribute {
-      index = 0,
+      location = 0,
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
                   0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
                   t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
    },
    -- normals
    VertexAttribute {
-      index = 1,
+      location = 1,
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
                   0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
                   t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
    },
    -- instances
    VertexAttribute {
-      index = 2,
+      location = 2,
       divisor = 1,
       values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 }
    },

@@ -192,7 +192,6 @@ Separator::initClass()
 }
 
 Separator::Separator() 
-  : boundingBoxCaching(0)
 {
   LUA_NODE_ADD_FIELD_1(this->children);
 }
@@ -267,10 +266,7 @@ IndexBuffer::initClass()
 class IndexBuffer::IndexBufferP {
 public:
   IndexBufferP(IndexBuffer * self) 
-    : buffer(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, 
-                                GL_STATIC_DRAW, 
-                                sizeof(ivec3) * self->indices.vec.size(), 
-                                self->indices.vec.data()))  {}
+    : buffer(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, self->indices.vec)) {}
   ~IndexBufferP() {}
 
   unique_ptr<GLBufferObject> buffer;
@@ -319,9 +315,7 @@ VertexAttribute::initClass()
 class VertexAttribute::VertexAttributeP {
 public:
   VertexAttributeP(VertexAttribute * self) 
-    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, 
-                                sizeof(vec3) * self->values.vec.size(), 
-                                self->values.vec.data())) {}
+    : buffer(new GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, self->values.vec)) {}
   ~VertexAttributeP() {}
   unique_ptr<GLBufferObject> buffer;
 };
@@ -330,7 +324,7 @@ VertexAttribute::VertexAttribute()
   : self(nullptr)
 {
   LUA_NODE_ADD_FIELD_2(this->values, "values");
-  LUA_NODE_ADD_FIELD_3(this->index, "index", 0);
+  LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
   LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
 }
 
@@ -375,16 +369,6 @@ VertexAttribute::unbind()
 
 // *************************************************************************************************
 
-static GLenum glMode(int mode) 
-{
-  switch (mode) {
-  case Draw::POINTS: return GL_POINTS;
-  case Draw::TRIANGLES: return GL_TRIANGLES;
-  default: 
-    throw std::runtime_error("invalid draw mode: " + std::to_string((__int64)mode));
-  }
-};
-
 Draw::Draw() 
 {
   LUA_NODE_ADD_FIELD_3(this->mode, "mode", Draw::POINTS);
@@ -404,14 +388,12 @@ void
 Draw::traverse(BoundingBoxAction * action)
 {
   VertexAttribute * attrib = action->state->attribelem.get(0);
-  if (attrib) {
-    box3 bbox;
-    for (size_t i = 0; i < attrib->values.vec.size(); i++) {
-      bbox.extendBy(attrib->values.vec[i]);
-    }
-    bbox.transform(action->state->modelmatrixelem.matrix);
-    action->extendBy(bbox);
+  box3 bbox;
+  for (size_t i = 0; i < attrib->values.vec.size(); i++) {
+    bbox.extendBy(attrib->values.vec[i]);
   }
+  bbox.transform(action->state->modelmatrixelem.matrix);
+  action->extendBy(bbox);
 }
 
 // *************************************************************************************************
@@ -427,9 +409,8 @@ DrawArrays::initClass()
 void
 DrawArrays::execute(State * state)
 {
-  VertexAttribute * attrib = state->attribelem.get(0);
-  assert(attrib);
-  glDrawArrays(glMode(this->mode.value), 0, attrib->values.vec.size());
+  unsigned int count = state->attribelem.getAttributeCount();
+  glDrawArrays(this->mode.value, 0, count);
 }
 
 // *************************************************************************************************
@@ -445,10 +426,8 @@ DrawElements::initClass()
 void
 DrawElements::execute(State * state)
 {
-  IndexBuffer * indexbuffer = state->attribelem.getIndexBuffer();
-  assert(indexbuffer);
-  GLuint num = indexbuffer->indices.vec.size() * sizeof(ivec3);
-  glDrawElements(glMode(this->mode.value), num, GL_UNSIGNED_INT, 0);
+  unsigned int elemcount = state->attribelem.getIndexCount();
+  glDrawElements(this->mode.value, elemcount, GL_UNSIGNED_INT, 0);
 }
 
 // *************************************************************************************************
@@ -464,11 +443,9 @@ DrawElementsInstanced::initClass()
 void
 DrawElementsInstanced::execute(State * state)
 {
-  IndexBuffer * indexbuffer = state->attribelem.getIndexBuffer();
+  unsigned int elemcount = state->attribelem.getIndexCount();
   unsigned int primcount = state->attribelem.getInstanceCount();
-  assert(indexbuffer && primcount > 0);
-  GLuint count = indexbuffer->indices.vec.size() * sizeof(ivec3);
-  glDrawElementsInstanced(glMode(this->mode.value), count, GL_UNSIGNED_INT, 0, primcount);
+  glDrawElementsInstanced(this->mode.value, elemcount, GL_UNSIGNED_INT, 0, primcount);
 }
 
 // *************************************************************************************************
@@ -484,9 +461,7 @@ DrawArraysInstanced::initClass()
 void
 DrawArraysInstanced::execute(State * state)
 {
-  VertexAttribute * attrib = state->attribelem.get(0);
+  unsigned int count = state->attribelem.getAttributeCount();
   unsigned int primcount = state->attribelem.getInstanceCount();
-  assert(attrib && primcount > 0);
-  GLuint count = attrib->values.vec.size();
-  glDrawArraysInstanced(glMode(this->mode.value), 0, count, primcount);
+  glDrawArraysInstanced(this->mode.value, 0, count, primcount);
 }

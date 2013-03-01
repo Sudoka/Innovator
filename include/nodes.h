@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
@@ -29,7 +30,6 @@ class Camera : public Node {
 public:
   Camera();
   virtual ~Camera();
-  static void initClass();
   virtual void traverse(RenderAction * action);
   void zoom(float dz);
   void pan(const glm::vec2 & dx);
@@ -62,7 +62,6 @@ public:
   Separator();
   virtual ~Separator();
   static void initClass();
-  int boundingBoxCaching;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   typedef std::shared_ptr<Separator> ptr;
@@ -71,7 +70,6 @@ public:
 class ShaderObject : public Node {
 public:
   ShaderObject(unsigned int type);
-  static void initClass();
   SFString source;
   unsigned int type;
 };
@@ -180,9 +178,8 @@ public:
   virtual ~Draw();
 
   enum Mode {
-    POINTS,
-    TRIANGLES,
-    NUM_MODES
+    POINTS = GL_POINTS,
+    TRIANGLES = GL_TRIANGLES
   };
 
   SFEnum mode;

@@ -4,7 +4,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <GL/glew.h>
-#include <glstate.h>
+#include <node.h>
 
 class State;
 class IndexBuffer;
@@ -32,8 +32,9 @@ public:
   void set(VertexAttribute * attribute);
   void set(IndexBuffer * indices);
 
-  IndexBuffer * getIndexBuffer() const;
+  unsigned int getIndexCount() const;
   unsigned int getInstanceCount() const;
+  unsigned int getAttributeCount() const;
   VertexAttribute * get(const int index) const;
 
 private:

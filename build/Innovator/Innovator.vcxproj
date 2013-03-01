@@ -130,7 +130,6 @@
     <ClInclude Include="..\..\include\box3.h" />
     <ClInclude Include="..\..\include\elements.h" />
     <ClInclude Include="..\..\include\fields.h" />
-    <ClInclude Include="..\..\include\glstate.h" />
     <ClInclude Include="..\..\include\innovator.h" />
     <ClInclude Include="..\..\include\luanode.h" />
     <ClInclude Include="..\..\include\luawrapper.h" />

@@ -14,32 +14,35 @@ GLBufferObject::GLBufferObject(GLenum target)
   glGenBuffers(1, &buffer);
 }
 
-GLBufferObject::GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
-  : target(target)
+GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data)
 {
-  glGenBuffers(1, &this->buffer);
-  this->setValues(usage, size, data);
+  this->construct(target, usage, sizeof(vec3) * data.size(), data.data());
+}
+
+GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data)
+{
+  this->construct(target, usage, sizeof(ivec3) * data.size(), data.data());
+}
+
+GLBufferObject::GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
+{
+  this->construct(target, usage, size, data);
 }
 
 GLBufferObject::~GLBufferObject()
 {
-  glBindBuffer(this->target, this->buffer);
+  glBindBuffer(this->target, 0);
   glDeleteBuffers(1, &this->buffer);
 }
 
 void
-GLBufferObject::setValues(GLenum usage, GLsizeiptr size, const GLvoid * data)
+GLBufferObject::construct(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
 {
+  this->target = target;
+  glGenBuffers(1, &this->buffer);
+
   this->bind();
   glBufferData(this->target, size, data, usage);
-  this->unbind();
-}
-
-void
-GLBufferObject::set1Value(int index, GLuint value)
-{
-  this->bind();
-  glBufferSubData(this->target, sizeof(GLuint) * index, sizeof(GLuint), &value);
   this->unbind();
 }
 
@@ -53,33 +56,6 @@ void
 GLBufferObject::unbind()
 {
   glBindBuffer(this->target, 0);
-}
-
-GLVertexAttribute::GLVertexAttribute(const std::vector<vec3> & data, GLuint index, GLuint divisor)
-  : index(index),
-    divisor(divisor),
-    GLBufferObject(GL_ARRAY_BUFFER, GL_STATIC_DRAW, sizeof(vec3) * data.size(), (GLvoid*)data.data())
-{
-}
-
-GLVertexAttribute::~GLVertexAttribute()
-{
-}
-
-void
-GLVertexAttribute::bind()
-{
-  GLBufferObject::bind();
-  glEnableVertexAttribArray(this->index);
-  glVertexAttribPointer(this->index, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glVertexAttribDivisor(this->index, this->divisor);
-}
-
-void
-GLVertexAttribute::unbind()
-{
-  GLBufferObject::unbind();
-  glDisableVertexAttribArray(this->index);
 }
 
 TransformFeedback::TransformFeedback(GLuint buffer, GLenum mode)
@@ -128,8 +104,6 @@ ShaderProgram::~ShaderProgram()
 void 
 ShaderProgram::attach(const char * source, GLenum type)
 {
-  if (source == nullptr) return;
-
   GLuint shader = glCreateShader(type);
   glShaderSource(shader, 1, &source, NULL);
   glCompileShader(shader);
