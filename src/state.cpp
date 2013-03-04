@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <nodes.h>
+#include <opengl.h>
 
 using namespace std;
 
@@ -10,7 +11,7 @@ public:
   StateP() {}
   ~StateP() {}
 
-  vector<Program*> programstack;
+  vector<ShaderProgram*> programstack;
   vector<MatrixElement> modelmatrixstack;
   vector<ViewportElement> viewportstack;
   vector<AttributeElement> attributestack;

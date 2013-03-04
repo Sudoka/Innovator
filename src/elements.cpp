@@ -1,6 +1,7 @@
 #include <elements.h>
 #include <state.h>
 #include <nodes.h>
+#include <opengl.h>
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace glm;
@@ -23,16 +24,16 @@ ViewportElement::updateGL(State * state)
 void
 MatrixElement::updateGL(State * state)
 {
-  GLuint loc = glGetUniformLocation(state->program->getProgramId(), this->name.c_str());
+  GLuint loc = glGetUniformLocation(state->program->id, this->name.c_str());
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
 }
 
 AttributeElement::AttributeElement()
-  : indices(nullptr),
-    instancecount(0)
+  : indexcount(0), 
+    attribcount(0),
+    instancecount(0),
+    arraybuffer(nullptr)
 {
-  this->attributes.resize(8);
-  std::fill(this->attributes.begin(), this->attributes.end(), nullptr);
 }
 
 AttributeElement::~AttributeElement()
@@ -41,76 +42,47 @@ AttributeElement::~AttributeElement()
 }
 
 void
-AttributeElement::set(VertexAttribute * attribute)
+AttributeElement::push(Bindable * bindable)
 {
-  assert(attribute->index.value >= 0 && attribute->index.value < this->attributes.size());
-  if (attribute->divisor.value == 1) {
-    Buffer * buffer = static_cast<Buffer*>(attribute->buffer.value.get());
-    if (this->instancecount > 0) { 
-      assert(this->instancecount == buffer->values.vec.size());
-    } else {
-      this->instancecount = buffer->values.vec.size();
-    }
-  }
-  this->attributes[attribute->index.value] = attribute;
-}
-
-VertexAttribute * 
-AttributeElement::get(const int index) const
-{
-  assert(this->attributes.size() > (size_t) index);
-  return this->attributes[index];
+  this->statevec.push_back(bindable);
 }
 
 void
-AttributeElement::set(IndexBuffer * indices)
+AttributeElement::push(GLBufferObject * buffer)
 {
-  this->indices = indices;
+  if (buffer->target == GL_ELEMENT_ARRAY_BUFFER) {
+    this->indexcount = buffer->count;
+  } 
+  if (buffer->target == GL_ARRAY_BUFFER) {
+    this->arraybuffer = buffer;
+  }
+  this->statevec.push_back(buffer);
 }
 
-unsigned int
-AttributeElement::getIndexCount() const
+void
+AttributeElement::push(GLVertexAttribute * attrib)
 {
-  assert(this->indices);
-  return this->indices->indices.vec.size() * sizeof(ivec3);
-}
-
-unsigned int
-AttributeElement::getInstanceCount() const
-{
-  return this->instancecount;
-}
-
-unsigned int 
-AttributeElement::getAttributeCount() const
-{
-  VertexAttribute * attribute = this->get(0);
-  Buffer * buffer = static_cast<Buffer*>(attribute->buffer.value.get());
-  return buffer->values.vec.size();
+  assert(this->arraybuffer);
+  if (attrib->divisor == 1) {
+    this->instancecount = this->arraybuffer->count;
+  } else {
+    this->attribcount = this->arraybuffer->count;
+  }
+  this->statevec.push_back(attrib);
 }
 
 void
 AttributeElement::bind()
 {
-  if (this->indices) {
-    this->indices->bind();
-  }
-  for (unsigned int i = 0; i < this->attributes.size(); i++) {
-    if (this->attributes[i]) {
-      this->attributes[i]->bind();
-    }
+  for (unsigned int i = 0; i < this->statevec.size(); i++) {
+    this->statevec[i]->bind();
   }
 }
 
 void
 AttributeElement::unbind()
 {
-  if (this->indices) {
-    this->indices->unbind();
-  }
-  for (unsigned int i = 0; i < this->attributes.size(); i++) {
-    if (this->attributes[i]) {
-      this->attributes[i]->unbind();
-    }
+  for (unsigned int i = 0; i < this->statevec.size(); i++) {
+    this->statevec[i]->unbind();
   }
 }

@@ -7,8 +7,8 @@
 #include <node.h>
 
 class State;
-class IndexBuffer;
-class VertexAttribute;
+class GLBufferObject;
+class GLVertexAttribute;
 
 class MatrixElement {
 public:
@@ -29,13 +29,14 @@ class AttributeElement : public Bindable {
 public:
   AttributeElement();
   ~AttributeElement();
-  void set(VertexAttribute * attribute);
-  void set(IndexBuffer * indices);
 
-  unsigned int getIndexCount() const;
-  unsigned int getInstanceCount() const;
-  unsigned int getAttributeCount() const;
-  VertexAttribute * get(const int index) const;
+  void push(Bindable * bindable);
+  void push(GLBufferObject * buffer);
+  void push(GLVertexAttribute * attrib);
+
+  unsigned int indexcount;
+  unsigned int attribcount;
+  unsigned int instancecount;
 
 private:
   friend class Bindable;
@@ -43,7 +44,6 @@ private:
   virtual void unbind();
 
 private:
-  unsigned int instancecount;
-  IndexBuffer * indices;
-  std::vector<VertexAttribute *> attributes;
+  GLBufferObject * arraybuffer;
+  std::vector<Bindable *> statevec;
 };

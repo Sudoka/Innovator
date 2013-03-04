@@ -15,18 +15,15 @@ GLBufferObject::GLBufferObject(GLenum target)
 }
 
 GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data)
+  : count(data.size())
 {
-  this->construct(target, usage, sizeof(vec3) * data.size(), data.data());
+  this->construct(target, usage, sizeof(vec3) * count, data.data());
 }
 
 GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data)
+  : count(data.size() * 3) // FIXME...
 {
-  this->construct(target, usage, sizeof(ivec3) * data.size(), data.data());
-}
-
-GLBufferObject::GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
-{
-  this->construct(target, usage, size, data);
+  this->construct(target, usage, sizeof(ivec3) * count, data.data());
 }
 
 GLBufferObject::~GLBufferObject()
@@ -57,6 +54,37 @@ GLBufferObject::unbind()
 {
   glBindBuffer(this->target, 0);
 }
+
+// *************************************************************************************************
+
+GLVertexAttribute::GLVertexAttribute(GLuint index, GLuint divisor)
+  : index(index), 
+    divisor(divisor),
+    size(3),
+    type(GL_FLOAT)
+{
+}
+
+GLVertexAttribute::~GLVertexAttribute()
+{
+}
+
+void
+GLVertexAttribute::bind()
+{
+  glEnableVertexAttribArray(this->index);
+  glVertexAttribPointer(this->index, this->size, this->type, GL_FALSE, 0, 0);
+  glVertexAttribDivisor(this->index, this->divisor);
+}
+
+void
+GLVertexAttribute::unbind()
+{
+  glDisableVertexAttribArray(this->index);
+}
+
+
+// *************************************************************************************************
 
 TransformFeedback::TransformFeedback(GLuint buffer, GLenum mode)
   : mode(mode)
@@ -138,4 +166,16 @@ ShaderProgram::link()
     Innovator::postError("Shader::link(): failed to link program: " + string(log));
     delete [] log;
   }
+}
+
+void
+ShaderProgram::bind()
+{
+  glUseProgram(this->id);
+}
+
+void
+ShaderProgram::unbind()
+{
+  glUseProgram(0);
 }

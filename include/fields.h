@@ -7,8 +7,6 @@
 #include <glm/glm.hpp>
 #include <node.h>
 
-class Buffer;
-
 class Field {
 public:
   virtual void read(lua_State * L) = 0;

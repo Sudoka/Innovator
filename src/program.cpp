@@ -81,23 +81,5 @@ Program::traverse(RenderAction * action)
   if (self.get() == nullptr) {
     self.reset(new ProgramP(this));
   }
-  action->state->program = this;
-}
-
-unsigned int
-Program::getProgramId() const
-{
-  return self->program->id;
-}
-
-void
-Program::bind()
-{
-  glUseProgram(self->program->id);
-}
-
-void
-Program::unbind()
-{
-  glUseProgram(0);
+  action->state->program = self->program.get();
 }

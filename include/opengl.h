@@ -26,19 +26,21 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
-class ShaderProgram {
+class ShaderProgram : public Bindable {
 public:
   ShaderProgram();
   ~ShaderProgram();
   void attach(const char * shader, GLenum type);
   void link();
   GLuint id;
+private:
+  virtual void bind();
+  virtual void unbind();
 };
 
 class GLBufferObject : public Bindable {
 public:
   GLBufferObject(GLenum target);
-  GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
   GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data);
   GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data);
   ~GLBufferObject();
@@ -50,6 +52,21 @@ public:
 
   GLenum target;
   GLuint buffer;
+  GLuint count;
+};
+
+class GLVertexAttribute : public Bindable {
+public:
+  GLVertexAttribute(GLuint index, GLuint divisor);
+  ~GLVertexAttribute();
+
+  virtual void bind();
+  virtual void unbind();
+
+  GLuint index;
+  GLuint divisor;
+  GLenum type;
+  GLint size;
 };
 
 class TransformFeedback : public Bindable {

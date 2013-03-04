@@ -4,7 +4,7 @@
 #include <elements.h>
 
 class Draw;
-class Program;
+class ShaderProgram;
 
 class State {
 public:
@@ -29,7 +29,7 @@ public:
   void pop();
   void flush(Draw * draw);
 
-  Program * program;
+  ShaderProgram * program;
   AttributeElement attribelem;
   MatrixElement viewmatrixelem;
   MatrixElement modelmatrixelem;

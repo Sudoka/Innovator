@@ -141,7 +141,7 @@ void
 SFEnum::read(lua_State * L)
 {
   string name;
-  ReadString(L, name, "mode");
+  ReadString(L, name, this->name.c_str());
   if (name.empty()) return;
   
   if (this->enums.find(name) == this->enums.end()) {

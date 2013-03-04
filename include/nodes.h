@@ -6,6 +6,10 @@
 #include <vector>
 #include <luanode.h>
 #include <fields.h>
+#include <elements.h>
+
+class GLBufferObject;
+class GLVertexAttribute;
 
 class State;
 class Action;
@@ -108,10 +112,6 @@ public:
   unsigned int getProgramId() const;
 
 private:
-  virtual void bind();
-  virtual void unbind();
-
-private:
   class ProgramP;
   std::unique_ptr<ProgramP> self;
 };
@@ -130,39 +130,45 @@ private:
   void doAction(Action * action);
 };
 
+template <typename MFValue>
 class Buffer : public Node {
   LUA_NODE_HEADER(Buffer);
 public:
   Buffer();
   virtual ~Buffer();
-  static void initClass();
-  MFVec3f values;
+  enum Target {
+    ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER,
+    ARRAY         = GL_ARRAY_BUFFER
+  };
+  enum Usage {
+    STATIC_DRAW  = GL_STATIC_DRAW,
+    DYNAMIC_DRAW = GL_DYNAMIC_DRAW
+  };
+  SFEnum target;
+  SFEnum usage;
+  MFValue values;
 
-private:
-  friend class VertexAttribute;
-  virtual void bind();
-  virtual void unbind();
+  virtual void traverse(RenderAction * action);
 
-  class BufferP;
-  std::unique_ptr<BufferP> self;
+protected:
+  void doAction(Action * action);
+
+protected:
+  friend class AttributeElement;
+  std::unique_ptr<GLBufferObject> buffer;
 };
 
-class IndexBuffer : public Node {
-  LUA_NODE_HEADER(IndexBuffer);
+class Buffer3f : public Buffer<MFVec3f> {
+  LUA_NODE_HEADER(Buffer3f);
 public:
-  IndexBuffer();
-  virtual ~IndexBuffer();
   static void initClass();
-  virtual void traverse(RenderAction * action);
-  MFVec3i indices;
+  virtual void traverse(BoundingBoxAction * action);
+};
 
-private:
-  friend class AttributeElement;
-  virtual void bind();
-  virtual void unbind();
-
-  class IndexBufferP;
-  std::unique_ptr<IndexBufferP> self;
+class Buffer3i : public Buffer<MFVec3i> {
+  LUA_NODE_HEADER(Buffer3i);
+public:
+  static void initClass();
 };
 
 class VertexAttribute : public Node {
@@ -171,7 +177,6 @@ public:
   VertexAttribute();
   virtual ~VertexAttribute();
   static void initClass();
-  SFNode buffer;
   SFUint32 index;
   SFUint32 divisor;
 
@@ -180,9 +185,7 @@ public:
 
 private:
   void doAction(Action * action);
-  friend class AttributeElement;
-  virtual void bind();
-  virtual void unbind();
+  std::unique_ptr<GLVertexAttribute> attribute;
 };
 
 class Draw : public Node {
@@ -198,7 +201,6 @@ public:
   SFEnum mode;
 
   virtual void traverse(RenderAction * action);
-  virtual void traverse(BoundingBoxAction * action);
   virtual void execute(State * state) = 0;
 };
 
