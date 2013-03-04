@@ -14,8 +14,20 @@ class GLVertexAttribute;
 class State;
 class Action;
 class RenderAction;
-class ShaderProgram;
 class BoundingBoxAction;
+
+class FieldContainer {
+protected:
+  std::vector<Field*> fields;
+};
+
+class Node : public FieldContainer {
+public:
+  virtual ~Node() {}
+  virtual void traverse(RenderAction * action) {}
+  virtual void traverse(BoundingBoxAction * action) {}
+  typedef std::shared_ptr<Node> ptr;
+};
 
 class Group : public Node {
   LUA_NODE_HEADER(Group);
@@ -109,7 +121,6 @@ public:
   MFNode shaders;
 
   virtual void traverse(RenderAction * action);
-  unsigned int getProgramId() const;
 
 private:
   class ProgramP;
@@ -152,21 +163,18 @@ public:
 
 protected:
   void doAction(Action * action);
-
-protected:
-  friend class AttributeElement;
   std::unique_ptr<GLBufferObject> buffer;
 };
 
-class Buffer3f : public Buffer<MFVec3f> {
-  LUA_NODE_HEADER(Buffer3f);
+class Vec3Buffer : public Buffer<MFVec3f> {
+  LUA_NODE_HEADER(Vec3Buffer);
 public:
   static void initClass();
   virtual void traverse(BoundingBoxAction * action);
 };
 
-class Buffer3i : public Buffer<MFVec3i> {
-  LUA_NODE_HEADER(Buffer3i);
+class IntBuffer : public Buffer<MFint> {
+  LUA_NODE_HEADER(IntBuffer);
 public:
   static void initClass();
 };
@@ -177,8 +185,8 @@ public:
   VertexAttribute();
   virtual ~VertexAttribute();
   static void initClass();
-  SFUint32 index;
-  SFUint32 divisor;
+  SFint index;
+  SFint divisor;
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);

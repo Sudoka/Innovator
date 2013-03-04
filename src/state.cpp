@@ -11,7 +11,7 @@ public:
   StateP() {}
   ~StateP() {}
 
-  vector<ShaderProgram*> programstack;
+  vector<GLProgram*> programstack;
   vector<MatrixElement> modelmatrixstack;
   vector<ViewportElement> viewportstack;
   vector<AttributeElement> attributestack;

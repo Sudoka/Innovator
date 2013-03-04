@@ -48,6 +48,24 @@ static void ReadVec3(lua_State * L, detail::tvec3<T> & vec, const char * name)
 }
 
 template <typename T>
+static void ReadMFNumber(lua_State * L, vector<T> & values, const char * name)
+{
+  luaL_checktype(L, -1, LUA_TTABLE);
+  lua_getfield(L, -1, name);
+  int n = luaL_len(L, -1);
+
+  values.resize(n);
+  T * dataptr = (T *) values.data();
+  
+  for (int i = 1; i <= n; i++) {
+    lua_rawgeti(L, -1, i);
+    dataptr[i-1] = (T)luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+  }
+  lua_pop(L, 1);
+}
+
+template <typename T>
 static void ReadMFVec3(lua_State * L, vector<detail::tvec3<T>> & values, const char * name)
 {
   luaL_checktype(L, -1, LUA_TTABLE);
@@ -93,15 +111,27 @@ SFVec3f::read(lua_State * L)
 }
 
 void
-SFUint32::read(lua_State * L)
+SFint::read(lua_State * L)
 {
-  ReadNumber<unsigned int>(L, this->value, this->name.c_str());
+  ReadNumber<int>(L, this->value, this->name.c_str());
 }
 
 void
 SFFloat::read(lua_State * L)
 {
   ReadNumber<float>(L, this->value, this->name.c_str());
+}
+
+void
+MFint::read(lua_State * L)
+{
+  ReadMFNumber<int>(L, this->vec, this->name.c_str());
+}
+
+void
+MFFloat::read(lua_State * L)
+{
+  ReadMFNumber<float>(L, this->vec, this->name.c_str());
 }
 
 void

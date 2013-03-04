@@ -48,7 +48,7 @@ FragmentShader::FragmentShader()
 class Program::ProgramP {
 public:
   ProgramP(Program * self) 
-    : program(new ShaderProgram()) 
+    : program(new GLProgram()) 
   {
     for (unsigned int i = 0; i < self->shaders.values.size(); i++) {
       ShaderObject * shader = static_cast<ShaderObject*>(self->shaders.values[i].get());
@@ -57,7 +57,7 @@ public:
     program->link();
   }
   ~ProgramP() {}
-  unique_ptr<ShaderProgram> program;
+  unique_ptr<GLProgram> program;
 };
 
 LUA_NODE_SOURCE(Program);

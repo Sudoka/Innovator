@@ -21,9 +21,15 @@ GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec
 }
 
 GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data)
-  : count(data.size() * 3) // FIXME...
+  : count(data.size())
 {
   this->construct(target, usage, sizeof(ivec3) * count, data.data());
+}
+
+GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<int> & data)
+  : count(data.size())
+{
+  this->construct(target, usage, sizeof(int) * count, data.data());
 }
 
 GLBufferObject::~GLBufferObject()
@@ -86,7 +92,7 @@ GLVertexAttribute::unbind()
 
 // *************************************************************************************************
 
-TransformFeedback::TransformFeedback(GLuint buffer, GLenum mode)
+GLTransformFeedback::GLTransformFeedback(GLuint buffer, GLenum mode)
   : mode(mode)
 {
   glGenTransformFeedbacks(1, &this->id);
@@ -96,13 +102,13 @@ TransformFeedback::TransformFeedback(GLuint buffer, GLenum mode)
 
 }
 
-TransformFeedback::~TransformFeedback()
+GLTransformFeedback::~GLTransformFeedback()
 {
   glDeleteTransformFeedbacks(1, &this->id);
 }
 
 void
-TransformFeedback::bind()
+GLTransformFeedback::bind()
 {
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
   glEnable(GL_RASTERIZER_DISCARD);
@@ -110,7 +116,7 @@ TransformFeedback::bind()
 }
 
 void
-TransformFeedback::unbind()
+GLTransformFeedback::unbind()
 {
   glEndTransformFeedback();
   glDisable(GL_RASTERIZER_DISCARD);
@@ -119,18 +125,18 @@ TransformFeedback::unbind()
 
 // *************************************************************************************************
 
-ShaderProgram::ShaderProgram() 
+GLProgram::GLProgram() 
   : id(glCreateProgram())
 {
 }
 
-ShaderProgram::~ShaderProgram()
+GLProgram::~GLProgram()
 {
   glDeleteProgram(this->id);
 }
 
 void 
-ShaderProgram::attach(const char * source, GLenum type)
+GLProgram::attach(const char * source, GLenum type)
 {
   GLuint shader = glCreateShader(type);
   glShaderSource(shader, 1, &source, NULL);
@@ -152,7 +158,7 @@ ShaderProgram::attach(const char * source, GLenum type)
 }
 
 void
-ShaderProgram::link()
+GLProgram::link()
 {
   glLinkProgram(this->id);
   
@@ -169,13 +175,13 @@ ShaderProgram::link()
 }
 
 void
-ShaderProgram::bind()
+GLProgram::bind()
 {
   glUseProgram(this->id);
 }
 
 void
-ShaderProgram::unbind()
+GLProgram::unbind()
 {
   glUseProgram(0);
 }

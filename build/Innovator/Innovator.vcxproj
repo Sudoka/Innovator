@@ -133,7 +133,6 @@
     <ClInclude Include="..\..\include\innovator.h" />
     <ClInclude Include="..\..\include\luanode.h" />
     <ClInclude Include="..\..\include\luawrapper.h" />
-    <ClInclude Include="..\..\include\node.h" />
     <ClInclude Include="..\..\include\nodes.h" />
     <ClInclude Include="..\..\include\opengl.h" />
     <ClInclude Include="..\..\include\state.h" />

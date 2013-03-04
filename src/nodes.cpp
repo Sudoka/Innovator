@@ -262,12 +262,10 @@ Buffer<MFValue>::Buffer()
   : buffer(nullptr)
 {
   LUA_NODE_ADD_FIELD_2(this->values, "values");
-
   LUA_NODE_ADD_FIELD_3(this->target, "target", Buffer::ARRAY);
+  LUA_NODE_ADD_FIELD_3(this->usage, "usage", Buffer::STATIC_DRAW);
   LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", Buffer::ARRAY);
   LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", Buffer::ELEMENT_ARRAY);
-
-  LUA_NODE_ADD_FIELD_3(this->usage, "usage", Buffer::STATIC_DRAW);
   LUA_ENUM_DEFINE_VALUE(this->usage, "STATIC_DRAW", Buffer::STATIC_DRAW);
   LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", Buffer::DYNAMIC_DRAW);
 }
@@ -293,16 +291,16 @@ Buffer<MFValue>::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Buffer3f);
+LUA_NODE_SOURCE(Vec3Buffer);
 
 void
-Buffer3f::initClass()
+Vec3Buffer::initClass()
 {
-  LUA_NODE_INIT_CLASS(Buffer3f, "Buffer3f");
+  LUA_NODE_INIT_CLASS(Vec3Buffer, "Vec3Buffer");
 }
 
 void
-Buffer3f::traverse(BoundingBoxAction * action)
+Vec3Buffer::traverse(BoundingBoxAction * action)
 {
   if (this->target.value == ARRAY) {
     this->doAction(action);
@@ -317,12 +315,13 @@ Buffer3f::traverse(BoundingBoxAction * action)
 
 
 // *************************************************************************************************
-LUA_NODE_SOURCE(Buffer3i);
+
+LUA_NODE_SOURCE(IntBuffer);
 
 void
-Buffer3i::initClass()
+IntBuffer::initClass()
 {
-  LUA_NODE_INIT_CLASS(Buffer3i, "Buffer3i");
+  LUA_NODE_INIT_CLASS(IntBuffer, "IntBuffer");
 }
 
 // *************************************************************************************************

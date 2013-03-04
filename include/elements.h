@@ -4,7 +4,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <GL/glew.h>
-#include <node.h>
+#include <opengl.h>
 
 class State;
 class GLBufferObject;

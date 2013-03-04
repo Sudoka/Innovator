@@ -1,16 +1,29 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 #include <lua.hpp>
 #include <glm/glm.hpp>
-#include <node.h>
+
+class Node;
 
 class Field {
 public:
   virtual void read(lua_State * L) = 0;
   std::string name;
+};
+
+template <typename T>
+class SField : public Field {
+public:
+  T value;
+};
+
+template <typename T>
+class MField : public Field {
+public:
+  std::vector<T> vec;
 };
 
 class SFString : public Field {
@@ -25,34 +38,32 @@ public:
   glm::vec3 value;
 };
 
-template <typename T>
-class SFNumber : public Field {
-public:
-  T value;
-};
-
-class SFFloat : public SFNumber<float> {
+class SFFloat : public SField<float> {
 public:
   virtual void read(lua_State * L);
 };
 
-class SFUint32 : public SFNumber<unsigned int> {
+class SFint : public SField<int> {
 public:
   virtual void read(lua_State * L);
 };
 
-template <typename T>
-class MFVec3 : public Field {
-public:
-  std::vector<glm::detail::tvec3<T>> vec;
-};
-
-class MFVec3f : public MFVec3<float> {
+class MFint : public MField<int> {
 public:
   virtual void read(lua_State * L);
 };
 
-class MFVec3i : public MFVec3<int> {
+class MFFloat : public MField<float> {
+public:
+  virtual void read(lua_State * L);
+};
+
+class MFVec3f : public MField<glm::vec3> {
+public:
+  virtual void read(lua_State * L);
+};
+
+class MFVec3i : public MField<glm::ivec3> {
 public:
   virtual void read(lua_State * L);
 };
@@ -74,7 +85,7 @@ public:
   virtual void read(lua_State * L);
 };
 
-class SFEnum : public SFNumber<int> {
+class SFEnum : public SField<int> {
 public:
   virtual void read(lua_State * L);
   typedef std::map<std::string, int> Enums;

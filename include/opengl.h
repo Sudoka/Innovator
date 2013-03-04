@@ -3,7 +3,24 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <vector>
-#include <node.h>
+
+class Bindable {
+public:
+  virtual void bind() = 0;
+  virtual void unbind() = 0;
+};
+
+class BindScope {
+public:
+  BindScope(Bindable * b) : bindable(b) {
+    this->bindable->bind();
+  }
+  ~BindScope() {
+    this->bindable->unbind();
+  }
+private:
+  Bindable * bindable;
+};
 
 struct DrawElementsIndirectBuffer
 {
@@ -26,10 +43,10 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
-class ShaderProgram : public Bindable {
+class GLProgram : public Bindable {
 public:
-  ShaderProgram();
-  ~ShaderProgram();
+  GLProgram();
+  ~GLProgram();
   void attach(const char * shader, GLenum type);
   void link();
   GLuint id;
@@ -43,6 +60,8 @@ public:
   GLBufferObject(GLenum target);
   GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data);
   GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data);
+  GLBufferObject(GLenum target, GLenum usage, std::vector<int> & data);
+
   ~GLBufferObject();
 
   void construct(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data);
@@ -69,10 +88,10 @@ public:
   GLint size;
 };
 
-class TransformFeedback : public Bindable {
+class GLTransformFeedback : public Bindable {
 public:
-  TransformFeedback(GLuint buffer, GLenum mode = GL_POINTS);
-  ~TransformFeedback();
+  GLTransformFeedback(GLuint buffer, GLenum mode = GL_POINTS);
+  ~GLTransformFeedback();
 
   virtual void bind();
   virtual void unbind();
