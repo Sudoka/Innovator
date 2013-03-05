@@ -32,6 +32,12 @@ GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<int> & d
   this->construct(target, usage, sizeof(int) * count, data.data());
 }
 
+GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<float> & data)
+  : count(data.size())
+{
+  this->construct(target, usage, sizeof(float) * count, data.data());
+}
+
 GLBufferObject::~GLBufferObject()
 {
   glBindBuffer(this->target, 0);

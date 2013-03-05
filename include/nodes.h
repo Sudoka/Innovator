@@ -37,28 +37,8 @@ public:
   static void initClass();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  void addChild(Node::ptr child);
   typedef std::shared_ptr<Group> ptr;
   MFNode children;
-};
-
-class Camera : public Node {
-public:
-  Camera();
-  virtual ~Camera();
-  virtual void traverse(RenderAction * action);
-  void zoom(float dz);
-  void pan(const glm::vec2 & dx);
-  void orbit(const glm::vec2 & dx);
-  void moveTo(const glm::vec3 & position);
-  void lookAt(const glm::vec3 & focalpoint);
-  void viewAll(Node::ptr root);
-  glm::vec3 getFocalDir() const;
-  void perspective(float fovy, float aspect, float near, float far);
-  typedef std::shared_ptr<Camera> ptr;
-private:
-  class CameraP;
-  std::unique_ptr<CameraP> self;
 };
 
 class Viewport : public Node {
@@ -75,12 +55,29 @@ public:
 class Separator : public Group {
   LUA_NODE_HEADER(Separator);
 public:
-  Separator();
-  virtual ~Separator();
   static void initClass();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   typedef std::shared_ptr<Separator> ptr;
+};
+
+class Camera : public Node {
+public:
+  Camera();
+  virtual ~Camera();
+  virtual void traverse(RenderAction * action);
+  void zoom(float dz);
+  void pan(const glm::vec2 & dx);
+  void orbit(const glm::vec2 & dx);
+  void moveTo(const glm::vec3 & position);
+  void lookAt(const glm::vec3 & focalpoint);
+  void viewAll(Separator::ptr root);
+  glm::vec3 getFocalDir() const;
+  void perspective(float fovy, float aspect, float near, float far);
+  typedef std::shared_ptr<Camera> ptr;
+private:
+  class CameraP;
+  std::unique_ptr<CameraP> self;
 };
 
 class ShaderObject : public Node {
@@ -143,10 +140,10 @@ private:
 
 template <typename MFValue>
 class Buffer : public Node {
-  LUA_NODE_HEADER(Buffer);
 public:
   Buffer();
   virtual ~Buffer();
+  static void initClass();
   enum Target {
     ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER,
     ARRAY         = GL_ARRAY_BUFFER
@@ -160,20 +157,22 @@ public:
   MFValue values;
 
   virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
 
 protected:
   void doAction(Action * action);
   std::unique_ptr<GLBufferObject> buffer;
 };
 
-class Vec3Buffer : public Buffer<MFVec3f> {
-  LUA_NODE_HEADER(Vec3Buffer);
+class FloatBuffer : public Buffer<MFFloat> {
+  LUA_NODE_HEADER(FloatBuffer);
 public:
   static void initClass();
+  virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
 };
 
-class IntBuffer : public Buffer<MFint> {
+class IntBuffer : public Buffer<MFInt> {
   LUA_NODE_HEADER(IntBuffer);
 public:
   static void initClass();
@@ -185,8 +184,8 @@ public:
   VertexAttribute();
   virtual ~VertexAttribute();
   static void initClass();
-  SFint index;
-  SFint divisor;
+  SFInt index;
+  SFInt divisor;
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);

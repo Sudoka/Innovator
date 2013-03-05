@@ -61,6 +61,7 @@ public:
   GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data);
   GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data);
   GLBufferObject(GLenum target, GLenum usage, std::vector<int> & data);
+  GLBufferObject(GLenum target, GLenum usage, std::vector<float> & data);
 
   ~GLBufferObject();
 

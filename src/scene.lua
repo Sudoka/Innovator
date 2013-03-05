@@ -92,7 +92,8 @@ root = Separator {
                  10, 1, 6, 11, 0, 9, 2, 11, 9, 5, 2,  9, 11, 2, 7 }
    },
 
-   Vec3Buffer {
+   FloatBuffer {
+      target = "ARRAY",
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
                  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
                  t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
@@ -101,11 +102,17 @@ root = Separator {
    VertexAttribute { location = 0 },
    VertexAttribute { location = 1 },
 
-   Vec3Buffer { 
+   FloatBuffer { 
+      target = "ARRAY",
       values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
    },
 
-   VertexAttribute { location = 2, divisor = 1 },
+   VertexAttribute { 
+      size = 3, 
+      type = "FLOAT", 
+      location = 2, 
+      divisor = 1 
+   },
 
    Program {
       VertexShader   { source = vertex },

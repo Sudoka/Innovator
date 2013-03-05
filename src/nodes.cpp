@@ -67,9 +67,11 @@ Camera::lookAt(const vec3 & focalpoint)
 }
 
 void
-Camera::viewAll(Node::ptr root)
+Camera::viewAll(Separator::ptr root)
 {
+  size_t numchildren = root->children.values.size();
   BoundingBoxAction action;
+
   action.apply(root);
   box3 box = action.getBoundingBox();
   float focaldist = box.size();
@@ -175,12 +177,6 @@ Group::traverse(BoundingBoxAction * action)
   }
 }
 
-void 
-Group::addChild(Node::ptr child)
-{
-  this->children.values.push_back(child);
-}
-
 // *************************************************************************************************
 
 LUA_NODE_SOURCE(Separator);
@@ -190,13 +186,6 @@ Separator::initClass()
 {
   LUA_NODE_INIT_CLASS(Separator, "Separator");
 }
-
-Separator::Separator() 
-{
-  LUA_NODE_ADD_FIELD_1(this->children);
-}
-
-Separator::~Separator() {}
 
 void
 Separator::traverse(RenderAction * action)
@@ -254,9 +243,6 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-template <typename MFValue>
-LUA_NODE_SOURCE(Buffer<MFValue>);
-
 template <typename MFValue> 
 Buffer<MFValue>::Buffer()
   : buffer(nullptr)
@@ -283,36 +269,42 @@ Buffer<MFValue>::doAction(Action * action)
   }
   action->state->attribelem.push(this->buffer.get());
 }
+
 template <typename MFValue> void
 Buffer<MFValue>::traverse(RenderAction * action)
 {
   this->doAction(action);
 }
 
+template <typename MFValue> void
+Buffer<MFValue>::traverse(BoundingBoxAction * action)
+{
+  this->doAction(action);
+}
+
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Vec3Buffer);
+LUA_NODE_SOURCE(FloatBuffer);
 
 void
-Vec3Buffer::initClass()
+FloatBuffer::initClass()
 {
-  LUA_NODE_INIT_CLASS(Vec3Buffer, "Vec3Buffer");
+  LUA_NODE_INIT_CLASS(FloatBuffer, "FloatBuffer");
 }
 
 void
-Vec3Buffer::traverse(BoundingBoxAction * action)
+FloatBuffer::traverse(RenderAction * action)
 {
-  if (this->target.value == ARRAY) {
-    this->doAction(action);
-    box3 bbox;
-    for (size_t i = 0; i < this->values.vec.size(); i++) {
-      bbox.extendBy(this->values.vec[i]);
-    }
-    bbox.transform(action->state->modelmatrixelem.matrix);
-    action->extendBy(bbox);
-  }
+  Buffer<MFFloat>::traverse(action);
+  action->state->buffer = this;
 }
 
+void
+FloatBuffer::traverse(BoundingBoxAction * action)
+{
+  Buffer<MFFloat>::traverse(action);
+  action->state->buffer = this;
+}
 
 // *************************************************************************************************
 
@@ -362,7 +354,31 @@ VertexAttribute::traverse(RenderAction * action)
 void
 VertexAttribute::traverse(BoundingBoxAction * action)
 {
-  this->doAction(action);
+  assert(action->state->buffer);
+  FloatBuffer * buffer = action->state->buffer;
+  float * values = buffer->values.vec.data();
+    
+  if (this->divisor.value == 0 && this->index.value == 0) {
+    box3 bbox;
+    for (size_t i = 0; i < buffer->values.vec.size(); i+=3) {
+      bbox.extendBy(vec3(values[i + 0],
+                         values[i + 1],
+                         values[i + 2]));
+    }
+    bbox.transform(action->state->modelmatrixelem.matrix);
+    action->extendBy(bbox);
+  } else if (this->divisor.value == 1) {
+    box3 bbox;
+    for (size_t i = 0; i < buffer->values.vec.size(); i+=3) {
+      vec3 pos = vec3(values[i + 0],
+                      values[i + 1],
+                      values[i + 2]);
+      bbox.extendBy(pos + action->getBoundingBox().min);
+      bbox.extendBy(pos + action->getBoundingBox().max);
+    }
+    bbox.transform(action->state->modelmatrixelem.matrix);
+    action->extendBy(bbox);
+  }
 }
 
 // *************************************************************************************************

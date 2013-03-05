@@ -8,7 +8,7 @@ public:
   Viewer(int width, int height);
   ~Viewer();
 
-  void setSceneGraph(Node::ptr root);
+  void setSceneGraph(Separator::ptr root);
   void renderGL();
 
   void resize(int width, int height);

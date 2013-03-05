@@ -111,7 +111,7 @@ SFVec3f::read(lua_State * L)
 }
 
 void
-SFint::read(lua_State * L)
+SFInt::read(lua_State * L)
 {
   ReadNumber<int>(L, this->value, this->name.c_str());
 }
@@ -123,7 +123,7 @@ SFFloat::read(lua_State * L)
 }
 
 void
-MFint::read(lua_State * L)
+MFInt::read(lua_State * L)
 {
   ReadMFNumber<int>(L, this->vec, this->name.c_str());
 }

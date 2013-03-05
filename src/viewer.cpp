@@ -73,12 +73,12 @@ Viewer::renderGL()
 }
 
 void
-Viewer::setSceneGraph(Node::ptr root)
+Viewer::setSceneGraph(Separator::ptr root)
 {
   self->root.reset(new Separator);
-  self->root->addChild(self->camera);
-  self->root->addChild(self->viewport);
-  self->root->addChild(root);
+  self->root->children.values.push_back(self->camera);
+  self->root->children.values.push_back(self->viewport);
+  self->root->children.values.push_back(root);
   self->camera->viewAll(root);
 }
 

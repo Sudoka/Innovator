@@ -18,7 +18,7 @@ public:
 };
 
 State::State()
-  : self(new StateP)
+  : self(new StateP), program(nullptr), buffer(nullptr)
 {
   this->viewmatrixelem.name = "ViewMatrix";
   this->modelmatrixelem.name = "ModelMatrix";

@@ -43,12 +43,12 @@ public:
   virtual void read(lua_State * L);
 };
 
-class SFint : public SField<int> {
+class SFInt : public SField<int> {
 public:
   virtual void read(lua_State * L);
 };
 
-class MFint : public MField<int> {
+class MFInt : public MField<int> {
 public:
   virtual void read(lua_State * L);
 };

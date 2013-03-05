@@ -5,6 +5,7 @@
 
 class Draw;
 class GLProgram;
+class FloatBuffer;
 
 class State {
 public:
@@ -30,6 +31,7 @@ public:
   void flush(Draw * draw);
 
   GLProgram * program;
+  FloatBuffer * buffer;
   AttributeElement attribelem;
   MatrixElement viewmatrixelem;
   MatrixElement modelmatrixelem;
