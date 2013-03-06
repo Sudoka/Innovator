@@ -29,12 +29,10 @@ MatrixElement::updateGL(State * state)
 }
 
 VertexElement::VertexElement()
-  : indexcount(0),
-    vertexcount(0),
-    instancecount(0), 
-    arraybuffer(nullptr),
-    elementbuffer(nullptr)
- {}
+  : arraybuffer(nullptr),
+    elementbuffer(nullptr),
+    instancebuffer(nullptr) {}
+
 VertexElement::~VertexElement() {}
 
 void
@@ -46,87 +44,59 @@ VertexElement::set(ArrayBuffer * buffer)
 void
 VertexElement::set(ElementBuffer * buffer)
 {
-  this->indexcount = buffer->values.vec.size();
   this->elementbuffer = buffer;
+  this->statevec.insert(this->statevec.begin(), buffer->buffer.get());
 }
 
 void 
 VertexElement::set(VertexAttribute * attrib)
 {
   ArrayBuffer * buffer = attrib->buffer.value.get();
-  if (!buffer) {
+
+  if (buffer == nullptr) {
     buffer = this->arraybuffer;
   }
-  assert(buffer);
-  this->statevec.push_back(buffer->buffer.get());
-
   if (attrib->index.value == 0) {
-    this->vertexcount = this->arraybuffer->values.vec.size();
+    this->vertexbuffer = buffer;
   }
   if (attrib->divisor.value == 1) {
-    this->instancecount = 8;
+    this->instancebuffer = buffer;
   }
-  this->attributes.push_back(attrib);
-  this->statevec.push_back(attrib->attribute.get());
+
+  this->statevec.push_back(buffer->buffer.get());
+  this->statevec.push_back(attrib->glattrib.get());
 }
 
-VertexAttribute * 
-VertexElement::get(unsigned int index)
+ArrayBuffer * 
+VertexElement::getVertexBuffer() const
 {
-  for (size_t i = 0; i < this->attributes.size(); i++) {
-    if (this->attributes[i]->index.value == index) {
-      return this->attributes[i];
-    }
-  }
-  return nullptr;
+  return this->vertexbuffer;
 }
 
-unsigned int 
-VertexElement::getIndexCount() const
+ArrayBuffer * 
+VertexElement::getInstanceBuffer() const
 {
-  return this->indexcount;
+  return this->instancebuffer;
 }
 
-unsigned int
-VertexElement::getVertexCount() const
+ElementBuffer * 
+VertexElement::getElementBuffer() const
 {
-  return this->vertexcount;
-}
-
-unsigned int
-VertexElement::getInstanceCount() const
-{
-  return this->instancecount;
+  return this->elementbuffer;
 }
 
 void
 VertexElement::bind()
 {
-  if (this->elementbuffer) {
-    this->elementbuffer->buffer->bind();
-  }
-
-  for (unsigned int i = 0; i < this->attributes.size(); i++) {
-    VertexAttribute * attrib = this->attributes[i];
-    GLBufferObject * glbuffer = attrib->buffer.value->buffer.get();
-    GLVertexAttribute * glattrib = attrib->attribute.get();
-    glbuffer->bind();
-    glattrib->bind();
+  for (unsigned int i = 0; i < this->statevec.size(); i++) {
+    this->statevec[i]->bind();
   }
 }
 
 void
 VertexElement::unbind()
 {
-  if (this->elementbuffer) {
-    this->elementbuffer->buffer->unbind();
-  }
-
-  for (unsigned int i = 0; i < this->attributes.size(); i++) {
-    VertexAttribute * attrib = this->attributes[i];
-    GLBufferObject * glbuffer = attrib->buffer.value->buffer.get();
-    GLVertexAttribute * glattrib = attrib->attribute.get();
-    glbuffer->unbind();
-    glattrib->unbind();
+  for (unsigned int i = 0; i < this->statevec.size(); i++) {
+    this->statevec[i]->unbind();
   }
 }

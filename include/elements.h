@@ -39,23 +39,18 @@ public:
   void set(ElementBuffer * buffer);
   void set(VertexAttribute * attrib);
 
-  VertexAttribute * get(unsigned int index);
-
-  unsigned int getIndexCount() const;
-  unsigned int getVertexCount() const;
-  unsigned int getInstanceCount() const;
+  ArrayBuffer * getVertexBuffer() const;
+  ArrayBuffer * getInstanceBuffer() const;
+  ElementBuffer * getElementBuffer() const;
 
 private:
   virtual void bind();
   virtual void unbind();
 
 private:
-  unsigned int vertexcount;
-  unsigned int indexcount;
-  unsigned int instancecount;
-
   ArrayBuffer * arraybuffer;
+  ArrayBuffer * vertexbuffer;
+  ArrayBuffer * instancebuffer;
   ElementBuffer * elementbuffer;
   std::vector<Bindable *> statevec;
-  std::vector<VertexAttribute *> attributes;
 };

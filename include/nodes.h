@@ -193,7 +193,7 @@ public:
 
 private:
   friend class VertexElement;
-  std::unique_ptr<GLVertexAttribute> attribute;
+  std::unique_ptr<GLVertexAttribute> glattrib;
 };
 
 class Shape : public Node {
@@ -201,16 +201,6 @@ class Shape : public Node {
 public:
   Shape();
   static void initClass();
-  virtual void traverse(RenderAction * action);
-  virtual void traverse(BoundingBoxAction * action);
-
-  void draw(State * state);
-};
-
-class Draw : public Node {
-public:
-  Draw();
-  virtual ~Draw();
 
   enum Mode {
     POINTS = GL_POINTS,
@@ -220,5 +210,7 @@ public:
   SFEnum mode;
 
   virtual void traverse(RenderAction * action);
-  virtual void execute(State * state) = 0;
+  virtual void traverse(BoundingBoxAction * action);
+
+  void draw(State * state);
 };

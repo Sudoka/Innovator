@@ -100,13 +100,12 @@ root = Separator {
    VertexAttribute { location = 0 },
    VertexAttribute { location = 1 },
 
-   ArrayBuffer { 
-      values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
-   },
-
    VertexAttribute { 
+      divisor = 1,
       location = 2, 
-      divisor = 1 
+      ArrayBuffer {
+         values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
+      }
    },
 
    Program {
@@ -114,7 +113,9 @@ root = Separator {
       FragmentShader { source = fragment }
    },
 
-   Shape {}
+   Shape {
+      mode = "TRIANGLES"
+   }
 --   DrawElementsInstanced { mode = "TRIANGLES" },
 
 --   Program {

@@ -270,7 +270,7 @@ ArrayBuffer::ArrayBuffer()
 void
 ArrayBuffer::traverse(RenderAction * action)
 {
-  if (this->buffer.get() == nullptr) {
+  if (!this->buffer.get()) {
     this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, this->usage.value, this->values.vec));
   }
   action->state->vertexelem.set(this);
@@ -279,7 +279,7 @@ ArrayBuffer::traverse(RenderAction * action)
 void
 ArrayBuffer::traverse(BoundingBoxAction * action)
 {
-  if (this->buffer.get() == nullptr) {
+  if (!this->buffer.get()) {
     this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, this->usage.value, this->values.vec));
   }
   action->state->vertexelem.set(this);
@@ -303,7 +303,7 @@ ElementBuffer::ElementBuffer()
 void
 ElementBuffer::traverse(RenderAction * action)
 {
-  if (this->buffer.get() == nullptr) {
+  if (!this->buffer.get()) {
     this->buffer.reset(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, this->usage.value, this->values.vec));
   }
   action->state->vertexelem.set(this);
@@ -312,9 +312,6 @@ ElementBuffer::traverse(RenderAction * action)
 void
 ElementBuffer::traverse(BoundingBoxAction * action)
 {
-  if (this->buffer.get() == nullptr) {
-    this->buffer.reset(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, this->usage.value, this->values.vec));
-  }
   action->state->vertexelem.set(this);
 }
 
@@ -330,7 +327,7 @@ VertexAttribute::initClass()
 
 
 VertexAttribute::VertexAttribute()
-  : attribute(nullptr)
+  : glattrib(nullptr)
 {
   LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
   LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
@@ -342,8 +339,11 @@ VertexAttribute::~VertexAttribute() {}
 void
 VertexAttribute::traverse(RenderAction * action)
 {
-  if (!this->attribute.get()) {
-    this->attribute.reset(new GLVertexAttribute(this->index.value, this->divisor.value));
+  if (!this->glattrib.get()) {
+    this->glattrib.reset(new GLVertexAttribute(this->index.value, this->divisor.value));
+  }
+  if (this->buffer.value.get()) {
+    this->buffer.value->traverse(action);
   }
   action->state->vertexelem.set(this);
 }
@@ -351,9 +351,6 @@ VertexAttribute::traverse(RenderAction * action)
 void
 VertexAttribute::traverse(BoundingBoxAction * action)
 {
-  if (!this->attribute.get()) {
-    this->attribute.reset(new GLVertexAttribute(this->index.value, this->divisor.value));
-  }
   action->state->vertexelem.set(this);
 }
 
@@ -367,7 +364,12 @@ Shape::initClass()
   LUA_NODE_INIT_CLASS(Shape, "Shape"); 
 }
 
-Shape::Shape() {}
+Shape::Shape() 
+{
+  LUA_NODE_ADD_FIELD_3(this->mode, "mode", Shape::POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", Shape::POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", Shape::TRIANGLES);
+}
 
 void
 Shape::traverse(RenderAction * action)
@@ -378,21 +380,27 @@ Shape::traverse(RenderAction * action)
 void
 Shape::draw(State * state)
 {
-  unsigned int elemcount = state->vertexelem.getIndexCount();
-  unsigned int vertexcount = state->vertexelem.getVertexCount();
-  unsigned int instancecount = state->vertexelem.getInstanceCount();
+  ArrayBuffer * vertexbuffer = state->vertexelem.getVertexBuffer();
+  ArrayBuffer * instancebuffer = state->vertexelem.getInstanceBuffer();
+  ElementBuffer * elementbuffer = state->vertexelem.getElementBuffer();
 
-  if (elemcount > 0) {
-    if (instancecount > 0) {
-      glDrawElementsInstanced(GL_TRIANGLES, elemcount, GL_UNSIGNED_INT, 0, instancecount);
+  GLenum mode = this->mode.value;
+
+  if (elementbuffer) {
+    unsigned int elemcount = elementbuffer->values.vec.size();
+    if (instancebuffer) {
+      unsigned int instancecount = elementbuffer->values.vec.size();
+      glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
     } else {
-      glDrawElements(GL_TRIANGLES, elemcount, GL_UNSIGNED_INT, nullptr);
+      glDrawElements(mode, elemcount, GL_UNSIGNED_INT, nullptr);
     }
   } else {
-    if (instancecount > 0) {
-      glDrawArraysInstanced(GL_TRIANGLES, 0, vertexcount, instancecount);
+    unsigned int vertexcount = vertexbuffer->values.vec.size();
+    if (instancebuffer) {
+      unsigned int instancecount = elementbuffer->values.vec.size();
+      glDrawArraysInstanced(mode, 0, vertexcount, instancecount);
     } else {
-      glDrawArrays(GL_TRIANGLES, 0, vertexcount);
+      glDrawArrays(mode, 0, vertexcount);
     }
   }
 }
@@ -400,9 +408,7 @@ Shape::draw(State * state)
 void
 Shape::traverse(BoundingBoxAction * action)
 {
-  assert(action->state->vertexelem.get(0));
-  VertexAttribute * attrib = action->state->vertexelem.get(0);
-  ArrayBuffer * buffer = attrib->buffer.value.get();
+  ArrayBuffer * buffer = action->state->vertexelem.getVertexBuffer();
 
   box3 bbox;
   for (size_t i = 0; i < buffer->values.vec.size(); i += 3) {
@@ -412,22 +418,4 @@ Shape::traverse(BoundingBoxAction * action)
   }
   bbox.transform(action->state->modelmatrixelem.matrix);
   action->extendBy(bbox);
-}
-
-
-// *************************************************************************************************
-
-Draw::Draw() 
-{
-  LUA_NODE_ADD_FIELD_3(this->mode, "mode", Draw::POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", Draw::POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", Draw::TRIANGLES);
-}
-
-Draw::~Draw() {}
-
-void
-Draw::traverse(RenderAction * action)
-{
-  //action->state->flush(this);
 }
