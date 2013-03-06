@@ -63,7 +63,6 @@ VertexElement::set(VertexAttribute * attrib)
   if (attrib->divisor.value == 1) {
     this->instancebuffer = buffer;
   }
-
   this->statevec.push_back(buffer->buffer.get());
   this->statevec.push_back(attrib->glattrib.get());
 }
