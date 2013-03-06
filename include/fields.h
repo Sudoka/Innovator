@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 class Node;
+class ArrayBuffer;
 
 class Field {
 public:
@@ -68,10 +69,15 @@ public:
   virtual void read(lua_State * L);
 };
 
+template <class NodeType>
 class SFNode : public Field {
 public:
+  std::shared_ptr<NodeType> value;
+};
+
+class SFArrayBuffer : public SFNode<ArrayBuffer> {
+public:
   virtual void read(lua_State * L);
-  std::shared_ptr<Node> value;
 };
 
 template <typename NodeType>

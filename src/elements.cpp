@@ -28,61 +28,105 @@ MatrixElement::updateGL(State * state)
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
 }
 
-AttributeElement::AttributeElement()
-  : indexcount(0), 
-    attribcount(0),
-    instancecount(0),
-    arraybuffer(nullptr)
-{
-}
+VertexElement::VertexElement()
+  : indexcount(0),
+    vertexcount(0),
+    instancecount(0), 
+    arraybuffer(nullptr),
+    elementbuffer(nullptr)
+ {}
+VertexElement::~VertexElement() {}
 
-AttributeElement::~AttributeElement()
+void
+VertexElement::set(ArrayBuffer * buffer)
 {
-
+  this->arraybuffer = buffer;
 }
 
 void
-AttributeElement::push(Bindable * bindable)
+VertexElement::set(ElementBuffer * buffer)
 {
-  this->statevec.push_back(bindable);
+  this->indexcount = buffer->values.vec.size();
+  this->elementbuffer = buffer;
 }
 
-void
-AttributeElement::push(GLBufferObject * buffer)
+void 
+VertexElement::set(VertexAttribute * attrib)
 {
-  if (buffer->target == GL_ELEMENT_ARRAY_BUFFER) {
-    this->indexcount = buffer->count;
-  } 
-  if (buffer->target == GL_ARRAY_BUFFER) {
-    this->arraybuffer = buffer;
+  ArrayBuffer * buffer = attrib->buffer.value.get();
+  if (!buffer) {
+    buffer = this->arraybuffer;
   }
-  this->statevec.push_back(buffer);
-}
+  assert(buffer);
+  this->statevec.push_back(buffer->buffer.get());
 
-void
-AttributeElement::push(GLVertexAttribute * attrib)
-{
-  assert(this->arraybuffer);
-  if (attrib->divisor == 1) {
-    this->instancecount = this->arraybuffer->count;
-  } else {
-    this->attribcount = this->arraybuffer->count;
+  if (attrib->index.value == 0) {
+    this->vertexcount = this->arraybuffer->values.vec.size();
   }
-  this->statevec.push_back(attrib);
+  if (attrib->divisor.value == 1) {
+    this->instancecount = 8;
+  }
+  this->attributes.push_back(attrib);
+  this->statevec.push_back(attrib->attribute.get());
+}
+
+VertexAttribute * 
+VertexElement::get(unsigned int index)
+{
+  for (size_t i = 0; i < this->attributes.size(); i++) {
+    if (this->attributes[i]->index.value == index) {
+      return this->attributes[i];
+    }
+  }
+  return nullptr;
+}
+
+unsigned int 
+VertexElement::getIndexCount() const
+{
+  return this->indexcount;
+}
+
+unsigned int
+VertexElement::getVertexCount() const
+{
+  return this->vertexcount;
+}
+
+unsigned int
+VertexElement::getInstanceCount() const
+{
+  return this->instancecount;
 }
 
 void
-AttributeElement::bind()
+VertexElement::bind()
 {
-  for (unsigned int i = 0; i < this->statevec.size(); i++) {
-    this->statevec[i]->bind();
+  if (this->elementbuffer) {
+    this->elementbuffer->buffer->bind();
+  }
+
+  for (unsigned int i = 0; i < this->attributes.size(); i++) {
+    VertexAttribute * attrib = this->attributes[i];
+    GLBufferObject * glbuffer = attrib->buffer.value->buffer.get();
+    GLVertexAttribute * glattrib = attrib->attribute.get();
+    glbuffer->bind();
+    glattrib->bind();
   }
 }
 
 void
-AttributeElement::unbind()
+VertexElement::unbind()
 {
-  for (unsigned int i = 0; i < this->statevec.size(); i++) {
-    this->statevec[i]->unbind();
+  if (this->elementbuffer) {
+    this->elementbuffer->buffer->unbind();
+  }
+
+  for (unsigned int i = 0; i < this->attributes.size(); i++) {
+    VertexAttribute * attrib = this->attributes[i];
+    GLBufferObject * glbuffer = attrib->buffer.value->buffer.get();
+    GLVertexAttribute * glattrib = attrib->attribute.get();
+    glbuffer->unbind();
+    glattrib->unbind();
   }
 }

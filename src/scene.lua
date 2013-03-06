@@ -84,32 +84,27 @@ void main()
 local t = (1 + 5^0.5) / 2; -- golden ratio
 
 root = Separator {
-   IntBuffer {
-      target = "ELEMENT_ARRAY",
+   ElementBuffer {
       values = { 1,  4, 0,  4, 9, 0, 4, 5,  9, 8, 5,  4,  1, 8, 4,
                  1, 10, 8, 10, 3, 8, 8, 3,  5, 3, 2,  5,  3, 7, 2,
                  3, 10, 7, 10, 6, 7, 6, 11, 7, 6, 0, 11,  6, 1, 0,
                  10, 1, 6, 11, 0, 9, 2, 11, 9, 5, 2,  9, 11, 2, 7 }
    },
 
-   FloatBuffer {
-      target = "ARRAY",
+   ArrayBuffer {
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
-                 0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
-                 t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
+                  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
+                  t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
    },
 
    VertexAttribute { location = 0 },
    VertexAttribute { location = 1 },
 
-   FloatBuffer { 
-      target = "ARRAY",
+   ArrayBuffer { 
       values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
    },
 
    VertexAttribute { 
-      size = 3, 
-      type = "FLOAT", 
       location = 2, 
       divisor = 1 
    },
@@ -119,13 +114,14 @@ root = Separator {
       FragmentShader { source = fragment }
    },
 
-   DrawElementsInstanced { mode = "TRIANGLES" },
+   Shape {}
+--   DrawElementsInstanced { mode = "TRIANGLES" },
 
-   Program {
-      VertexShader   { source = normal_vertex },
-      GeometryShader { source = normal_geometry },
-      FragmentShader { source = normal_fragment }
-   },
+--   Program {
+--      VertexShader   { source = normal_vertex },
+--      GeometryShader { source = normal_geometry },
+--      FragmentShader { source = normal_fragment }
+--   },
 
-   DrawArraysInstanced { mode = "POINTS" }
+--   DrawArraysInstanced { mode = "POINTS" }
 }

@@ -3,9 +3,8 @@
 #include <memory>
 #include <elements.h>
 
-class Draw;
+class Shape;
 class GLProgram;
-class FloatBuffer;
 
 class State {
 public:
@@ -28,11 +27,10 @@ public:
 
   void push();
   void pop();
-  void flush(Draw * draw);
+  void flush(Shape * shape);
 
   GLProgram * program;
-  FloatBuffer * buffer;
-  AttributeElement attribelem;
+  VertexElement vertexelem;
   MatrixElement viewmatrixelem;
   MatrixElement modelmatrixelem;
   MatrixElement projmatrixelem;

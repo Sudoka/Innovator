@@ -98,6 +98,21 @@ static void ReadChildren(lua_State * L, vector<shared_ptr<ChildType>> & children
   }
 }
 
+template <typename NodeType>
+static void ReadSFNode(lua_State *L, shared_ptr<NodeType> & value)
+{
+  luaL_checktype(L, -1, LUA_TTABLE);
+  int n = luaL_len(L, -1);
+  assert(n <= 1);
+  lua_rawgeti(L, -1, 1);
+  if (!lua_isnil(L, -1)) {
+    luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
+    NodeType * node = static_cast<NodeType *>(lua_touserdata(L, -1));
+    value.reset(node);
+  }
+  lua_pop(L, 1);
+}
+
 void
 SFString::read(lua_State * L)
 {
@@ -147,18 +162,9 @@ MFVec3i::read(lua_State * L)
 }
 
 void
-SFNode::read(lua_State * L)
+SFArrayBuffer::read(lua_State * L)
 {
-  luaL_checktype(L, -1, LUA_TTABLE);
-  int n = luaL_len(L, -1);
-  assert(n == 1);
-  lua_rawgeti(L, -1, 1);
-  if (!lua_isnil(L, -1)) {
-    luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
-    Node * node = static_cast<Node *>(lua_touserdata(L, -1));
-    this->value.reset(node);
-  }
-  lua_pop(L, 1);
+  ReadSFNode<ArrayBuffer>(L, this->value);
 }
 
 void

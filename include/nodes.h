@@ -138,11 +138,9 @@ private:
   void doAction(Action * action);
 };
 
-template <typename MFValue>
 class Buffer : public Node {
 public:
   Buffer();
-  virtual ~Buffer();
   static void initClass();
   enum Target {
     ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER,
@@ -154,28 +152,30 @@ public:
   };
   SFEnum target;
   SFEnum usage;
-  MFValue values;
-
-  virtual void traverse(RenderAction * action);
-  virtual void traverse(BoundingBoxAction * action);
 
 protected:
-  void doAction(Action * action);
+  friend class VertexElement;
   std::unique_ptr<GLBufferObject> buffer;
 };
 
-class FloatBuffer : public Buffer<MFFloat> {
-  LUA_NODE_HEADER(FloatBuffer);
+class ArrayBuffer : public Buffer {
+  LUA_NODE_HEADER(ArrayBuffer);
 public:
+  ArrayBuffer();
   static void initClass();
+  MFFloat values;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
 };
 
-class IntBuffer : public Buffer<MFInt> {
-  LUA_NODE_HEADER(IntBuffer);
+class ElementBuffer : public Buffer {
+  LUA_NODE_HEADER(ElementBuffer);
 public:
+  ElementBuffer();
   static void initClass();
+  MFInt values;
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
 };
 
 class VertexAttribute : public Node {
@@ -186,13 +186,25 @@ public:
   static void initClass();
   SFInt index;
   SFInt divisor;
+  SFArrayBuffer buffer;
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
 
 private:
-  void doAction(Action * action);
+  friend class VertexElement;
   std::unique_ptr<GLVertexAttribute> attribute;
+};
+
+class Shape : public Node {
+  LUA_NODE_HEADER(Shape);
+public:
+  Shape();
+  static void initClass();
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
+
+  void draw(State * state);
 };
 
 class Draw : public Node {
@@ -209,32 +221,4 @@ public:
 
   virtual void traverse(RenderAction * action);
   virtual void execute(State * state) = 0;
-};
-
-class DrawArrays : public Draw {
-  LUA_NODE_HEADER(DrawArrays);
-public:
-  static void initClass();
-  virtual void execute(State * state);
-};
-
-class DrawArraysInstanced : public Draw {
-  LUA_NODE_HEADER(DrawArraysInstanced);
-public:
-  static void initClass();
-  virtual void execute(State * state);
-};
-
-class DrawElements : public Draw {
-  LUA_NODE_HEADER(DrawElements);
-public:
-  static void initClass();
-  virtual void execute(State * state);
-};
-
-class DrawElementsInstanced : public Draw {
-  LUA_NODE_HEADER(DrawElementsInstanced);
-public:
-  static void initClass();
-  virtual void execute(State * state);
 };

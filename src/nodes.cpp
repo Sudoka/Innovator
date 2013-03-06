@@ -69,9 +69,7 @@ Camera::lookAt(const vec3 & focalpoint)
 void
 Camera::viewAll(Separator::ptr root)
 {
-  size_t numchildren = root->children.values.size();
   BoundingBoxAction action;
-
   action.apply(root);
   box3 box = action.getBoundingBox();
   float focaldist = box.size();
@@ -243,11 +241,9 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-template <typename MFValue> 
-Buffer<MFValue>::Buffer()
+Buffer::Buffer()
   : buffer(nullptr)
 {
-  LUA_NODE_ADD_FIELD_2(this->values, "values");
   LUA_NODE_ADD_FIELD_3(this->target, "target", Buffer::ARRAY);
   LUA_NODE_ADD_FIELD_3(this->usage, "usage", Buffer::STATIC_DRAW);
   LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", Buffer::ARRAY);
@@ -256,64 +252,70 @@ Buffer<MFValue>::Buffer()
   LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", Buffer::DYNAMIC_DRAW);
 }
 
-template <typename MFValue> 
-Buffer<MFValue>::~Buffer()
+// *************************************************************************************************
+
+LUA_NODE_SOURCE(ArrayBuffer);
+
+void
+ArrayBuffer::initClass()
 {
+  LUA_NODE_INIT_CLASS(ArrayBuffer, "ArrayBuffer");
 }
 
-template <typename MFValue> void
-Buffer<MFValue>::doAction(Action * action)
+ArrayBuffer::ArrayBuffer()
+{
+  LUA_NODE_ADD_FIELD_2(this->values, "values");
+}
+
+void
+ArrayBuffer::traverse(RenderAction * action)
 {
   if (this->buffer.get() == nullptr) {
-    this->buffer.reset(new GLBufferObject(this->target.value, this->usage.value, this->values.vec));
+    this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, this->usage.value, this->values.vec));
   }
-  action->state->attribelem.push(this->buffer.get());
+  action->state->vertexelem.set(this);
 }
 
-template <typename MFValue> void
-Buffer<MFValue>::traverse(RenderAction * action)
+void
+ArrayBuffer::traverse(BoundingBoxAction * action)
 {
-  this->doAction(action);
-}
-
-template <typename MFValue> void
-Buffer<MFValue>::traverse(BoundingBoxAction * action)
-{
-  this->doAction(action);
+  if (this->buffer.get() == nullptr) {
+    this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, this->usage.value, this->values.vec));
+  }
+  action->state->vertexelem.set(this);
 }
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(FloatBuffer);
+LUA_NODE_SOURCE(ElementBuffer);
 
 void
-FloatBuffer::initClass()
+ElementBuffer::initClass()
 {
-  LUA_NODE_INIT_CLASS(FloatBuffer, "FloatBuffer");
+  LUA_NODE_INIT_CLASS(ElementBuffer, "ElementBuffer");
+}
+
+ElementBuffer::ElementBuffer()
+{
+  LUA_NODE_ADD_FIELD_2(this->values, "values");
 }
 
 void
-FloatBuffer::traverse(RenderAction * action)
+ElementBuffer::traverse(RenderAction * action)
 {
-  Buffer<MFFloat>::traverse(action);
-  action->state->buffer = this;
+  if (this->buffer.get() == nullptr) {
+    this->buffer.reset(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, this->usage.value, this->values.vec));
+  }
+  action->state->vertexelem.set(this);
 }
 
 void
-FloatBuffer::traverse(BoundingBoxAction * action)
+ElementBuffer::traverse(BoundingBoxAction * action)
 {
-  Buffer<MFFloat>::traverse(action);
-  action->state->buffer = this;
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(IntBuffer);
-
-void
-IntBuffer::initClass()
-{
-  LUA_NODE_INIT_CLASS(IntBuffer, "IntBuffer");
+  if (this->buffer.get() == nullptr) {
+    this->buffer.reset(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, this->usage.value, this->values.vec));
+  }
+  action->state->vertexelem.set(this);
 }
 
 // *************************************************************************************************
@@ -332,54 +334,86 @@ VertexAttribute::VertexAttribute()
 {
   LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
   LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
+  LUA_NODE_ADD_FIELD_3(this->buffer, "buffer", nullptr);
 }
 
 VertexAttribute::~VertexAttribute() {}
 
 void
-VertexAttribute::doAction(Action * action)
+VertexAttribute::traverse(RenderAction * action)
 {
   if (!this->attribute.get()) {
     this->attribute.reset(new GLVertexAttribute(this->index.value, this->divisor.value));
   }
-  action->state->attribelem.push(this->attribute.get());
-}
-
-void
-VertexAttribute::traverse(RenderAction * action)
-{
-  this->doAction(action);
+  action->state->vertexelem.set(this);
 }
 
 void
 VertexAttribute::traverse(BoundingBoxAction * action)
 {
-  assert(action->state->buffer);
-  FloatBuffer * buffer = action->state->buffer;
-  float * values = buffer->values.vec.data();
-    
-  if (this->divisor.value == 0 && this->index.value == 0) {
-    box3 bbox;
-    for (size_t i = 0; i < buffer->values.vec.size(); i+=3) {
-      bbox.extendBy(vec3(values[i + 0],
-                         values[i + 1],
-                         values[i + 2]));
+  if (!this->attribute.get()) {
+    this->attribute.reset(new GLVertexAttribute(this->index.value, this->divisor.value));
+  }
+  action->state->vertexelem.set(this);
+}
+
+// *************************************************************************************************
+
+LUA_NODE_SOURCE(Shape);
+
+void
+Shape::initClass()
+{
+  LUA_NODE_INIT_CLASS(Shape, "Shape"); 
+}
+
+Shape::Shape() {}
+
+void
+Shape::traverse(RenderAction * action)
+{
+  action->state->flush(this);
+}
+
+void
+Shape::draw(State * state)
+{
+  unsigned int elemcount = state->vertexelem.getIndexCount();
+  unsigned int vertexcount = state->vertexelem.getVertexCount();
+  unsigned int instancecount = state->vertexelem.getInstanceCount();
+
+  if (elemcount > 0) {
+    if (instancecount > 0) {
+      glDrawElementsInstanced(GL_TRIANGLES, elemcount, GL_UNSIGNED_INT, 0, instancecount);
+    } else {
+      glDrawElements(GL_TRIANGLES, elemcount, GL_UNSIGNED_INT, nullptr);
     }
-    bbox.transform(action->state->modelmatrixelem.matrix);
-    action->extendBy(bbox);
-  } else if (this->divisor.value == 1) {
-    box3 bbox;
-    for (size_t i = 0; i < buffer->values.vec.size(); i+=3) {
-      vec3 pos = vec3(values[i + 0],
-                      values[i + 1],
-                      values[i + 2]);
-      bbox.extendBy(pos + action->getBoundingBox().min);
-      bbox.extendBy(pos + action->getBoundingBox().max);
+  } else {
+    if (instancecount > 0) {
+      glDrawArraysInstanced(GL_TRIANGLES, 0, vertexcount, instancecount);
+    } else {
+      glDrawArrays(GL_TRIANGLES, 0, vertexcount);
     }
-    bbox.transform(action->state->modelmatrixelem.matrix);
-    action->extendBy(bbox);
   }
 }
+
+void
+Shape::traverse(BoundingBoxAction * action)
+{
+  assert(action->state->vertexelem.get(0));
+  VertexAttribute * attrib = action->state->vertexelem.get(0);
+  ArrayBuffer * buffer = attrib->buffer.value.get();
+
+  box3 bbox;
+  for (size_t i = 0; i < buffer->values.vec.size(); i += 3) {
+    bbox.extendBy(vec3(buffer->values.vec[i + 0],
+                       buffer->values.vec[i + 1],
+                       buffer->values.vec[i + 2]));
+  }
+  bbox.transform(action->state->modelmatrixelem.matrix);
+  action->extendBy(bbox);
+}
+
 
 // *************************************************************************************************
 
@@ -395,75 +429,5 @@ Draw::~Draw() {}
 void
 Draw::traverse(RenderAction * action)
 {
-  action->state->flush(this);
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawArrays);
-
-void
-DrawArrays::initClass()
-{
-  LUA_NODE_INIT_CLASS(DrawArrays, "DrawArrays");
-}
-
-void
-DrawArrays::execute(State * state)
-{
-  unsigned int count = state->attribelem.attribcount;
-  glDrawArrays(this->mode.value, 0, count);
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawElements);
-
-void
-DrawElements::initClass()
-{
-  LUA_NODE_INIT_CLASS(DrawElements, "DrawElements");
-}
-
-void
-DrawElements::execute(State * state)
-{
-  unsigned int elemcount = state->attribelem.indexcount;
-  glDrawElements(this->mode.value, elemcount, GL_UNSIGNED_INT, 0);
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawElementsInstanced);
-
-void
-DrawElementsInstanced::initClass()
-{
-  LUA_NODE_INIT_CLASS(DrawElementsInstanced, "DrawElementsInstanced");
-}
-
-void
-DrawElementsInstanced::execute(State * state)
-{
-  unsigned int elemcount = state->attribelem.indexcount;
-  unsigned int primcount = state->attribelem.instancecount;
-  glDrawElementsInstanced(this->mode.value, elemcount, GL_UNSIGNED_INT, 0, primcount);
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawArraysInstanced);
-
-void
-DrawArraysInstanced::initClass()
-{
-  LUA_NODE_INIT_CLASS(DrawArraysInstanced, "DrawArraysInstanced");
-}
-
-void
-DrawArraysInstanced::execute(State * state)
-{
-  unsigned int count = state->attribelem.attribcount;
-  unsigned int primcount = state->attribelem.instancecount;
-  glDrawArraysInstanced(this->mode.value, 0, count, primcount);
+  //action->state->flush(this);
 }

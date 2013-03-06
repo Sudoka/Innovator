@@ -12,13 +12,13 @@ public:
   ~StateP() {}
 
   vector<GLProgram*> programstack;
+  vector<VertexElement> vertexstack;
   vector<MatrixElement> modelmatrixstack;
   vector<ViewportElement> viewportstack;
-  vector<AttributeElement> attributestack;
 };
 
 State::State()
-  : self(new StateP), program(nullptr), buffer(nullptr)
+  : self(new StateP), program(nullptr)
 {
   this->viewmatrixelem.name = "ViewMatrix";
   this->modelmatrixelem.name = "ModelMatrix";
@@ -32,7 +32,7 @@ void
 State::push()
 {
   self->programstack.push_back(this->program);
-  self->attributestack.push_back(this->attribelem);
+  self->vertexstack.push_back(this->vertexelem);
   self->viewportstack.push_back(this->viewportelem);
   self->modelmatrixstack.push_back(this->modelmatrixelem);
 }
@@ -41,26 +41,26 @@ void
 State::pop()
 {
   this->program = self->programstack.back();
-  this->attribelem = self->attributestack.back();
+  this->vertexelem = self->vertexstack.back();
   this->viewportelem = self->viewportstack.back();
   this->modelmatrixelem = self->modelmatrixstack.back();
 
   self->programstack.pop_back();
   self->viewportstack.pop_back();
-  self->attributestack.pop_back();
+  self->vertexstack.pop_back();
   self->modelmatrixstack.pop_back();
 }
 
 void
-State::flush(Draw * draw)
+State::flush(Shape * shape)
 {
   BindScope program(this->program);
-  BindScope attributes(&this->attribelem);
+  BindScope vertices(&this->vertexelem);
 
   this->viewportelem.updateGL(this);
   this->viewmatrixelem.updateGL(this);
   this->projmatrixelem.updateGL(this);
   this->modelmatrixelem.updateGL(this);
-
-  draw->execute(this);
+  
+  shape->draw(this);
 }

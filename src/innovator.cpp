@@ -55,12 +55,9 @@ Innovator::Innovator(int width, int height)
   glfwSetMousePosCallback(Innovator::mouseMovedCB);
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
 
-  IntBuffer::initClass();
-  FloatBuffer::initClass();
-  DrawArrays::initClass();
-  DrawArraysInstanced::initClass();
-  DrawElements::initClass();
-  DrawElementsInstanced::initClass();
+  Shape::initClass();
+  ArrayBuffer::initClass();
+  ElementBuffer::initClass();
   Program::initClass();
   Group::initClass();
   Separator::initClass();
