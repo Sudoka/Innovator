@@ -1,5 +1,4 @@
 #include <nodes.h>
-
 #include <actions.h>
 #include <opengl.h>
 #include <state.h>
@@ -7,8 +6,6 @@
 #include <vector>
 #include <math.h>
 #include <string>
-#include <iostream>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -279,9 +276,6 @@ ArrayBuffer::traverse(RenderAction * action)
 void
 ArrayBuffer::traverse(BoundingBoxAction * action)
 {
-  if (!this->buffer.get()) {
-    this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, this->usage.value, this->values.vec));
-  }
   action->state->vertexelem.set(this);
 }
 
