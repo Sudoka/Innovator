@@ -90,13 +90,11 @@ root = Separator {
                  3, 10, 7, 10, 6, 7, 6, 11, 7, 6, 0, 11,  6, 1, 0,
                  10, 1, 6, 11, 0, 9, 2, 11, 9, 5, 2,  9, 11, 2, 7 }
    },
-
    ArrayBuffer {
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
                   0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
                   t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
    },
-
    VertexAttribute { location = 0 },
    VertexAttribute { location = 1 },
 
@@ -107,12 +105,10 @@ root = Separator {
          values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
       }
    },
-
    Program {
       VertexShader   { source = vertex },
       FragmentShader { source = fragment }
    },
-
    Shape {
       mode = "TRIANGLES"
    }

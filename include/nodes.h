@@ -16,17 +16,14 @@ class Action;
 class RenderAction;
 class BoundingBoxAction;
 
-class FieldContainer {
-protected:
-  std::vector<Field*> fields;
-};
-
-class Node : public FieldContainer {
+class Node {
 public:
   virtual ~Node() {}
   virtual void traverse(RenderAction * action) {}
   virtual void traverse(BoundingBoxAction * action) {}
   typedef std::shared_ptr<Node> ptr;
+protected:
+  std::vector<Field*> fields;
 };
 
 class Group : public Node {
@@ -116,9 +113,7 @@ public:
   static void initClass();
   SFString fileName;
   MFNode shaders;
-
   virtual void traverse(RenderAction * action);
-
 private:
   class ProgramP;
   std::unique_ptr<ProgramP> self;
@@ -199,18 +194,15 @@ private:
 class Shape : public Node {
   LUA_NODE_HEADER(Shape);
 public:
-  Shape();
-  static void initClass();
-
   enum Mode {
     POINTS = GL_POINTS,
     TRIANGLES = GL_TRIANGLES
   };
-
   SFEnum mode;
 
+  Shape();
+  static void initClass();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-
   void draw(State * state);
 };

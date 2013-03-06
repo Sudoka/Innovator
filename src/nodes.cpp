@@ -408,13 +408,31 @@ Shape::draw(State * state)
 void
 Shape::traverse(BoundingBoxAction * action)
 {
-  ArrayBuffer * buffer = action->state->vertexelem.getVertexBuffer();
+  ArrayBuffer * vertexbuffer = action->state->vertexelem.getVertexBuffer();
+  ArrayBuffer * instancebuffer = action->state->vertexelem.getInstanceBuffer();
 
   box3 bbox;
-  for (size_t i = 0; i < buffer->values.vec.size(); i += 3) {
-    bbox.extendBy(vec3(buffer->values.vec[i + 0],
-                       buffer->values.vec[i + 1],
-                       buffer->values.vec[i + 2]));
+
+  if (instancebuffer) {
+    for (size_t i = 0; i < instancebuffer->values.vec.size(); i += 3) {
+      vec3 instancepos = vec3(instancebuffer->values.vec[i + 0],
+                              instancebuffer->values.vec[i + 1],
+                              instancebuffer->values.vec[i + 2]);
+
+      for (size_t j = 0; j < instancebuffer->values.vec.size(); j += 3) {
+        vec3 vertex = vec3(vertexbuffer->values.vec[j + 0],
+                           vertexbuffer->values.vec[j + 1],
+                           vertexbuffer->values.vec[j + 2]);
+
+        bbox.extendBy(vertex + instancepos);
+      }
+    }
+  } else {
+    for (size_t i = 0; i < vertexbuffer->values.vec.size(); i += 3) {
+      bbox.extendBy(vec3(vertexbuffer->values.vec[i + 0],
+                         vertexbuffer->values.vec[i + 1],
+                         vertexbuffer->values.vec[i + 2]));
+    }
   }
   bbox.transform(action->state->modelmatrixelem.matrix);
   action->extendBy(bbox);

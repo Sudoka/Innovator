@@ -44,6 +44,7 @@ VertexElement::set(ArrayBuffer * buffer)
 void
 VertexElement::set(ElementBuffer * buffer)
 {
+  assert(this->elementbuffer == nullptr);
   this->elementbuffer = buffer;
   this->statevec.insert(this->statevec.begin(), buffer->buffer.get());
 }
@@ -73,16 +74,16 @@ VertexElement::getVertexBuffer() const
   return this->vertexbuffer;
 }
 
-ArrayBuffer * 
-VertexElement::getInstanceBuffer() const
-{
-  return this->instancebuffer;
-}
-
 ElementBuffer * 
 VertexElement::getElementBuffer() const
 {
   return this->elementbuffer;
+}
+
+ArrayBuffer * 
+VertexElement::getInstanceBuffer() const
+{
+  return this->instancebuffer;
 }
 
 void
