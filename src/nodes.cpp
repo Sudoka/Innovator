@@ -241,12 +241,12 @@ Transform::traverse(BoundingBoxAction * action)
 Buffer::Buffer()
   : buffer(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->target, "target", Buffer::ARRAY);
-  LUA_NODE_ADD_FIELD_3(this->usage, "usage", Buffer::STATIC_DRAW);
-  LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", Buffer::ARRAY);
-  LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", Buffer::ELEMENT_ARRAY);
-  LUA_ENUM_DEFINE_VALUE(this->usage, "STATIC_DRAW", Buffer::STATIC_DRAW);
-  LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", Buffer::DYNAMIC_DRAW);
+  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_ELEMENT_ARRAY_BUFFER);
+  LUA_NODE_ADD_FIELD_3(this->usage, "usage", GL_STATIC_DRAW);
+  LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", GL_ARRAY_BUFFER);
+  LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
+  LUA_ENUM_DEFINE_VALUE(this->usage, "STATIC_DRAW", GL_STATIC_DRAW);
+  LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", GL_DYNAMIC_DRAW);
 }
 
 // *************************************************************************************************
@@ -363,9 +363,9 @@ Shape::initClass()
 
 Shape::Shape() 
 {
-  LUA_NODE_ADD_FIELD_3(this->mode, "mode", Shape::POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", Shape::POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", Shape::TRIANGLES);
+  LUA_NODE_ADD_FIELD_3(this->mode, "mode", GL_POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", GL_POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", GL_TRIANGLES);
 }
 
 void

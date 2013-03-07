@@ -137,17 +137,8 @@ class Buffer : public Node {
 public:
   Buffer();
   static void initClass();
-  enum Target {
-    ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER,
-    ARRAY         = GL_ARRAY_BUFFER
-  };
-  enum Usage {
-    STATIC_DRAW  = GL_STATIC_DRAW,
-    DYNAMIC_DRAW = GL_DYNAMIC_DRAW
-  };
-  SFEnum target;
   SFEnum usage;
-
+  SFEnum target;
 protected:
   friend class VertexElement;
   std::unique_ptr<GLBufferObject> buffer;
@@ -194,12 +185,7 @@ private:
 class Shape : public Node {
   LUA_NODE_HEADER(Shape);
 public:
-  enum Mode {
-    POINTS = GL_POINTS,
-    TRIANGLES = GL_TRIANGLES
-  };
   SFEnum mode;
-
   Shape();
   static void initClass();
   virtual void traverse(RenderAction * action);
