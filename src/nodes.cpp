@@ -268,10 +268,7 @@ void
 ArrayBuffer::traverse(RenderAction * action)
 {
   if (!this->buffer.get()) {
-    this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, 
-                                          this->usage.value,
-                                          sizeof(float) * this->values.vec.size(),
-                                          this->values.vec.data()));
+    this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, this->usage.value, this->values.size(), this->values.data()));
   }
   action->state->vertexelem.set(this);
 }
@@ -301,10 +298,7 @@ void
 ElementBuffer::traverse(RenderAction * action)
 {
   if (!this->buffer.get()) {
-    this->buffer.reset(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, 
-                                          this->usage.value, 
-                                          sizeof(int) * this->values.vec.size(),
-                                          this->values.vec.data()));
+    this->buffer.reset(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, this->usage.value, this->values.size(), this->values.data()));
   }
   action->state->vertexelem.set(this);
 }

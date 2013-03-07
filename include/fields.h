@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/glew.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -25,6 +26,8 @@ template <typename T>
 class MField : public Field {
 public:
   std::vector<T> vec;
+  GLvoid * data() { return vec.data(); }
+  GLsizeiptr size() { return sizeof(T) * vec.size(); }
 };
 
 class SFString : public Field {
