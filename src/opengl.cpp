@@ -8,51 +8,19 @@
 using namespace glm;
 using namespace std;
 
-GLBufferObject::GLBufferObject(GLenum target)
+GLBufferObject::GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
   : target(target)
 {
-  glGenBuffers(1, &buffer);
-}
-
-GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data)
-  : count(data.size())
-{
-  this->construct(target, usage, sizeof(vec3) * count, data.data());
-}
-
-GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data)
-  : count(data.size())
-{
-  this->construct(target, usage, sizeof(ivec3) * count, data.data());
-}
-
-GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<int> & data)
-  : count(data.size())
-{
-  this->construct(target, usage, sizeof(int) * count, data.data());
-}
-
-GLBufferObject::GLBufferObject(GLenum target, GLenum usage, std::vector<float> & data)
-  : count(data.size())
-{
-  this->construct(target, usage, sizeof(float) * count, data.data());
+  glGenBuffers(1, &this->buffer);
+  glBindBuffer(this->target, this->buffer);
+  glBufferData(this->target, size, data, usage);
+  glBindBuffer(this->target, 0);
 }
 
 GLBufferObject::~GLBufferObject()
 {
   glBindBuffer(this->target, 0);
   glDeleteBuffers(1, &this->buffer);
-}
-
-void
-GLBufferObject::construct(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
-{
-  this->target = target;
-  glGenBuffers(1, &this->buffer);
-
-  this->bind();
-  glBufferData(this->target, size, data, usage);
-  this->unbind();
 }
 
 void

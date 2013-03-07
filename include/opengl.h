@@ -57,22 +57,14 @@ private:
 
 class GLBufferObject : public Bindable {
 public:
-  GLBufferObject(GLenum target);
-  GLBufferObject(GLenum target, GLenum usage, std::vector<glm::vec3> & data);
-  GLBufferObject(GLenum target, GLenum usage, std::vector<glm::ivec3> & data);
-  GLBufferObject(GLenum target, GLenum usage, std::vector<int> & data);
-  GLBufferObject(GLenum target, GLenum usage, std::vector<float> & data);
-
+  GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data);
   ~GLBufferObject();
-
-  void construct(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data);
 
   virtual void bind();
   virtual void unbind();
 
   GLenum target;
   GLuint buffer;
-  GLuint count;
 };
 
 class GLVertexAttribute : public Bindable {
