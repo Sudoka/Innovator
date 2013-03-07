@@ -345,6 +345,9 @@ VertexAttribute::traverse(RenderAction * action)
 void
 VertexAttribute::traverse(BoundingBoxAction * action)
 {
+  if (this->buffer.value.get()) {
+    this->buffer.value->traverse(action);
+  }
   action->state->vertexelem.set(this);
 }
 

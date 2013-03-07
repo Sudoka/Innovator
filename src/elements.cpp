@@ -52,18 +52,13 @@ VertexElement::set(ElementBuffer * buffer)
 void 
 VertexElement::set(VertexAttribute * attrib)
 {
-  ArrayBuffer * buffer = attrib->buffer.value.get();
-
-  if (buffer == nullptr) {
-    buffer = this->arraybuffer;
-  }
   if (attrib->index.value == 0) {
-    this->vertexbuffer = buffer;
+    this->vertexbuffer = this->arraybuffer;
   }
   if (attrib->divisor.value == 1) {
-    this->instancebuffer = buffer;
+    this->instancebuffer = this->arraybuffer;
   }
-  this->statevec.push_back(buffer->buffer.get());
+  this->statevec.push_back(this->arraybuffer->buffer.get());
   this->statevec.push_back(attrib->glattrib.get());
 }
 
