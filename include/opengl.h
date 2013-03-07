@@ -55,14 +55,26 @@ private:
   virtual void unbind();
 };
 
+template <typename T>
 class GLBufferObject : public Bindable {
 public:
-  GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data);
-  ~GLBufferObject();
-
-  virtual void bind();
-  virtual void unbind();
-
+  GLBufferObject(GLenum target, GLenum usage, std::vector<T> & data) 
+    : target(target) {
+    glGenBuffers(1, &this->buffer);
+    glBindBuffer(this->target, this->buffer);
+    glBufferData(this->target, sizeof(T) * data.size(), data.data(), usage);
+    glBindBuffer(this->target, 0);
+  }
+  ~GLBufferObject() {
+    glBindBuffer(this->target, 0);
+    glDeleteBuffers(1, &this->buffer);
+  }
+  virtual void bind() {
+    glBindBuffer(this->target, this->buffer);
+  }
+  virtual void unbind() {
+    glBindBuffer(this->target, 0);
+  }
   GLenum target;
   GLuint buffer;
 };

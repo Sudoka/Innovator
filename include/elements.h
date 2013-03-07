@@ -8,12 +8,10 @@
 #include <fields.h>
 
 class State;
-class Buffer;
-class ArrayBuffer;
-class ElementBuffer;
-class IntBuffer;
-class FloatBuffer;
 class VertexAttribute;
+
+template <typename T>
+class Buffer;
 
 class MatrixElement {
 public:
@@ -35,22 +33,22 @@ public:
   VertexElement();
   ~VertexElement();
 
-  void set(ArrayBuffer * buffer);
-  void set(ElementBuffer * buffer);
+  void set(Buffer<int> * buffer);
+  void set(Buffer<float> * buffer);
   void set(VertexAttribute * attrib);
 
-  ArrayBuffer * getVertexBuffer() const;
-  ArrayBuffer * getInstanceBuffer() const;
-  ElementBuffer * getElementBuffer() const;
+  Buffer<int> * getElementBuffer() const;
+  Buffer<float> * getVertexBuffer() const;
+  Buffer<float> * getInstanceBuffer() const;
 
 private:
   virtual void bind();
   virtual void unbind();
 
 private:
-  ArrayBuffer * arraybuffer;
-  ArrayBuffer * vertexbuffer;
-  ArrayBuffer * instancebuffer;
-  ElementBuffer * elementbuffer;
+  Buffer<int> * elementbuffer;
+  Buffer<float> * arraybuffer;
+  Buffer<float> * vertexbuffer;
+  Buffer<float> * instancebuffer;
   std::vector<Bindable *> statevec;
 };

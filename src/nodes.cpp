@@ -238,7 +238,23 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-Buffer::Buffer()
+template <typename T>
+LUA_NODE_SOURCE(Buffer<T>);
+
+void
+Buffer<float>::initClass()
+{
+  LUA_NODE_INIT_CLASS(Buffer<float>, "FloatBuffer");
+}
+
+void
+Buffer<int>::initClass()
+{
+  LUA_NODE_INIT_CLASS(Buffer<int>, "IntBuffer");
+}
+
+template <typename T>
+Buffer<T>::Buffer()
   : buffer(nullptr)
 {
   LUA_NODE_ADD_FIELD_3(this->target, "target", GL_ELEMENT_ARRAY_BUFFER);
@@ -247,64 +263,20 @@ Buffer::Buffer()
   LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
   LUA_ENUM_DEFINE_VALUE(this->usage, "STATIC_DRAW", GL_STATIC_DRAW);
   LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", GL_DYNAMIC_DRAW);
+  LUA_NODE_ADD_FIELD_2(this->values, "values");  
 }
 
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(ArrayBuffer);
-
-void
-ArrayBuffer::initClass()
-{
-  LUA_NODE_INIT_CLASS(ArrayBuffer, "ArrayBuffer");
-}
-
-ArrayBuffer::ArrayBuffer()
-{
-  LUA_NODE_ADD_FIELD_2(this->values, "values");
-}
-
-void
-ArrayBuffer::traverse(RenderAction * action)
+template <typename T> void
+Buffer<T>::traverse(RenderAction * action)
 {
   if (!this->buffer.get()) {
-    this->buffer.reset(new GLBufferObject(GL_ARRAY_BUFFER, this->usage.value, this->values.size(), this->values.data()));
+    this->buffer.reset(new GLBufferObject<T>(this->target.value, this->usage.value, this->values.vec));
   }
   action->state->vertexelem.set(this);
 }
 
-void
-ArrayBuffer::traverse(BoundingBoxAction * action)
-{
-  action->state->vertexelem.set(this);
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(ElementBuffer);
-
-void
-ElementBuffer::initClass()
-{
-  LUA_NODE_INIT_CLASS(ElementBuffer, "ElementBuffer");
-}
-
-ElementBuffer::ElementBuffer()
-{
-  LUA_NODE_ADD_FIELD_2(this->values, "values");
-}
-
-void
-ElementBuffer::traverse(RenderAction * action)
-{
-  if (!this->buffer.get()) {
-    this->buffer.reset(new GLBufferObject(GL_ELEMENT_ARRAY_BUFFER, this->usage.value, this->values.size(), this->values.data()));
-  }
-  action->state->vertexelem.set(this);
-}
-
-void
-ElementBuffer::traverse(BoundingBoxAction * action)
+template <typename T> void
+Buffer<T>::traverse(BoundingBoxAction * action)
 {
   action->state->vertexelem.set(this);
 }
@@ -318,7 +290,6 @@ VertexAttribute::initClass()
 {
   LUA_NODE_INIT_CLASS(VertexAttribute, "VertexAttribute");
 }
-
 
 VertexAttribute::VertexAttribute()
   : glattrib(nullptr)
@@ -377,16 +348,16 @@ Shape::traverse(RenderAction * action)
 void
 Shape::draw(State * state)
 {
-  ArrayBuffer * vertexbuffer = state->vertexelem.getVertexBuffer();
-  ArrayBuffer * instancebuffer = state->vertexelem.getInstanceBuffer();
-  ElementBuffer * elementbuffer = state->vertexelem.getElementBuffer();
+  Buffer<int> * elementbuffer = state->vertexelem.getElementBuffer();
+  Buffer<float> * vertexbuffer = state->vertexelem.getVertexBuffer();
+  Buffer<float> * instancebuffer = state->vertexelem.getInstanceBuffer();
 
   GLenum mode = this->mode.value;
 
   if (elementbuffer) {
     unsigned int elemcount = elementbuffer->values.vec.size();
     if (instancebuffer) {
-      unsigned int instancecount = elementbuffer->values.vec.size();
+      unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
       glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
     } else {
       glDrawElements(mode, elemcount, GL_UNSIGNED_INT, nullptr);
@@ -405,8 +376,8 @@ Shape::draw(State * state)
 void
 Shape::traverse(BoundingBoxAction * action)
 {
-  ArrayBuffer * vertexbuffer = action->state->vertexelem.getVertexBuffer();
-  ArrayBuffer * instancebuffer = action->state->vertexelem.getInstanceBuffer();
+  Buffer<float> * vertexbuffer = action->state->vertexelem.getVertexBuffer();
+  Buffer<float> * instancebuffer = action->state->vertexelem.getInstanceBuffer();
 
   box3 bbox;
 

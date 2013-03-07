@@ -8,33 +8,6 @@
 using namespace glm;
 using namespace std;
 
-GLBufferObject::GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
-  : target(target)
-{
-  glGenBuffers(1, &this->buffer);
-  glBindBuffer(this->target, this->buffer);
-  glBufferData(this->target, size, data, usage);
-  glBindBuffer(this->target, 0);
-}
-
-GLBufferObject::~GLBufferObject()
-{
-  glBindBuffer(this->target, 0);
-  glDeleteBuffers(1, &this->buffer);
-}
-
-void
-GLBufferObject::bind()
-{
-  glBindBuffer(this->target, this->buffer);
-}
-
-void
-GLBufferObject::unbind()
-{
-  glBindBuffer(this->target, 0);
-}
-
 // *************************************************************************************************
 
 GLVertexAttribute::GLVertexAttribute(GLuint index, GLuint divisor)

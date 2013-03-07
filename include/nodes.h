@@ -8,6 +8,7 @@
 #include <fields.h>
 #include <elements.h>
 
+template <typename T>
 class GLBufferObject;
 class GLVertexAttribute;
 
@@ -133,35 +134,19 @@ private:
   void doAction(Action * action);
 };
 
+template <typename T>
 class Buffer : public Node {
+  LUA_NODE_HEADER(Buffer<T>);
 public:
-  Buffer();
   static void initClass();
+  Buffer();
   SFEnum usage;
   SFEnum target;
-protected:
+  MField<T> values;
+  virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
   friend class VertexElement;
-  std::unique_ptr<GLBufferObject> buffer;
-};
-
-class ArrayBuffer : public Buffer {
-  LUA_NODE_HEADER(ArrayBuffer);
-public:
-  ArrayBuffer();
-  static void initClass();
-  MFFloat values;
-  virtual void traverse(RenderAction * action);
-  virtual void traverse(BoundingBoxAction * action);
-};
-
-class ElementBuffer : public Buffer {
-  LUA_NODE_HEADER(ElementBuffer);
-public:
-  ElementBuffer();
-  static void initClass();
-  MFInt values;
-  virtual void traverse(RenderAction * action);
-  virtual void traverse(BoundingBoxAction * action);
+  std::unique_ptr<GLBufferObject<T>> buffer;
 };
 
 class VertexAttribute : public Node {
@@ -172,7 +157,7 @@ public:
   static void initClass();
   SFInt index;
   SFInt divisor;
-  SFArrayBuffer buffer;
+  SFBuffer<float> buffer;
 
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);

@@ -36,15 +36,14 @@ VertexElement::VertexElement()
 VertexElement::~VertexElement() {}
 
 void
-VertexElement::set(ArrayBuffer * buffer)
+VertexElement::set(Buffer<float> * buffer)
 {
   this->arraybuffer = buffer;
 }
 
 void
-VertexElement::set(ElementBuffer * buffer)
+VertexElement::set(Buffer<int> * buffer)
 {
-  assert(this->elementbuffer == nullptr);
   this->elementbuffer = buffer;
   this->statevec.insert(this->statevec.begin(), buffer->buffer.get());
 }
@@ -62,19 +61,19 @@ VertexElement::set(VertexAttribute * attrib)
   this->statevec.push_back(attrib->glattrib.get());
 }
 
-ArrayBuffer * 
+Buffer<float> * 
 VertexElement::getVertexBuffer() const
 {
   return this->vertexbuffer;
 }
 
-ElementBuffer * 
+Buffer<int> * 
 VertexElement::getElementBuffer() const
 {
   return this->elementbuffer;
 }
 
-ArrayBuffer * 
+Buffer<float> * 
 VertexElement::getInstanceBuffer() const
 {
   return this->instancebuffer;
