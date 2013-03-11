@@ -36,7 +36,6 @@ GLVertexAttribute::unbind()
   glDisableVertexAttribArray(this->index);
 }
 
-
 // *************************************************************************************************
 
 GLTransformFeedback::GLTransformFeedback(GLuint buffer, GLenum mode)
@@ -46,7 +45,6 @@ GLTransformFeedback::GLTransformFeedback(GLuint buffer, GLenum mode)
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
   glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer);
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
-
 }
 
 GLTransformFeedback::~GLTransformFeedback()

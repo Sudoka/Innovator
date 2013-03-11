@@ -56,10 +56,7 @@ Innovator::Innovator(int width, int height)
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
 
   Shape::initClass();
-  Buffer<int>::initClass();
-  Buffer<float>::initClass();
-  //ArrayBuffer::initClass();
-  //ElementBuffer::initClass();
+  Buffer::initClass();
   Program::initClass();
   Group::initClass();
   Separator::initClass();

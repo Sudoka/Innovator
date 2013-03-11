@@ -9,7 +9,6 @@
 #include <innovator.h>
 
 class Node;
-template <typename T>
 class Buffer;
 
 class Field {
@@ -18,52 +17,76 @@ public:
   std::string name;
 };
 
-template <typename T>
-class SField : public Field {
+class Value {
 public:
-  virtual void read(lua_State * L)
-  {
+  Value(lua_State * L, const std::string & name) 
+    : L(L) {
     luaL_checktype(L, -1, LUA_TTABLE);
-    lua_getfield(L, -1, this->name.c_str());
-    if (!lua_isnil(L, -1)) {
-      this->value = static_cast<T>(luaL_checknumber(L, -1));
-    }
+    lua_getfield(L, -1, name.c_str());
+  }
+  ~Value() {
     lua_pop(L, 1);
   }
-  T value;
+  lua_State * L;
 };
 
-template <typename T>
+class Number : public Value {
+public:
+  Number(lua_State * L, const std::string & name)
+    : Value(L, name), value(0) {
+    if (!lua_isnil(L, -1)) {
+      this->value = luaL_checknumber(L, -1);
+    }
+  }
+  double value;
+};
+
+class Array : public Value {
+public:
+  Array(lua_State * L, const std::string & name, std::vector<double> & vec)
+    : Value(L, name) {
+    if (!lua_isnil(L, -1)) {
+      int n = luaL_len(L, -1);
+      for (int i = 1; i <= n; i++) {
+        lua_rawgeti(L, -1, i);
+        vec.push_back(luaL_checknumber(L, -1));
+        lua_pop(L, 1);
+      }
+    }
+  }
+};
+
+template <typename FieldType>
 class MField : public Field {
 public:
   virtual void read(lua_State * L) 
   {
-    luaL_checktype(L, -1, LUA_TTABLE);
-    lua_getfield(L, -1, this->name.c_str());
-    int n = luaL_len(L, -1);
-    
-    this->vec.resize(n);
-    T * dataptr = (T *) this->vec.data();
-    
-    for (int i = 1; i <= n; i++) {
-      lua_rawgeti(L, -1, i);
-      dataptr[i-1] = (T)luaL_checknumber(L, -1);
-      lua_pop(L, 1);
-    }
-    lua_pop(L, 1);
+    FieldType value(L, this->name, this->vec);
   }
-  std::vector<T> vec;
+  std::vector<double> vec;
 };
 
-static void ReadString(lua_State * L, std::string & value, const char * name)
-{
-  luaL_checktype(L, -1, LUA_TTABLE);
-  lua_getfield(L, -1, name);
-  if (!lua_isnil(L, -1)) {
-    value = luaL_checkstring(L, -1);
+template <typename FieldType>
+class SField : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    FieldType type(L, this->name);
+    this->value = type.value;
   }
-  lua_pop(L, 1);
-}
+  double value;
+};
+
+class String {
+public:
+  static void read(lua_State * L, std::string & name, std::string & value)
+  {
+    Value field(L, name);
+    if (!lua_isnil(L, -1)) {
+      value = luaL_checkstring(L, -1);
+    }
+  }
+};
 
 class SFVec3f : public Field {
 public:
@@ -71,12 +94,10 @@ public:
   {
     luaL_checktype(L, -1, LUA_TTABLE);
     lua_getfield(L, -1, this->name.c_str());
-    
-    luaL_checktype(L, -1, LUA_TTABLE);
     if (!lua_isnil(L, -1)) {
+      luaL_checktype(L, -1, LUA_TTABLE);
       int n = luaL_len(L, -1);
       assert(n == 3);
-      
       for (int i = 0; i < n; i++) {
         lua_rawgeti(L, -1, i + 1);
         this->value[i] = (float)luaL_checknumber(L, -1);
@@ -107,8 +128,7 @@ public:
   std::shared_ptr<NodeType> value;
 };
 
-template <typename T>
-class SFBuffer : public SFNode<Buffer<T>> {
+class SFBuffer : public SFNode<Buffer> {
 };
 
 template <typename NodeType>
@@ -134,17 +154,17 @@ class SFString : public Field {
 public:
   virtual void read(lua_State * L)
   {
-    ReadString(L, this->value, this->name.c_str());
+    String::read(L, this->name, this->value);
   }
   std::string value;
 };
 
-class SFEnum : public SField<int> {
+class SFEnum : public Field {
 public:
   virtual void read(lua_State * L)
   {
     std::string name;
-    ReadString(L, name, this->name.c_str());
+    String::read(L, this->name, name);
     if (name.empty()) return;
     
     if (this->enums.find(name) == this->enums.end()) {
@@ -155,10 +175,7 @@ public:
   }
   typedef std::map<std::string, int> Enums;
   Enums enums;
+  int value;
 };
 
-typedef SField<int> SFInt;
-typedef SField<float> SFFloat;
-typedef MField<int> MFInt;
-typedef MField<float> MFFloat;
 typedef MFChild<Node> MFNode;

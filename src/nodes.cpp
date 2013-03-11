@@ -238,45 +238,57 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-template <typename T>
-LUA_NODE_SOURCE(Buffer<T>);
+LUA_NODE_SOURCE(Buffer);
 
 void
-Buffer<float>::initClass()
+Buffer::initClass()
 {
-  LUA_NODE_INIT_CLASS(Buffer<float>, "FloatBuffer");
+  LUA_NODE_INIT_CLASS(Buffer, "Buffer");
 }
 
-void
-Buffer<int>::initClass()
-{
-  LUA_NODE_INIT_CLASS(Buffer<int>, "IntBuffer");
-}
-
-template <typename T>
-Buffer<T>::Buffer()
+Buffer::Buffer()
   : buffer(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_ELEMENT_ARRAY_BUFFER);
+  LUA_NODE_ADD_FIELD_3(this->type, "type", GL_UNSIGNED_INT);
+  LUA_ENUM_DEFINE_VALUE(this->type, "FLOAT", GL_FLOAT);
+  LUA_ENUM_DEFINE_VALUE(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
+
   LUA_NODE_ADD_FIELD_3(this->usage, "usage", GL_STATIC_DRAW);
-  LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", GL_ARRAY_BUFFER);
-  LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
   LUA_ENUM_DEFINE_VALUE(this->usage, "STATIC_DRAW", GL_STATIC_DRAW);
   LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", GL_DYNAMIC_DRAW);
+
+  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_ELEMENT_ARRAY_BUFFER);
+  LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", GL_ARRAY_BUFFER);
+  LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
+
   LUA_NODE_ADD_FIELD_2(this->values, "values");  
 }
 
-template <typename T> void
-Buffer<T>::traverse(RenderAction * action)
+void
+Buffer::traverse(RenderAction * action)
 {
   if (!this->buffer.get()) {
-    this->buffer.reset(new GLBufferObject<T>(this->target.value, this->usage.value, this->values.vec));
+    if (this->type.value == GL_UNSIGNED_INT) {
+      vector<GLuint> vec(this->values.vec.size());
+      for (size_t i = 0; i < this->values.vec.size(); i++) {
+        vec[i] = static_cast<GLuint>(this->values.vec[i]);
+      }
+      this->buffer.reset(new GLBufferObject(this->target.value, this->usage.value, sizeof(GLuint) * vec.size(), vec.data()));
+    } else if (this->type.value == GL_FLOAT) {
+      vector<GLfloat> vec(this->values.vec.size());
+      for (size_t i = 0; i < this->values.vec.size(); i++) {
+        vec[i] = static_cast<GLfloat>(this->values.vec[i]);
+      }
+      this->buffer.reset(new GLBufferObject(this->target.value, this->usage.value, sizeof(GLfloat) * vec.size(), vec.data()));
+    } else {
+      assert(0);
+    }
   }
   action->state->vertexelem.set(this);
 }
 
-template <typename T> void
-Buffer<T>::traverse(BoundingBoxAction * action)
+void
+Buffer::traverse(BoundingBoxAction * action)
 {
   action->state->vertexelem.set(this);
 }
@@ -348,9 +360,9 @@ Shape::traverse(RenderAction * action)
 void
 Shape::draw(State * state)
 {
-  Buffer<int> * elementbuffer = state->vertexelem.getElementBuffer();
-  Buffer<float> * vertexbuffer = state->vertexelem.getVertexBuffer();
-  Buffer<float> * instancebuffer = state->vertexelem.getInstanceBuffer();
+  Buffer * elementbuffer = state->vertexelem.getElementBuffer();
+  Buffer * vertexbuffer = state->vertexelem.getVertexBuffer();
+  Buffer * instancebuffer = state->vertexelem.getInstanceBuffer();
 
   GLenum mode = this->mode.value;
 
@@ -376,8 +388,8 @@ Shape::draw(State * state)
 void
 Shape::traverse(BoundingBoxAction * action)
 {
-  Buffer<float> * vertexbuffer = action->state->vertexelem.getVertexBuffer();
-  Buffer<float> * instancebuffer = action->state->vertexelem.getInstanceBuffer();
+  Buffer * vertexbuffer = action->state->vertexelem.getVertexBuffer();
+  Buffer * instancebuffer = action->state->vertexelem.getInstanceBuffer();
 
   box3 bbox;
 

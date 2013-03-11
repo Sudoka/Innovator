@@ -84,14 +84,19 @@ void main()
 local t = (1 + 5^0.5) / 2; -- golden ratio
 
 root = Separator {
-   IntBuffer {
+   Transform {
+      scaleFactor = { 1, 1, 1 }
+   },
+   Buffer {
+      type = "UNSIGNED_INT",
       target = "ELEMENT_ARRAY",
       values = { 1,  4, 0,  4, 9, 0, 4, 5,  9, 8, 5,  4,  1, 8, 4,
                  1, 10, 8, 10, 3, 8, 8, 3,  5, 3, 2,  5,  3, 7, 2,
                  3, 10, 7, 10, 6, 7, 6, 11, 7, 6, 0, 11,  6, 1, 0,
                  10, 1, 6, 11, 0, 9, 2, 11, 9, 5, 2,  9, 11, 2, 7 }
    },
-   FloatBuffer {
+   Buffer {
+      type = "FLOAT",
       target = "ARRAY",
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
                   0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
@@ -104,7 +109,8 @@ root = Separator {
       size = 3,
       divisor = 1,
       location = 2, 
-      FloatBuffer {
+      Buffer {
+         type = "FLOAT",
          target = "ARRAY",
          values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
       }

@@ -1,9 +1,6 @@
 
-
 - lua file format!
   - poll file, reload on change
-  - probably use table of tables for multi value vec3 fields
-  - mesh computations in lua?
 
 - debug:
   - use new opengl debug output

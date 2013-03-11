@@ -36,16 +36,19 @@ VertexElement::VertexElement()
 VertexElement::~VertexElement() {}
 
 void
-VertexElement::set(Buffer<float> * buffer)
+VertexElement::set(Buffer * buffer)
 {
-  this->arraybuffer = buffer;
-}
-
-void
-VertexElement::set(Buffer<int> * buffer)
-{
-  this->elementbuffer = buffer;
-  this->statevec.insert(this->statevec.begin(), buffer->buffer.get());
+  switch (buffer->target.value) {
+  case GL_ELEMENT_ARRAY_BUFFER: {
+    this->elementbuffer = buffer;
+    this->statevec.insert(this->statevec.begin(), buffer->buffer.get());
+  } break;
+  case GL_ARRAY_BUFFER:
+    this->arraybuffer = buffer;
+    break;
+  default:
+    throw std::invalid_argument("Invalid buffer type");
+  }
 }
 
 void 
@@ -61,19 +64,19 @@ VertexElement::set(VertexAttribute * attrib)
   this->statevec.push_back(attrib->glattrib.get());
 }
 
-Buffer<float> * 
+Buffer * 
 VertexElement::getVertexBuffer() const
 {
   return this->vertexbuffer;
 }
 
-Buffer<int> * 
+Buffer * 
 VertexElement::getElementBuffer() const
 {
   return this->elementbuffer;
 }
 
-Buffer<float> * 
+Buffer * 
 VertexElement::getInstanceBuffer() const
 {
   return this->instancebuffer;
