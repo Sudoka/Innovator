@@ -87,17 +87,13 @@ root = Separator {
    Transform {
       scaleFactor = { 1, 1, 1 }
    },
-   Buffer {
-      type = "UNSIGNED_INT",
-      target = "ELEMENT_ARRAY",
+   IndexBuffer {
       values = { 1,  4, 0,  4, 9, 0, 4, 5,  9, 8, 5,  4,  1, 8, 4,
                  1, 10, 8, 10, 3, 8, 8, 3,  5, 3, 2,  5,  3, 7, 2,
                  3, 10, 7, 10, 6, 7, 6, 11, 7, 6, 0, 11,  6, 1, 0,
                  10, 1, 6, 11, 0, 9, 2, 11, 9, 5, 2,  9, 11, 2, 7 }
    },
-   Buffer {
-      type = "FLOAT",
-      target = "ARRAY",
+   VertexBuffer {
       values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
                   0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
                   t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
@@ -109,9 +105,7 @@ root = Separator {
       size = 3,
       divisor = 1,
       location = 2, 
-      Buffer {
-         type = "FLOAT",
-         target = "ARRAY",
+      VertexBuffer {
          values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
       }
    },

@@ -12,7 +12,7 @@ Lua::Lua()
   L = luaL_newstate();
   luaL_openlibs(L);
 
-  //this->dofile("../../src/file.lua");
+  this->dofile("../../src/file.lua");
 }
 
 Lua::~Lua()
