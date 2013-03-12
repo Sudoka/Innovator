@@ -17,146 +17,131 @@ public:
   std::string name;
 };
 
-class Value {
+template <typename T>
+class FieldValue {
 public:
-  Value(lua_State * L, const std::string & name) 
-    : L(L) {
-    luaL_checktype(L, -1, LUA_TTABLE);
-    lua_getfield(L, -1, name.c_str());
-  }
-  ~Value() {
-    lua_pop(L, 1);
-  }
-  lua_State * L;
+  T readValue(lua_State * L);
 };
 
-class Number : public Value {
+template <typename T>
+class Value : public FieldValue<T> {
 public:
-  Number(lua_State * L, const std::string & name)
-    : Value(L, name), value(0) {
-    if (!lua_isnil(L, -1)) {
-      this->value = luaL_checknumber(L, -1);
-    }
-  }
-  double value;
-};
-
-class Array : public Value {
-public:
-  Array(lua_State * L, const std::string & name, std::vector<double> & vec)
-    : Value(L, name) {
-    if (!lua_isnil(L, -1)) {
-      int n = luaL_len(L, -1);
-      for (int i = 1; i <= n; i++) {
-        lua_rawgeti(L, -1, i);
-        vec.push_back(luaL_checknumber(L, -1));
-        lua_pop(L, 1);
-      }
-    }
-  }
-};
-
-template <typename FieldType>
-class MField : public Field {
-public:
-  virtual void read(lua_State * L) 
-  {
-    FieldType value(L, this->name, this->vec);
-  }
-  std::vector<double> vec;
-};
-
-template <typename FieldType>
-class SField : public Field {
-public:
-  virtual void read(lua_State * L)
-  {
-    FieldType type(L, this->name);
-    this->value = type.value;
-  }
-  double value;
-};
-
-class String {
-public:
-  static void read(lua_State * L, std::string & name, std::string & value)
-  {
-    Value field(L, name);
-    if (!lua_isnil(L, -1)) {
-      value = luaL_checkstring(L, -1);
-    }
-  }
-};
-
-class SFVec3f : public Field {
-public:
-  virtual void read(lua_State * L)
-  {
-    luaL_checktype(L, -1, LUA_TTABLE);
-    lua_getfield(L, -1, this->name.c_str());
-    if (!lua_isnil(L, -1)) {
-      luaL_checktype(L, -1, LUA_TTABLE);
-      int n = luaL_len(L, -1);
-      assert(n == 3);
-      for (int i = 0; i < n; i++) {
-        lua_rawgeti(L, -1, i + 1);
-        this->value[i] = (float)luaL_checknumber(L, -1);
-        lua_pop(L, 1);
-      }
-    }
-    lua_pop(L, 1);
-  }
-  glm::vec3 value;
-};
-
-template <class NodeType>
-class SFNode : public Field {
-public:
-  virtual void read(lua_State * L)
+  Value(lua_State * L, T & value)
   {
     luaL_checktype(L, -1, LUA_TTABLE);
     int n = luaL_len(L, -1);
     assert(n <= 1);
     lua_rawgeti(L, -1, 1);
     if (!lua_isnil(L, -1)) {
-      luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
-      NodeType * node = static_cast<NodeType *>(lua_touserdata(L, -1));
-      value.reset(node);
+      value = this->readValue(L);
     }
     lua_pop(L, 1);
   }
-  std::shared_ptr<NodeType> value;
+  Value(lua_State * L, const std::string & name, T & value)
+  {
+    luaL_checktype(L, -1, LUA_TTABLE);
+    lua_getfield(L, -1, name.c_str());
+    if (!lua_isnil(L, -1)) {
+      value = this->readValue(L);
+    }
+    lua_pop(L, 1);
+  }
 };
 
-class SFBuffer : public SFNode<Buffer> {
+template <typename T>
+class Array : public FieldValue<T> {
+public:
+  Array(lua_State * L, std::vector<T> & vec)
+  {
+    luaL_checktype(L, -1, LUA_TTABLE);
+    this->read(L, vec);
+  }
+  Array(lua_State * L, const std::string & name, std::vector<T> & vec)
+  {
+    luaL_checktype(L, -1, LUA_TTABLE);
+    lua_getfield(L, -1, name.c_str());
+    if (!lua_isnil(L, -1)) {
+      this->read(L, vec);
+    }
+    lua_pop(L, 1);
+  }
+  void read(lua_State * L, std::vector<T> & vec) {
+    if (!lua_isnil(L, -1)) {
+      int n = luaL_len(L, -1);
+      for (int i = 1; i <= n; i++) {
+        lua_rawgeti(L, -1, i);
+        vec.push_back(this->readValue(L));
+        lua_pop(L, 1);
+      }
+    }
+  }
 };
 
-template <typename NodeType>
-class MFChild : public Field {
+class SFNumber : public Field {
 public:
   virtual void read(lua_State * L)
   {
-    luaL_checktype(L, -1, LUA_TTABLE);
-    int n = luaL_len(L, -1);
-    
-    for (int i = 1; i <= n; i++) {
-      lua_rawgeti(L, -1, i);
-      luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
-      NodeType * child = static_cast<NodeType *>(lua_touserdata(L, -1));
-      this->values.push_back(shared_ptr<NodeType>(child));
-      lua_pop(L, 1);
-    }
+    Value<double> value(L, this->name, this->value);
   }
-  std::vector<std::shared_ptr<NodeType>> values;
+  double value;
+};
+
+class SFInt : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Value<int> value(L, this->name, this->value);
+  }
+  int value;
 };
 
 class SFString : public Field {
 public:
   virtual void read(lua_State * L)
   {
-    String::read(L, this->name, this->value);
+    Value<std::string> value(L, this->name, this->value);
   }
   std::string value;
+};
+
+class MFNumber : public Field {
+public:
+  virtual void read(lua_State * L) 
+  {
+    Array<double> value(L, this->name, this->vec);
+  }
+  std::vector<double> vec;
+};
+
+class SFBuffer : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Value<std::shared_ptr<Buffer>> value(L, this->value);
+  }
+  std::shared_ptr<Buffer> value;
+};
+
+class MFNode : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Array<std::shared_ptr<Node>> value(L, this->values);
+  }
+  std::vector<std::shared_ptr<Node>> values;
+};
+
+class SFVec3f : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    std::vector<double> tmp;
+    Array<double> value(L, this->name, tmp);
+    if (tmp.size() == 3) {
+      this->value = glm::vec3(tmp[0], tmp[1], tmp[2]);
+    }
+  }
+  glm::vec3 value;
 };
 
 class SFEnum : public Field {
@@ -164,7 +149,7 @@ public:
   virtual void read(lua_State * L)
   {
     std::string name;
-    String::read(L, this->name, name);
+    Value<std::string> value(L, this->name, name);
     if (name.empty()) return;
     
     if (this->enums.find(name) == this->enums.end()) {
@@ -173,9 +158,6 @@ public:
     }
     this->value = this->enums[name];
   }
-  typedef std::map<std::string, int> Enums;
-  Enums enums;
   int value;
+  std::map<std::string, int> enums;
 };
-
-typedef MFChild<Node> MFNode;

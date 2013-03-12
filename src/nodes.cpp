@@ -268,21 +268,10 @@ void
 Buffer::traverse(RenderAction * action)
 {
   if (!this->buffer.get()) {
-    if (this->type.value == GL_UNSIGNED_INT) {
-      vector<GLuint> vec(this->values.vec.size());
-      for (size_t i = 0; i < this->values.vec.size(); i++) {
-        vec[i] = static_cast<GLuint>(this->values.vec[i]);
-      }
-      this->buffer.reset(new GLBufferObject(this->target.value, this->usage.value, sizeof(GLuint) * vec.size(), vec.data()));
-    } else if (this->type.value == GL_FLOAT) {
-      vector<GLfloat> vec(this->values.vec.size());
-      for (size_t i = 0; i < this->values.vec.size(); i++) {
-        vec[i] = static_cast<GLfloat>(this->values.vec[i]);
-      }
-      this->buffer.reset(new GLBufferObject(this->target.value, this->usage.value, sizeof(GLfloat) * vec.size(), vec.data()));
-    } else {
-      assert(0);
-    }
+    this->buffer.reset(GLBufferObject::create(this->target.value, 
+                                              this->usage.value, 
+                                              this->type.value, 
+                                              this->values.vec));
   }
   action->state->vertexelem.set(this);
 }
@@ -360,8 +349,8 @@ Shape::traverse(RenderAction * action)
 void
 Shape::draw(State * state)
 {
-  Buffer * elementbuffer = state->vertexelem.getElementBuffer();
   Buffer * vertexbuffer = state->vertexelem.getVertexBuffer();
+  Buffer * elementbuffer = state->vertexelem.getElementBuffer();
   Buffer * instancebuffer = state->vertexelem.getInstanceBuffer();
 
   GLenum mode = this->mode.value;

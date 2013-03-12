@@ -57,23 +57,17 @@ private:
 
 class GLBufferObject : public Bindable {
 public:
-  GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
-    : target(target) {
-    glGenBuffers(1, &this->buffer);
-    glBindBuffer(this->target, this->buffer);
-    glBufferData(this->target, size, data, usage);
-    glBindBuffer(this->target, 0);
-  }
-  ~GLBufferObject() {
-    glBindBuffer(this->target, 0);
-    glDeleteBuffers(1, &this->buffer);
-  }
-  virtual void bind() {
-    glBindBuffer(this->target, this->buffer);
-  }
-  virtual void unbind() {
-    glBindBuffer(this->target, 0);
-  }
+  GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
+  ~GLBufferObject();
+
+  void * map(GLenum access);
+  void unmap();
+
+  virtual void bind();
+  virtual void unbind();
+
+  static GLBufferObject * create(GLenum target, GLenum usage, GLenum type, const std::vector<double> & data);
+
   GLenum target;
   GLuint buffer;
 };

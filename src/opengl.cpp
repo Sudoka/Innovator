@@ -8,6 +8,77 @@
 using namespace glm;
 using namespace std;
 
+template <typename T>
+GLBufferObject * GetGLBuffer(GLenum target, GLenum usage, const std::vector<double> & vec)
+{
+  GLBufferObject * glbuffer = new GLBufferObject(target, usage, sizeof(T) * vec.size());
+  T * data = (T *)glbuffer->map(GL_WRITE_ONLY);
+  if (!data) {
+    throw std::runtime_error("GetGLBuffer(): Unable to map buffer.");
+  }
+  for (size_t i = 0; i < vec.size(); i++) {
+    data[i] = static_cast<T>(vec[i]);
+  }
+  glbuffer->unmap();
+  return glbuffer;
+}
+
+GLBufferObject * 
+GLBufferObject::create(GLenum target, GLenum usage, GLenum type, const std::vector<double> & vec)
+{
+  switch (type) {
+  case GL_FLOAT:
+    return GetGLBuffer<GLfloat>(target, usage, vec);
+    break;
+  case GL_UNSIGNED_INT:
+    return GetGLBuffer<GLuint>(target, usage, vec);
+    break;
+  default:
+    throw std::invalid_argument("GLBufferObject::create(): Invalid buffer type");
+  }
+}
+
+GLBufferObject::GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data)
+  : target(target) 
+{
+  glGenBuffers(1, &this->buffer);
+  glBindBuffer(this->target, this->buffer);
+  glBufferData(this->target, size, data, usage);
+  glBindBuffer(this->target, 0);
+}
+  
+GLBufferObject::~GLBufferObject() 
+{
+  glBindBuffer(this->target, 0);
+  glDeleteBuffers(1, &this->buffer);
+}
+
+void * 
+GLBufferObject::map(GLenum access) 
+{
+  this->bind();
+  return glMapBuffer(this->target, access);
+}
+
+void 
+GLBufferObject::unmap() 
+{
+  glUnmapBuffer(this->target);
+  this->unbind();
+}
+
+void
+GLBufferObject::bind() 
+{
+  glBindBuffer(this->target, this->buffer);
+}
+
+void
+GLBufferObject::unbind() 
+{
+  glBindBuffer(this->target, 0);
+}
+
 // *************************************************************************************************
 
 GLVertexAttribute::GLVertexAttribute(GLuint index, GLuint divisor)

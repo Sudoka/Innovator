@@ -141,7 +141,7 @@ public:
   SFEnum type;
   SFEnum usage;
   SFEnum target;
-  MField<Array> values;
+  MFNumber values;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
   friend class VertexElement;
@@ -155,8 +155,8 @@ public:
   virtual ~VertexAttribute();
   static void initClass();
 
-  SField<Number> index;
-  SField<Number> divisor;
+  SFInt index;
+  SFInt divisor;
   SFBuffer buffer;
 
   virtual void traverse(RenderAction * action);
