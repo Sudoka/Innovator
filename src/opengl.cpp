@@ -1,11 +1,7 @@
 #include <opengl.h>
 #include <innovator.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 #include <string>
-#include <assert.h>
 
-using namespace glm;
 using namespace std;
 
 template <typename T>
@@ -13,9 +9,6 @@ GLBufferObject * GetGLBuffer(GLenum target, GLenum usage, const std::vector<doub
 {
   GLBufferObject * glbuffer = new GLBufferObject(target, usage, sizeof(T) * vec.size());
   T * data = (T *)glbuffer->map(GL_WRITE_ONLY);
-  if (!data) {
-    throw std::runtime_error("GetGLBuffer(): Unable to map buffer.");
-  }
   for (size_t i = 0; i < vec.size(); i++) {
     data[i] = static_cast<T>(vec[i]);
   }
@@ -57,7 +50,11 @@ void *
 GLBufferObject::map(GLenum access) 
 {
   this->bind();
-  return glMapBuffer(this->target, access);
+  void * data = glMapBuffer(this->target, access);
+  if (!data) {
+    throw std::runtime_error("GLBufferObject::map(): Unable to map buffer.");
+  }
+  return data;
 }
 
 void 

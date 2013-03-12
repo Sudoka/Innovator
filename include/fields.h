@@ -90,9 +90,18 @@ class SFInt : public Field {
 public:
   virtual void read(lua_State * L)
   {
-    Value<int> value(L, this->name, this->value);
+    Value<GLint> value(L, this->name, this->value);
   }
-  int value;
+  GLint value;
+};
+
+class SFUint : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Value<GLuint> value(L, this->name, this->value);
+  }
+  GLuint value;
 };
 
 class SFString : public Field {

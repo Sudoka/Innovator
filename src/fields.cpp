@@ -30,8 +30,14 @@ FieldValue<double>::readValue(lua_State * L)
   return luaL_checknumber(L, -1);
 }
 
-int
-FieldValue<int>::readValue(lua_State * L)
+GLint
+FieldValue<GLint>::readValue(lua_State * L)
+{
+  return luaL_checkinteger(L, -1);
+}
+
+GLuint
+FieldValue<GLuint>::readValue(lua_State * L)
 {
   return luaL_checkinteger(L, -1);
 }

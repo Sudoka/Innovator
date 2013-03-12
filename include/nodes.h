@@ -2,8 +2,6 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <string>
-#include <vector>
 #include <luanode.h>
 #include <fields.h>
 #include <elements.h>
@@ -155,8 +153,8 @@ public:
   virtual ~VertexAttribute();
   static void initClass();
 
-  SFInt index;
-  SFInt divisor;
+  SFUint index;
+  SFUint divisor;
   SFBuffer buffer;
 
   virtual void traverse(RenderAction * action);

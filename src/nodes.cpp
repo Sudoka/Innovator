@@ -3,10 +3,7 @@
 #include <opengl.h>
 #include <state.h>
 #include <box3.h>
-#include <vector>
 #include <math.h>
-#include <string>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace glm;
