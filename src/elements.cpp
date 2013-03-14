@@ -41,7 +41,6 @@ VertexElement::set(Buffer * buffer)
   switch (buffer->target.value) {
   case GL_ELEMENT_ARRAY_BUFFER: {
     this->elementbuffer = buffer;
-    this->statevec.insert(this->statevec.begin(), buffer->buffer.get());
   } break;
   case GL_ARRAY_BUFFER:
     this->arraybuffer = buffer;
@@ -49,6 +48,7 @@ VertexElement::set(Buffer * buffer)
   default:
     throw std::invalid_argument("Invalid buffer type");
   }
+  this->statevec.push_back(buffer->buffer.get());
 }
 
 void 
@@ -60,7 +60,6 @@ VertexElement::set(VertexAttribute * attrib)
   if (attrib->divisor.value == 1) {
     this->instancebuffer = this->arraybuffer;
   }
-  this->statevec.push_back(this->arraybuffer->buffer.get());
   this->statevec.push_back(attrib->glattrib.get());
 }
 

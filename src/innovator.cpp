@@ -72,7 +72,7 @@ Innovator::Innovator(int width, int height)
   GeometryShader::initClass();
   FragmentShader::initClass();
 
-  self->viewer->setSceneGraph(self->lua->readAll("../../src/scene2.lua"));
+  self->viewer->setSceneGraph(self->lua->readAll("../../src/scene.lua"));
 }
 
 Innovator::~Innovator()
