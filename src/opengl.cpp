@@ -78,15 +78,11 @@ GLBufferObject::unbind()
 
 // *************************************************************************************************
 
-GLVertexAttribute::GLVertexAttribute(GLuint index, GLuint divisor)
+GLVertexAttribute::GLVertexAttribute(GLuint index, GLuint size, GLenum type, GLuint divisor)
   : index(index), 
-    divisor(divisor),
-    size(3),
-    type(GL_FLOAT)
-{
-}
-
-GLVertexAttribute::~GLVertexAttribute()
+    size(size),
+    type(type),
+    divisor(divisor)
 {
 }
 

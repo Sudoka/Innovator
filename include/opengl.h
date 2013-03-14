@@ -73,8 +73,7 @@ public:
 
 class GLVertexAttribute : public Bindable {
 public:
-  GLVertexAttribute(GLuint index, GLuint divisor);
-  ~GLVertexAttribute();
+  GLVertexAttribute(GLuint index, GLuint size, GLenum type, GLuint divisor);
 
   virtual void bind();
   virtual void unbind();

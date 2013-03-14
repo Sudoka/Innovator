@@ -292,6 +292,7 @@ VertexAttribute::initClass()
 VertexAttribute::VertexAttribute()
   : glattrib(nullptr)
 {
+  LUA_NODE_ADD_FIELD_3(this->size, "size", 3);
   LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
   LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
   LUA_NODE_ADD_FIELD_3(this->buffer, "buffer", nullptr);
@@ -303,7 +304,10 @@ void
 VertexAttribute::traverse(RenderAction * action)
 {
   if (!this->glattrib.get()) {
-    this->glattrib.reset(new GLVertexAttribute(this->index.value, this->divisor.value));
+    this->glattrib.reset(new GLVertexAttribute(this->index.value, 
+                                               this->size.value,
+                                               this->type.value,
+                                               this->divisor.value));
   }
   if (this->buffer.value.get()) {
     this->buffer.value->traverse(action);
