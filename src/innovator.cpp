@@ -41,7 +41,13 @@ Innovator::Innovator(int width, int height)
   self->lua.reset(new Lua);
   self->glfw.reset(new Glfw);
 
-  if (!glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW)) {
+  /*
+  enable this when VAO support is added.
+  glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
+  */
+  if (glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW) != GL_TRUE) {
     throw std::runtime_error("failed to open GLFW window.");
   }
   if (glewInit() != GLEW_OK) {
@@ -103,7 +109,7 @@ Innovator::loop()
     if (self->viewer->needRedraw()) {
       self->viewer->renderGL();
       if (glGetError() != GL_NO_ERROR) {
-        cout << "GL error\n" << endl;
+        cout << "GL error" << endl;
       }
       glfwSwapBuffers();
     }

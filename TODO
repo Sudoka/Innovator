@@ -1,13 +1,19 @@
 
-- lua file format!
+- nodes
+  - text
+
+- Separator render cache
+
+- lua file format:
   - poll file, reload on change
 
 - debug:
-  - use new opengl debug output
+  - use new opengl debug output?
 
 - statically link dependencies
-- port LEGO model import to Lua!
+- port LEGO model import to Lua?
 
-- nodes
-  - text
-  - indirect buffer
+- shadow mapping
+
+- screen-space effects
+
