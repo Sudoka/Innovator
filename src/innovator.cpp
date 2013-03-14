@@ -62,15 +62,15 @@ Innovator::Innovator(int width, int height)
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
 
   Shape::initClass();
+  Group::initClass();
   Buffer::initClass();
   Program::initClass();
-  Group::initClass();
   Separator::initClass();
   Transform::initClass();
-  VertexAttribute::initClass();
   VertexShader::initClass();
   GeometryShader::initClass();
   FragmentShader::initClass();
+  VertexAttribute::initClass();
 
   self->viewer->setSceneGraph(self->lua->readAll("../../src/scene.lua"));
 }

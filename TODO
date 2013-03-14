@@ -1,15 +1,15 @@
 
-- nodes
-  - text
+- opengl error checking
+  - define macros for calling opengl with glGetError()
 
 - Separator render cache
 
 - VertexElement
   - vao mandatory when using 3.3 core
-  - just insert element and array buffers in the order they come in
 
 - lua file format:
   - poll file, reload on change
+  - more robust error handling
 
 - debug:
   - use new opengl debug output?
@@ -19,5 +19,6 @@
 
 - shadow mapping
 
-- screen-space effects
+- text node
 
+- screen-space effects
