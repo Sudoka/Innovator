@@ -153,6 +153,7 @@ public:
   virtual ~VertexAttribute();
   static void initClass();
 
+  SFEnum type;
   SFUint size;
   SFUint index;
   SFUint divisor;

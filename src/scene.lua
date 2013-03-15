@@ -100,21 +100,22 @@ root = Separator {
    },
    VertexAttribute { location = 0, size = 3 },
    VertexAttribute { location = 1, size = 3 },
-   BoundingBox { size = 3 },
+--   BoundingBox { size = 3 },
 
    VertexBuffer {
       values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
    },
 
    VertexAttribute { location = 2, size = 3, divisor = 1 },
-   BoundingBox { size = 3 },
+--   BoundingBox { size = 3 },
 
    Program {
       VertexShader   { source = vertex },
       FragmentShader { source = fragment }
    },
 
-   DrawElementsInstanced { mode = "TRIANGLES" }
+   Shape { mode = "TRIANGLES" }
+--   DrawElementsInstanced { mode = "TRIANGLES" }
 
 --   Program {
 --      VertexShader   { source = normal_vertex },

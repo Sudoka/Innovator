@@ -292,6 +292,7 @@ VertexAttribute::initClass()
 VertexAttribute::VertexAttribute()
   : glattrib(nullptr)
 {
+  LUA_NODE_ADD_FIELD_3(this->type, "type", GL_FLOAT);
   LUA_NODE_ADD_FIELD_3(this->size, "size", 3);
   LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
   LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
