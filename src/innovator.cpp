@@ -40,13 +40,14 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   self->lua.reset(new Lua);
   self->glfw.reset(new Glfw);
 
-  //glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
-  //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
+  glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
 
   if (glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW) != GL_TRUE) {
     throw std::runtime_error("failed to open GLFW window.");
   }
+  glewExperimental = true; // necessary for core profile
   if (glewInit() != GLEW_OK) {
     throw std::runtime_error("failed to initialize GLEW.");
   }
