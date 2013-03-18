@@ -1,5 +1,4 @@
 #include <luawrapper.h>
-#include <iostream>
 #include <innovator.h>
 #include <glm/glm.hpp>
 #include <nodes.h>
@@ -12,12 +11,11 @@ Lua::Lua()
   L = luaL_newstate();
   luaL_openlibs(L);
 
-  this->dofile("../../src/file.lua");
+  this->dofile("src/file.lua");
 }
 
 Lua::~Lua()
 {
-  cout << "Lua::exit()" << endl;
   lua_close(L);
 }
 

@@ -6,7 +6,7 @@ class Lua;
 
 class Innovator {
 public:
-  Innovator(int width, int height);
+  Innovator(int width, int height, const std::string & filename);
   ~Innovator();
 
   static void resizeCB(int width, int height);

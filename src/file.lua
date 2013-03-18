@@ -71,7 +71,8 @@ function Box(data)
                         1,  1, -1,  1,  1,  1 } 
          }
       },
-      Shape { mode = "TRIANGLES" }
+      BoundingBox { min = { -1, -1, -1 }, max = { 1, 1, 1 } },
+      DrawElements { mode = "TRIANGLES" }
    }
 end
 
@@ -98,6 +99,7 @@ function Sphere(data)
                         t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
          }
       },
-      Shape { mode = "TRIANGLES" }
+      BoundingBox { min = { -1, -1, -1 }, max = { 1, 1, 1 } },
+      DrawElements { mode = "TRIANGLES" }
    }
 end

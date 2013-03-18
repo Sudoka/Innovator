@@ -16,7 +16,6 @@ public:
     }
   }
   ~Glfw() {
-    cout << "glfwTerminate()" << endl;
     glfwTerminate();
   }
 };
@@ -30,7 +29,7 @@ public:
 
 std::unique_ptr<Innovator::InnovatorP> Innovator::self = nullptr;
 
-Innovator::Innovator(int width, int height)
+Innovator::Innovator(int width, int height, const std::string & filename)
 {
   if (self.get() != nullptr) {
     throw std::runtime_error("Innovator already created.");
@@ -74,7 +73,7 @@ Innovator::Innovator(int width, int height)
   DrawArraysInstanced::initClass();
   DrawElementsInstanced::initClass();
 
-  self->viewer->setSceneGraph(self->lua->readAll("../../src/scene.lua"));
+  self->viewer->setSceneGraph(self->lua->readAll(filename));
 }
 
 Innovator::~Innovator()
