@@ -4,12 +4,14 @@
     <LocalDebuggerEnvironment>
     </LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>instances.lua</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>geometry_cubes.lua</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>..\..</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerEnvironment>
     </LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>geometry_cubes.lua</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>..\..</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>
