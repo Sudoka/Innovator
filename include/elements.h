@@ -6,10 +6,12 @@
 #include <GL/glew.h>
 #include <opengl.h>
 #include <fields.h>
+#include <memory.h>
 
 class State;
 class Buffer;
 class VertexAttribute;
+class GLVertexArrayObject;
 
 class MatrixElement {
 public:
@@ -38,14 +40,16 @@ public:
   Buffer * getElementBuffer() const;
   Buffer * getInstanceBuffer() const;
 
+  GLVertexArrayObject * createVAO();
+
 private:
   virtual void bind();
   virtual void unbind();
 
 private:
-  Buffer * elementbuffer;
   Buffer * arraybuffer;
   Buffer * vertexbuffer;
+  Buffer * elementbuffer;
   Buffer * instancebuffer;
   std::vector<Bindable *> statevec;
 };

@@ -71,6 +71,18 @@ public:
   GLuint buffer;
 };
 
+class GLVertexArrayObject : public Bindable {
+public:
+  GLVertexArrayObject();
+  ~GLVertexArrayObject();
+
+private:
+  virtual void bind();
+  virtual void unbind();
+
+  GLuint vao;
+};
+
 class GLVertexAttribute : public Bindable {
 public:
   GLVertexAttribute(GLuint index, GLuint size, GLenum type, GLuint divisor);

@@ -31,9 +31,11 @@ MatrixElement::updateGL(State * state)
 VertexElement::VertexElement()
   : arraybuffer(nullptr),
     elementbuffer(nullptr),
-    instancebuffer(nullptr) {}
+    instancebuffer(nullptr)
+{}
 
-VertexElement::~VertexElement() {}
+VertexElement::~VertexElement() 
+{}
 
 void
 VertexElement::set(Buffer * buffer)
@@ -79,6 +81,18 @@ Buffer *
 VertexElement::getInstanceBuffer() const
 {
   return this->instancebuffer;
+}
+
+GLVertexArrayObject * 
+VertexElement::createVAO()
+{
+  GLVertexArrayObject * vao = new GLVertexArrayObject;
+  {
+    BindScope vao_scope(vao);
+    this->bind();
+  }
+  this->unbind();
+  return vao;
 }
 
 void

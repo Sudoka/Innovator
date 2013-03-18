@@ -327,15 +327,32 @@ VertexAttribute::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Shape);
+LUA_NODE_SOURCE(BoundingBox);
 
 void
-Shape::initClass()
+BoundingBox::initClass()
 {
-  LUA_NODE_INIT_CLASS(Shape, "Shape"); 
+  LUA_NODE_INIT_CLASS(BoundingBox, "BoundingBox");
 }
 
-Shape::Shape() 
+BoundingBox::BoundingBox()
+{
+  LUA_NODE_ADD_FIELD_3(this->min, "min", vec3(-1));
+  LUA_NODE_ADD_FIELD_3(this->max, "max", vec3( 1));
+}
+
+void
+BoundingBox::traverse(BoundingBoxAction * action) 
+{
+  box3 bbox(this->min.value, this->max.value);
+  bbox.transform(action->state->modelmatrixelem.matrix);
+  action->extendBy(bbox);
+}
+
+// *************************************************************************************************
+
+Draw::Draw() 
+  : vao(nullptr) 
 {
   LUA_NODE_ADD_FIELD_3(this->mode, "mode", GL_POINTS);
   LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", GL_POINTS);
@@ -343,68 +360,107 @@ Shape::Shape()
 }
 
 void
-Shape::traverse(RenderAction * action)
+Draw::traverse(RenderAction * action)
 {
+  if (this->vao.get() == nullptr) {
+    this->vao.reset(action->state->vertexelem.createVAO());
+  }
   action->state->flush(this);
 }
 
+// *************************************************************************************************
+
+LUA_NODE_SOURCE(DrawArrays);
+
 void
-Shape::draw(State * state)
+DrawArrays::initClass()
 {
-  Buffer * vertexbuffer = state->vertexelem.getVertexBuffer();
-  Buffer * elementbuffer = state->vertexelem.getElementBuffer();
-  Buffer * instancebuffer = state->vertexelem.getInstanceBuffer();
-
-  GLenum mode = this->mode.value;
-
-  if (elementbuffer) {
-    unsigned int elemcount = elementbuffer->values.vec.size();
-    if (instancebuffer) {
-      unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
-      glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
-    } else {
-      glDrawElements(mode, elemcount, GL_UNSIGNED_INT, nullptr);
-    }
-  } else {
-    unsigned int vertexcount = vertexbuffer->values.vec.size();
-    if (instancebuffer) {
-      unsigned int instancecount = elementbuffer->values.vec.size();
-      glDrawArraysInstanced(mode, 0, vertexcount, instancecount);
-    } else {
-      glDrawArrays(mode, 0, vertexcount);
-    }
-  }
+  LUA_NODE_INIT_CLASS(DrawArrays, "DrawArrays"); 
 }
 
 void
-Shape::traverse(BoundingBoxAction * action)
+DrawArrays::execute(State * state)
 {
-  Buffer * vertexbuffer = action->state->vertexelem.getVertexBuffer();
-  Buffer * instancebuffer = action->state->vertexelem.getInstanceBuffer();
+  Buffer * vertexbuffer = state->vertexelem.getVertexBuffer();
+  if (!vertexbuffer) throw std::runtime_error("DrawArrays::execute(): invalid state");
 
-  box3 bbox;
+  BindScope vao(this->vao.get());
+  GLenum mode = this->mode.value;
 
-  if (instancebuffer) {
-    for (size_t i = 0; i < instancebuffer->values.vec.size(); i += 3) {
-      vec3 instancepos = vec3(instancebuffer->values.vec[i + 0],
-                              instancebuffer->values.vec[i + 1],
-                              instancebuffer->values.vec[i + 2]);
+  unsigned int count = vertexbuffer->values.vec.size();
+  glDrawArrays(mode, 0, count);
+}
 
-      for (size_t j = 0; j < instancebuffer->values.vec.size(); j += 3) {
-        vec3 vertex = vec3(vertexbuffer->values.vec[j + 0],
-                           vertexbuffer->values.vec[j + 1],
-                           vertexbuffer->values.vec[j + 2]);
+// *************************************************************************************************
 
-        bbox.extendBy(vertex + instancepos);
-      }
-    }
-  } else {
-    for (size_t i = 0; i < vertexbuffer->values.vec.size(); i += 3) {
-      bbox.extendBy(vec3(vertexbuffer->values.vec[i + 0],
-                         vertexbuffer->values.vec[i + 1],
-                         vertexbuffer->values.vec[i + 2]));
-    }
-  }
-  bbox.transform(action->state->modelmatrixelem.matrix);
-  action->extendBy(bbox);
+LUA_NODE_SOURCE(DrawElements);
+
+void
+DrawElements::initClass()
+{
+  LUA_NODE_INIT_CLASS(DrawElements, "DrawElements"); 
+}
+
+void
+DrawElements::execute(State * state)
+{
+  Buffer * elementbuffer = state->vertexelem.getElementBuffer();
+  if (!elementbuffer) throw std::runtime_error("DrawElements::execute(): invalid state");
+
+  BindScope vao(this->vao.get());
+  GLenum mode = this->mode.value;
+
+  unsigned int count = elementbuffer->values.vec.size();
+  glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
+}
+
+// *************************************************************************************************
+
+LUA_NODE_SOURCE(DrawArraysInstanced);
+
+void
+DrawArraysInstanced::initClass()
+{
+  LUA_NODE_INIT_CLASS(DrawArraysInstanced, "DrawArraysInstanced"); 
+}
+
+void
+DrawArraysInstanced::execute(State * state)
+{
+  Buffer * vertexbuffer = state->vertexelem.getVertexBuffer();
+  Buffer * instancebuffer = state->vertexelem.getInstanceBuffer();
+  if (!instancebuffer || !vertexbuffer) throw std::runtime_error("DrawArraysInstanced::execute(): invalid state");
+
+  BindScope vao(this->vao.get());
+  GLenum mode = this->mode.value;
+
+  unsigned int count = vertexbuffer->values.vec.size();
+  unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
+  glDrawArraysInstanced(mode, 0, count, instancecount);
+}
+
+// *************************************************************************************************
+
+LUA_NODE_SOURCE(DrawElementsInstanced);
+
+void
+DrawElementsInstanced::initClass()
+{
+  LUA_NODE_INIT_CLASS(DrawElementsInstanced, "DrawElementsInstanced"); 
+}
+
+void
+DrawElementsInstanced::execute(State * state)
+{
+  Buffer * elementbuffer = state->vertexelem.getElementBuffer();
+  Buffer * instancebuffer = state->vertexelem.getInstanceBuffer();
+  if (!elementbuffer || !instancebuffer) throw std::runtime_error("DrawElementsInstanced::execute(): invalid state");
+
+  BindScope vao(this->vao.get());
+  GLenum mode = this->mode.value;
+
+  unsigned int elemcount = elementbuffer->values.vec.size();
+  unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
+  
+  glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
 }

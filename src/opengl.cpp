@@ -78,6 +78,30 @@ GLBufferObject::unbind()
 
 // *************************************************************************************************
 
+GLVertexArrayObject::GLVertexArrayObject()
+{
+  glGenVertexArrays(1, &this->vao);
+}
+
+GLVertexArrayObject::~GLVertexArrayObject()
+{
+  glDeleteVertexArrays(1, &this->vao);
+}
+
+void
+GLVertexArrayObject::bind()
+{
+  glBindVertexArray(this->vao);
+}
+
+void
+GLVertexArrayObject::unbind()
+{
+  glBindVertexArray(0);
+}
+
+// *************************************************************************************************
+
 GLVertexAttribute::GLVertexAttribute(GLuint index, GLuint size, GLenum type, GLuint divisor)
   : index(index), 
     size(size),

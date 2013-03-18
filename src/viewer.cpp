@@ -60,7 +60,7 @@ Viewer::needRedraw() const
 void
 Viewer::resize(int width, int height)
 {
-  self->camera->perspective(45, float(width) / float(height), 0.1f, 100);
+  self->camera->perspective(45, float(width) / float(height), 0.1f, 10000);
   self->viewport->origin = ivec2(0);
   self->viewport->size = ivec2(width, height);
 }

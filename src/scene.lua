@@ -84,9 +84,6 @@ void main()
 local t = (1 + 5^0.5) / 2; -- golden ratio
 
 root = Separator {
-   Transform {
-      scaleFactor = { 1, 1, 1 }
-   },
    IndexBuffer {
       values = { 1,  4, 0,  4, 9, 0, 4, 5,  9, 8, 5,  4,  1, 8, 4,
                  1, 10, 8, 10, 3, 8, 8, 3,  5, 3, 2,  5,  3, 7, 2,
@@ -100,28 +97,38 @@ root = Separator {
    },
    VertexAttribute { location = 0, size = 3 },
    VertexAttribute { location = 1, size = 3 },
---   BoundingBox { size = 3 },
 
    VertexBuffer {
-      values = { 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 3, 3, 0, 0, 3, 0, 3, 3, 3, 0, 3, 3, 3 } 
+      values = 
+         (function () 
+             instances = {}
+             for i = 1, 3000000 do
+                instances[i] = math.random() * 300
+             end
+             return instances
+          end)()
    },
 
    VertexAttribute { location = 2, size = 3, divisor = 1 },
---   BoundingBox { size = 3 },
+
+   BoundingBox { 
+      min = { 0, 0, 0 },
+      max = { 300, 300, 300 }
+   },
 
    Program {
       VertexShader   { source = vertex },
       FragmentShader { source = fragment }
    },
 
-   Shape { mode = "TRIANGLES" }
---   DrawElementsInstanced { mode = "TRIANGLES" }
+   DrawElementsInstanced { mode = "TRIANGLES" },
+--[[
+   Program {
+      VertexShader   { source = normal_vertex },
+      GeometryShader { source = normal_geometry },
+      FragmentShader { source = normal_fragment }
+   },
 
---   Program {
---      VertexShader   { source = normal_vertex },
---      GeometryShader { source = normal_geometry },
---      FragmentShader { source = normal_fragment }
---   },
-
---   DrawArraysInstanced { mode = "POINTS" }
+   DrawArraysInstanced { mode = "POINTS" }
+   --]]
 }

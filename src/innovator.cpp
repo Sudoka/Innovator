@@ -1,7 +1,7 @@
 #include <innovator.h>
-#include <viewer.h>
 #include <GL/glew.h>
 #include <GL/glfw.h>
+#include <viewer.h>
 #include <luawrapper.h>
 #include <iostream>
 #include <nodes.h>
@@ -41,12 +41,10 @@ Innovator::Innovator(int width, int height)
   self->lua.reset(new Lua);
   self->glfw.reset(new Glfw);
 
-  /*
-  enable this when VAO support is added.
-  glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
-  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
-  */
+  //glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+  //glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
+
   if (glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW) != GL_TRUE) {
     throw std::runtime_error("failed to open GLFW window.");
   }
@@ -56,21 +54,25 @@ Innovator::Innovator(int width, int height)
   if (!GLEW_VERSION_3_3) {
     throw std::runtime_error("OpenGL 3.3 not supported.");
   }
-  glfwDisable(GLFW_AUTO_POLL_EVENTS);
+  //glfwDisable(GLFW_AUTO_POLL_EVENTS);
   glfwSetWindowSizeCallback(Innovator::resizeCB);
   glfwSetMousePosCallback(Innovator::mouseMovedCB);
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
 
-  Shape::initClass();
   Group::initClass();
   Buffer::initClass();
   Program::initClass();
   Separator::initClass();
   Transform::initClass();
+  BoundingBox::initClass();
   VertexShader::initClass();
   GeometryShader::initClass();
   FragmentShader::initClass();
   VertexAttribute::initClass();
+  DrawArrays::initClass();
+  DrawElements::initClass();
+  DrawArraysInstanced::initClass();
+  DrawElementsInstanced::initClass();
 
   self->viewer->setSceneGraph(self->lua->readAll("../../src/scene.lua"));
 }
@@ -102,12 +104,13 @@ void
 Innovator::loop()
 {
   while (true) {
-    glfwWaitEvents();
+    //glfwWaitEvents();
     if (glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
       break;
 
     if (self->viewer->needRedraw()) {
       self->viewer->renderGL();
+      self->viewer->scheduleRedraw();
       if (glGetError() != GL_NO_ERROR) {
         cout << "GL error" << endl;
       }

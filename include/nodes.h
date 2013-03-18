@@ -8,6 +8,7 @@
 
 class GLBufferObject;
 class GLVertexAttribute;
+class GLVertexArrayObject;
 
 class State;
 class Action;
@@ -167,13 +168,50 @@ private:
   std::unique_ptr<GLVertexAttribute> glattrib;
 };
 
-class Shape : public Node {
-  LUA_NODE_HEADER(Shape);
+class BoundingBox : public Node {
+  LUA_NODE_HEADER(BoundingBox);
 public:
-  SFEnum mode;
-  Shape();
+  BoundingBox();
   static void initClass();
-  virtual void traverse(RenderAction * action);
+  SFVec3f min;
+  SFVec3f max;
   virtual void traverse(BoundingBoxAction * action);
-  void draw(State * state);
+};
+
+class Draw : public Node {
+public:
+  Draw();
+  SFEnum mode;
+  virtual void traverse(RenderAction * action);
+  virtual void execute(State * state) = 0;
+protected:
+  std::unique_ptr<GLVertexArrayObject> vao;
+};
+
+class DrawArrays : public Draw {
+  LUA_NODE_HEADER(DrawArrays);
+public:
+  static void initClass();
+  virtual void execute(State * state);
+};
+
+class DrawElements : public Draw {
+  LUA_NODE_HEADER(DrawElements);
+public:
+  static void initClass();
+  virtual void execute(State * state);
+};
+
+class DrawArraysInstanced : public Draw {
+  LUA_NODE_HEADER(DrawArraysInstanced);
+public:
+  static void initClass();
+  virtual void execute(State * state);
+};
+
+class DrawElementsInstanced : public Draw {
+  LUA_NODE_HEADER(DrawElementsInstanced);
+public:
+  static void initClass();
+  virtual void execute(State * state);
 };

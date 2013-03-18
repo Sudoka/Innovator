@@ -52,15 +52,12 @@ State::pop()
 }
 
 void
-State::flush(Shape * shape)
+State::flush(Draw * draw)
 {
   BindScope program(this->program);
-  BindScope vertices(&this->vertexelem);
-
   this->viewportelem.updateGL(this);
   this->viewmatrixelem.updateGL(this);
   this->projmatrixelem.updateGL(this);
   this->modelmatrixelem.updateGL(this);
-  
-  shape->draw(this);
+  draw->execute(this);
 }

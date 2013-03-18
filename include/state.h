@@ -3,7 +3,7 @@
 #include <memory>
 #include <elements.h>
 
-class Shape;
+class Draw;
 class GLProgram;
 
 class State {
@@ -27,7 +27,7 @@ public:
 
   void push();
   void pop();
-  void flush(Shape * shape);
+  void flush(Draw * draw);
 
   GLProgram * program;
   VertexElement vertexelem;

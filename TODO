@@ -4,9 +4,6 @@
 
 - Separator render cache
 
-- VertexElement
-  - vao mandatory when using 3.3 core
-
 - lua file format:
   - poll file, reload on change
   - more robust error handling
@@ -14,7 +11,6 @@
 - debug:
   - use new opengl debug output?
 
-- statically link dependencies
 - port LEGO model import to Lua?
 
 - shadow mapping
