@@ -34,37 +34,42 @@ void main()
 ]]
 
 local t = (1 + 5^0.5) / 2; -- golden ratio
+local bbox = 1000;
 
 root = Separator {
    IndexBuffer {
       values = { 5, 1, 4, 0, 2, 1, 3, 5, 7, 4, 6, 2, 7, 3 }
    },
 
-   VertexBuffer {
-      values = { -1, -1, -1, -1, -1,  1, 
-                 -1,  1, -1, -1,  1,  1,
-                  1, -1, -1,  1, -1,  1,
-                  1,  1, -1,  1,  1,  1 } 
+   VertexAttribute { 
+      size = 3,
+      location = 0, 
+      VertexBuffer {
+         values = { -1, -1, -1, -1, -1,  1, 
+                    -1,  1, -1, -1,  1,  1,
+                     1, -1, -1,  1, -1,  1,
+                     1,  1, -1,  1,  1,  1 } 
+      }
    },
-
-   VertexAttribute { location = 0, size = 3 },
-
-   VertexBuffer {
-      values = 
-         (function () 
-             instances = {}
-             for i = 1, 3000000 do
-                instances[i] = math.random() * 300
-             end
-             return instances
-          end)()
+   VertexAttribute { 
+      size = 3, 
+      divisor = 1,
+      location = 1, 
+      VertexBuffer {
+         values = 
+            (function () 
+                instances = {}
+                for i = 1, 30e6 do
+                   instances[i] = math.random() * bbox;
+                end
+                return instances;
+             end)()
+      }
    },
-
-   VertexAttribute { location = 1, size = 3, divisor = 1 },
-
+ 
    BoundingBox { 
       min = { 0, 0, 0 },
-      max = { 300, 300, 300 }
+      max = { bbox, bbox, bbox }
    },
 
    Program {
@@ -72,5 +77,5 @@ root = Separator {
       FragmentShader { source = fragment }
    },
 
-   DrawElementsInstanced { mode = "TRIANGLE_STRIP" },
+   DrawElementsInstanced { mode = "TRIANGLE_STRIP" }
 }

@@ -66,6 +66,7 @@ void main()
 ]]
 
 local t = (1 + 5^0.5) / 2; -- golden ratio
+local bbox = 1000;
 
 root = Separator {
    VertexAttribute { 
@@ -75,16 +76,16 @@ root = Separator {
          values = 
             (function () 
                 instances = {}
-                for i = 1, 3000000 do
-                   instances[i] = math.random() * 300
+                for i = 1, 30e6 do
+                   instances[i] = math.random() * bbox;
                 end
-                return instances
+                return instances;
              end)()
      }
    },
    BoundingBox { 
       min = { 0, 0, 0 },
-      max = { 300, 300, 300 }
+      max = { bbox, bbox, bbox }
    },
    Program {
       VertexShader   { source = vertex },
