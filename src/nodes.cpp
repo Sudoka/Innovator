@@ -388,7 +388,7 @@ DrawArrays::execute(State * state)
   BindScope vao(this->vao.get());
   GLenum mode = this->mode.value;
 
-  unsigned int count = vertexbuffer->values.vec.size();
+  unsigned int count = vertexbuffer->values.vec.size() / 3;
   glDrawArrays(mode, 0, count);
 }
 
@@ -435,7 +435,7 @@ DrawArraysInstanced::execute(State * state)
   BindScope vao(this->vao.get());
   GLenum mode = this->mode.value;
 
-  unsigned int count = vertexbuffer->values.vec.size();
+  unsigned int count = vertexbuffer->values.vec.size() / 3;
   unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
   glDrawArraysInstanced(mode, 0, count, instancecount);
 }
