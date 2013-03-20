@@ -1,4 +1,19 @@
 
+function flatten(list)
+  if type(list) ~= "table" then return {list} end
+  local flat_list = {}
+  for _, elem in ipairs(list) do
+    for _, val in ipairs(flatten(elem)) do
+      flat_list[#flat_list + 1] = val
+    end
+  end
+  return flat_list
+end
+
+function avg(a, b)
+   return { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2 };
+end
+
 function IndexBuffer(data)
    return Buffer {
       type = "UNSIGNED_INT",
@@ -12,6 +27,17 @@ function VertexBuffer(data)
       type = "FLOAT",
       target = "ARRAY",
       values = data.values
+   }
+end
+
+function VertexAttribute3f(data)
+   return VertexAttribute {
+      size = 3,
+      divisor = data.divisor,
+      location = data.location,
+      VertexBuffer {
+         values = data.values
+      }
    }
 end
 

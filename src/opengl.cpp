@@ -102,7 +102,7 @@ GLVertexArrayObject::unbind()
 
 // *************************************************************************************************
 
-GLVertexAttribute::GLVertexAttribute(GLuint index, GLuint size, GLenum type, GLuint divisor)
+GLVertexAttribute::GLVertexAttribute(GLuint index, GLint size, GLenum type, GLuint divisor)
   : index(index), 
     size(size),
     type(type),

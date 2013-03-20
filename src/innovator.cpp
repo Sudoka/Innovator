@@ -41,7 +41,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   self->glfw.reset(new Glfw);
 
   glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+  glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 4);
   glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
 
   if (glfwOpenWindow(width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW) != GL_TRUE) {
@@ -51,8 +51,8 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   if (glewInit() != GLEW_OK) {
     throw std::runtime_error("failed to initialize GLEW.");
   }
-  if (!GLEW_VERSION_3_3) {
-    throw std::runtime_error("OpenGL 3.3 not supported.");
+  if (!GLEW_VERSION_4_3) {
+    throw std::runtime_error("OpenGL 4.3 not supported.");
   }
   glfwDisable(GLFW_AUTO_POLL_EVENTS);
   glfwSetWindowSizeCallback(Innovator::resizeCB);
