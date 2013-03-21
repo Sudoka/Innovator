@@ -9,6 +9,7 @@ uniform mat4 ViewMatrix = mat4(1.0);
 uniform mat4 ModelMatrix = mat4(1.0);
 uniform mat4 ProjectionMatrix = mat4(1.0);
 
+out vec4 Normal;
 out vec4 ViewPosition;
 out vec3 Color;
 
@@ -17,6 +18,7 @@ void main()
   Color = InstanceColor;
   mat4 MV = ViewMatrix * ModelMatrix;
   ViewPosition = MV * vec4(normalize(Position) + InstancePosition, 1.0);
+  Normal = MV * vec4(normalize(Position), 0.0);
   gl_Position = ProjectionMatrix * ViewPosition;
 }
 ]]
@@ -26,13 +28,17 @@ local fragment = [[
 layout(location = 0) out vec4 FragColor;
 
 in vec3 Color;
+in vec4 Normal;
 in vec4 ViewPosition;
 
 void main()
 {
+/*
   vec3 dx = dFdx(ViewPosition.xyz);
   vec3 dy = dFdy(ViewPosition.xyz);
   vec3 normal = normalize(cross(dx, dy));
+*/
+  vec3 normal = normalize(Normal.xyz);
   FragColor = vec4(normal.zzz * Color, 1.0);
 }
 ]]
@@ -58,32 +64,6 @@ local indices = { { 0, 1, 2 }, { 0, 2, 3 }, { 0, 3, 4 }, { 0, 4, 1 }, { 5, 2, 1 
 local vertices = { { 0, 0, 1 }, { -t,-t, 0 }, { t,-t, 0 }, { t, t, 0 }, { -t, t, 0 }, { 0, 0,-1 } };
 --]]
 
-function subdivide(lod)
-   for l = 1, lod do
-      local num_faces = #indices;
-      for face_index = 1, num_faces do
-         local face = indices[face_index];
-
-         local a = vertices[face[1] + 1];
-         local b = vertices[face[2] + 1];
-         local c = vertices[face[3] + 1];
-         
-         table.insert(vertices, avg(a, b));
-         table.insert(vertices, avg(b, c));
-         table.insert(vertices, avg(c, a));
-         
-         local i = #vertices - 3;
-         local j = #vertices - 2;
-         local k = #vertices - 1;
-         
-         table.insert(indices, { i, j, k });
-         table.insert(indices, { face[1], i, k });
-         table.insert(indices, { i, face[2], j });
-         indices[face_index] = { k, j, face[3] };
-      end
-   end
-end
-
 function instancePositions()
    instances = {}
    for i = 1, 3 * num_instances do
@@ -100,7 +80,7 @@ function instanceColors()
    return instances;
 end
 
-subdivide(2);
+subdivide(indices, vertices, 2);
 
 root = Separator {
    IndexBuffer {
