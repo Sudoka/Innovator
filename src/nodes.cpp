@@ -327,6 +327,39 @@ VertexAttribute::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+LUA_NODE_SOURCE(TransformFeedback);
+
+void
+TransformFeedback::initClass()
+{
+  LUA_NODE_INIT_CLASS(TransformFeedback, "TransformFeedback");
+}
+
+TransformFeedback::TransformFeedback()
+  : glfeedback(nullptr)
+{
+  LUA_NODE_ADD_FIELD_3(this->mode, "mode", GL_POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", GL_POINTS);
+  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", GL_TRIANGLES);
+
+  LUA_NODE_ADD_FIELD_2(this->attributes, "attribtues");
+}
+
+TransformFeedback::~TransformFeedback()
+{
+
+}
+
+void
+TransformFeedback::traverse(RenderAction * action)
+{
+  if (!glfeedback.get()) {
+    glfeedback.reset(new GLTransformFeedback(this->mode.value, 0, 0));
+  }
+}
+
+// *************************************************************************************************
+
 LUA_NODE_SOURCE(BoundingBox);
 
 void

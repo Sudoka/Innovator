@@ -69,6 +69,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   GeometryShader::initClass();
   FragmentShader::initClass();
   VertexAttribute::initClass();
+  TransformFeedback::initClass();
   DrawArrays::initClass();
   DrawElements::initClass();
   DrawArraysInstanced::initClass();

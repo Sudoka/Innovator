@@ -8,6 +8,7 @@
 
 class GLBufferObject;
 class GLVertexAttribute;
+class GLTransformFeedback;
 class GLVertexArrayObject;
 
 class State;
@@ -166,6 +167,21 @@ public:
 private:
   friend class VertexElement;
   std::unique_ptr<GLVertexAttribute> glattrib;
+};
+
+class TransformFeedback : public Node {
+  LUA_NODE_HEADER(TransformFeedback);
+public:
+  TransformFeedback();
+  virtual ~TransformFeedback();
+  static void initClass();
+  SFEnum mode;
+  MFInt attributes;
+
+  virtual void traverse(RenderAction * action);
+
+private:
+  std::unique_ptr<GLTransformFeedback> glfeedback;
 };
 
 class BoundingBox : public Node {

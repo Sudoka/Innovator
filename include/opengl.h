@@ -12,10 +12,14 @@ public:
 class BindScope {
 public:
   BindScope(Bindable * b) : bindable(b) {
-    this->bindable->bind();
+    if (this->bindable) {
+      this->bindable->bind();
+    }
   }
   ~BindScope() {
-    this->bindable->unbind();
+    if (this->bindable) {
+      this->bindable->unbind();
+    }
   }
 private:
   Bindable * bindable;
@@ -98,7 +102,7 @@ public:
 
 class GLTransformFeedback : public Bindable {
 public:
-  GLTransformFeedback(GLuint buffer, GLenum mode = GL_POINTS);
+  GLTransformFeedback(GLenum mode, GLuint buffer, GLuint index);
   ~GLTransformFeedback();
 
   virtual void bind();
@@ -107,4 +111,6 @@ public:
 public:
   GLuint id;
   GLenum mode;
+  GLuint buffer;
+  GLuint index;
 };

@@ -126,12 +126,13 @@ GLVertexAttribute::unbind()
 
 // *************************************************************************************************
 
-GLTransformFeedback::GLTransformFeedback(GLuint buffer, GLenum mode)
-  : mode(mode)
+GLTransformFeedback::GLTransformFeedback(GLenum mode, GLuint buffer, GLuint index)
+  : mode(mode),
+    index(index),
+    buffer(buffer)
 {
   glGenTransformFeedbacks(1, &this->id);
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
-  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, buffer);
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
@@ -143,6 +144,7 @@ GLTransformFeedback::~GLTransformFeedback()
 void
 GLTransformFeedback::bind()
 {
+  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, this->index, this->buffer);
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
   glEnable(GL_RASTERIZER_DISCARD);
   glBeginTransformFeedback(this->mode);
@@ -154,6 +156,7 @@ GLTransformFeedback::unbind()
   glEndTransformFeedback();
   glDisable(GL_RASTERIZER_DISCARD);
   glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+  glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, this->index, 0);
 }
 
 // *************************************************************************************************

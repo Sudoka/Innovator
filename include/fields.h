@@ -113,6 +113,15 @@ public:
   std::string value;
 };
 
+class MFInt : public Field {
+public:
+  virtual void read(lua_State * L) 
+  {
+    Array<int> value(L, this->name, this->vec);
+  }
+  std::vector<int> vec;
+};
+
 class MFNumber : public Field {
 public:
   virtual void read(lua_State * L) 

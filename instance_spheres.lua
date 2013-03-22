@@ -43,8 +43,8 @@ void main()
 }
 ]]
 
-local bbox = 2;
-local num_instances = 1;
+local bbox = 200;
+local num_instances = 1000000;
 
 
 local t = (1 + 5^0.5) / 2; -- golden ratio
@@ -59,6 +59,7 @@ local vertices = { {-1, 0, t}, {1, 0, t}, {-1, 0, -t}, {1, 0, -t},
    
 --[[
 
+-- Octahedron
 local t = 1 / math.sqrt(2);
 local indices = { { 0, 1, 2 }, { 0, 2, 3 }, { 0, 3, 4 }, { 0, 4, 1 }, { 5, 2, 1 }, { 5, 3, 2 }, { 5, 4, 3 }, { 5, 1, 4 } };
 local vertices = { { 0, 0, 1 }, { -t,-t, 0 }, { t,-t, 0 }, { t, t, 0 }, { -t, t, 0 }, { 0, 0,-1 } };
@@ -80,7 +81,7 @@ function instanceColors()
    return instances;
 end
 
-subdivide(indices, vertices, 2);
+subdivide(indices, vertices, 1);
 
 root = Separator {
    IndexBuffer {
@@ -101,12 +102,19 @@ root = Separator {
       location = 2, 
       values = instanceColors();
    },
- 
+--[[
+   Separator {
+      TransformFeedback {
+         mode = "POINTS",
+         attributes = { 1, 2 }
+      },
+      DrawArrays { mode = "POINTS" }
+   },
+--]]
    BoundingBox { 
       min = { 0, 0, 0 },
       max = { bbox, bbox, bbox }
    },
-
    Program {
       VertexShader   { source = vertex },
       FragmentShader { source = fragment }
