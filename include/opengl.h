@@ -69,7 +69,7 @@ public:
   virtual void bind();
   virtual void unbind();
 
-  static GLBufferObject * create(GLenum target, GLenum usage, GLenum type, const std::vector<double> & data);
+  static GLBufferObject * create(GLenum target, GLenum usage, GLenum type, GLuint count, std::vector<double> & data);
 
   GLenum target;
   GLuint buffer;
@@ -102,7 +102,7 @@ public:
 
 class GLTransformFeedback : public Bindable {
 public:
-  GLTransformFeedback(GLenum mode, GLuint buffer, GLuint index);
+  GLTransformFeedback(GLenum mode, GLuint index, GLuint buffer);
   ~GLTransformFeedback();
 
   virtual void bind();
@@ -111,6 +111,21 @@ public:
 public:
   GLuint id;
   GLenum mode;
-  GLuint buffer;
   GLuint index;
+  GLuint buffer;
+};
+
+class GLQueryObject : public Bindable {
+public:
+  GLQueryObject(GLenum target);
+  ~GLQueryObject();
+
+  GLuint getResult();
+
+  virtual void bind();
+  virtual void unbind();
+
+private:
+  GLuint query;
+  GLenum target;
 };

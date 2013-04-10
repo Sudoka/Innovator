@@ -66,6 +66,12 @@ VertexElement::set(VertexAttribute * attrib)
 }
 
 Buffer * 
+VertexElement::getArrayBuffer() const
+{
+  return this->arraybuffer;
+}
+
+Buffer * 
 VertexElement::getVertexBuffer() const
 {
   return this->vertexbuffer;

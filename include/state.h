@@ -5,6 +5,7 @@
 
 class Draw;
 class GLProgram;
+class GLQueryObject;
 class GLTransformFeedback;
 
 class State {
@@ -31,6 +32,7 @@ public:
   void flush(Draw * draw);
 
   GLProgram * program;
+  GLQueryObject * query;
   GLTransformFeedback * feedback;
   VertexElement vertexelem;
   MatrixElement viewmatrixelem;

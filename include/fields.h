@@ -10,6 +10,7 @@
 
 class Node;
 class Buffer;
+class Separator;
 
 class Field {
 public:
@@ -135,9 +136,18 @@ class SFBuffer : public Field {
 public:
   virtual void read(lua_State * L)
   {
-    Value<std::shared_ptr<Buffer>> value(L, this->value);
+    Value<std::shared_ptr<Buffer>> value(L, this->name, this->value);
   }
   std::shared_ptr<Buffer> value;
+};
+
+class SFSeparator : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Value<std::shared_ptr<Separator>> value(L, this->name, this->value);
+  }
+  std::shared_ptr<Separator> value;
 };
 
 class MFNode : public Field {

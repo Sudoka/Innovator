@@ -36,6 +36,7 @@ public:
   void set(Buffer * buffer);
   void set(VertexAttribute * attrib);
 
+  Buffer * getArrayBuffer() const;
   Buffer * getVertexBuffer() const;
   Buffer * getElementBuffer() const;
   Buffer * getInstanceBuffer() const;

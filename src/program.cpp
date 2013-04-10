@@ -54,6 +54,10 @@ public:
       ShaderObject * shader = static_cast<ShaderObject*>(self->shaders.values[i].get());
       this->program->attach(shader->source.value.c_str(), shader->type);
     }
+    if (!self->feedbackVarying.value.empty()) {
+      const char * varyings[] = { self->feedbackVarying.value.c_str() };
+      glTransformFeedbackVaryings(this->program->id, 1, varyings, GL_SEPARATE_ATTRIBS);
+    }
     program->link();
   }
   ~ProgramP() {}
@@ -71,6 +75,7 @@ Program::initClass()
 Program::Program() : self(nullptr) 
 {
   LUA_NODE_ADD_FIELD_1(this->shaders);
+  LUA_NODE_ADD_FIELD_3(this->feedbackVarying, "feedbackVarying", "");
 }
 
 Program::~Program() {}

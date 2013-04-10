@@ -6,6 +6,7 @@
 #include <fields.h>
 #include <elements.h>
 
+class GLProgram;
 class GLBufferObject;
 class GLVertexAttribute;
 class GLTransformFeedback;
@@ -113,6 +114,7 @@ public:
   static void initClass();
   MFNode shaders;
   SFString fileName;
+  SFString feedbackVarying;
   virtual void traverse(RenderAction * action);
 private:
   class ProgramP;
@@ -138,14 +140,30 @@ class Buffer : public Node {
 public:
   static void initClass();
   Buffer();
+  virtual ~Buffer();
+  SFInt count;
   SFEnum type;
   SFEnum usage;
   SFEnum target;
   MFNumber values;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  friend class VertexElement;
+  virtual GLuint getCount() const;
   std::unique_ptr<GLBufferObject> buffer;
+};
+
+class FeedbackBuffer : public Buffer {
+  LUA_NODE_HEADER(FeedbackBuffer);
+public:
+  FeedbackBuffer();
+  virtual ~FeedbackBuffer();
+  static void initClass();
+  SFSeparator scene;
+  virtual void traverse(RenderAction * action);
+  virtual GLuint getCount() const;
+private:
+  class FeedbackBufferP;
+  std::unique_ptr<FeedbackBufferP> self;
 };
 
 class VertexAttribute : public Node {
@@ -167,21 +185,6 @@ public:
 private:
   friend class VertexElement;
   std::unique_ptr<GLVertexAttribute> glattrib;
-};
-
-class TransformFeedback : public Node {
-  LUA_NODE_HEADER(TransformFeedback);
-public:
-  TransformFeedback();
-  virtual ~TransformFeedback();
-  static void initClass();
-  SFEnum mode;
-  MFInt attributes;
-
-  virtual void traverse(RenderAction * action);
-
-private:
-  std::unique_ptr<GLTransformFeedback> glfeedback;
 };
 
 class BoundingBox : public Node {

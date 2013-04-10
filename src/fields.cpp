@@ -24,6 +24,12 @@ FieldValue<shared_ptr<Buffer>>::readValue(lua_State * L)
   return shared_ptr<Buffer>(ReadUserData<Buffer>(L));
 }
 
+shared_ptr<Separator>
+FieldValue<shared_ptr<Separator>>::readValue(lua_State * L)
+{
+  return shared_ptr<Separator>(ReadUserData<Separator>(L));
+}
+
 double
 FieldValue<double>::readValue(lua_State * L)
 {

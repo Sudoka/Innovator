@@ -4,6 +4,7 @@
 #include <state.h>
 #include <box3.h>
 #include <math.h>
+#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace glm;
@@ -246,7 +247,7 @@ Buffer::initClass()
 Buffer::Buffer()
   : buffer(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->type, "type", GL_UNSIGNED_INT);
+  LUA_NODE_ADD_FIELD_3(this->type, "type", GL_FLOAT);
   LUA_ENUM_DEFINE_VALUE(this->type, "FLOAT", GL_FLOAT);
   LUA_ENUM_DEFINE_VALUE(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
 
@@ -254,11 +255,16 @@ Buffer::Buffer()
   LUA_ENUM_DEFINE_VALUE(this->usage, "STATIC_DRAW", GL_STATIC_DRAW);
   LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", GL_DYNAMIC_DRAW);
 
-  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_ELEMENT_ARRAY_BUFFER);
+  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_ARRAY_BUFFER);
   LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", GL_ARRAY_BUFFER);
   LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
 
-  LUA_NODE_ADD_FIELD_2(this->values, "values");  
+  LUA_NODE_ADD_FIELD_3(this->count, "count", 0);
+  LUA_NODE_ADD_FIELD_2(this->values, "values");
+}
+
+Buffer::~Buffer()
+{
 }
 
 void
@@ -268,6 +274,7 @@ Buffer::traverse(RenderAction * action)
     this->buffer.reset(GLBufferObject::create(this->target.value, 
                                               this->usage.value, 
                                               this->type.value, 
+                                              this->count.value,
                                               this->values.vec));
   }
   action->state->vertexelem.set(this);
@@ -277,6 +284,71 @@ void
 Buffer::traverse(BoundingBoxAction * action)
 {
   action->state->vertexelem.set(this);
+}
+
+GLuint
+Buffer::getCount() const
+{
+  return (this->count.value > 0) ? this->count.value : this->values.vec.size() / 3;
+}
+
+// *************************************************************************************************
+
+class FeedbackBuffer::FeedbackBufferP {
+public:
+  FeedbackBufferP() 
+    : count(0), glquery(nullptr), glfeedback(nullptr) {}
+  GLuint count;
+  std::unique_ptr<GLQueryObject> glquery;
+  std::unique_ptr<GLTransformFeedback> glfeedback;
+};
+
+LUA_NODE_SOURCE(FeedbackBuffer);
+
+void
+FeedbackBuffer::initClass()
+{
+  LUA_NODE_INIT_CLASS(FeedbackBuffer, "FeedbackBuffer");
+}
+
+FeedbackBuffer::FeedbackBuffer()
+  : self(new FeedbackBufferP)
+{
+  LUA_NODE_ADD_FIELD_3(this->scene, "scene", nullptr);
+}
+
+FeedbackBuffer::~FeedbackBuffer()
+{
+}
+
+void
+FeedbackBuffer::traverse(RenderAction * action)
+{
+  Buffer::traverse(action);
+
+  if (!self->glfeedback.get()) {
+    self->glfeedback.reset(new GLTransformFeedback(GL_POINTS, 0, this->buffer->buffer));
+  }
+  if (!self->glquery.get()) {
+    self->glquery.reset(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN));
+  }
+
+  action->state->query = self->glquery.get();
+  action->state->feedback = self->glfeedback.get();
+
+  this->scene.value->traverse(action);
+
+  action->state->query = nullptr;
+  action->state->feedback = nullptr;
+
+  self->count = self->glquery->getResult();
+  cout << "count: " << self->count << endl;
+}
+
+GLuint
+FeedbackBuffer::getCount() const
+{
+  return self->count;
 }
 
 // *************************************************************************************************
@@ -323,39 +395,6 @@ VertexAttribute::traverse(BoundingBoxAction * action)
     this->buffer.value->traverse(action);
   }
   action->state->vertexelem.set(this);
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(TransformFeedback);
-
-void
-TransformFeedback::initClass()
-{
-  LUA_NODE_INIT_CLASS(TransformFeedback, "TransformFeedback");
-}
-
-TransformFeedback::TransformFeedback()
-  : glfeedback(nullptr)
-{
-  LUA_NODE_ADD_FIELD_3(this->mode, "mode", GL_POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", GL_POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", GL_TRIANGLES);
-
-  LUA_NODE_ADD_FIELD_2(this->attributes, "attribtues");
-}
-
-TransformFeedback::~TransformFeedback()
-{
-
-}
-
-void
-TransformFeedback::traverse(RenderAction * action)
-{
-  if (!glfeedback.get()) {
-    glfeedback.reset(new GLTransformFeedback(this->mode.value, 0, 0));
-  }
 }
 
 // *************************************************************************************************
@@ -416,12 +455,12 @@ void
 DrawArrays::execute(State * state)
 {
   Buffer * vertexbuffer = state->vertexelem.getVertexBuffer();
-  if (!vertexbuffer) throw std::runtime_error("DrawArrays::execute(): invalid state");
-
+  if (!vertexbuffer) {
+    throw std::runtime_error("DrawArrays::execute(): invalid state");
+  }
   BindScope vao(this->vao.get());
   GLenum mode = this->mode.value;
-
-  unsigned int count = vertexbuffer->values.vec.size() / 3;
+  unsigned int count = vertexbuffer->getCount();
   glDrawArrays(mode, 0, count);
 }
 
@@ -494,7 +533,7 @@ DrawElementsInstanced::execute(State * state)
   GLenum mode = this->mode.value;
 
   unsigned int elemcount = elementbuffer->values.vec.size();
-  unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
+  unsigned int instancecount = instancebuffer->getCount();
   
   glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
 }

@@ -5,26 +5,29 @@
 using namespace std;
 
 template <typename T>
-GLBufferObject * GetGLBuffer(GLenum target, GLenum usage, const std::vector<double> & vec)
+GLBufferObject * GetGLBuffer(GLenum target, GLenum usage, GLuint count, vector<double> & vec)
 {
-  GLBufferObject * glbuffer = new GLBufferObject(target, usage, sizeof(T) * vec.size());
-  T * data = (T *)glbuffer->map(GL_WRITE_ONLY);
-  for (size_t i = 0; i < vec.size(); i++) {
-    data[i] = static_cast<T>(vec[i]);
+  GLsizeiptr size = count > 0 ? sizeof(T) * count : sizeof(T) * vec.size();
+  GLBufferObject * glbuffer = new GLBufferObject(target, usage, size);
+  if (vec.size() > 0) {
+    T * data = (T *)glbuffer->map(GL_WRITE_ONLY);
+    for (size_t i = 0; i < vec.size(); i++) {
+      data[i] = static_cast<T>(vec[i]);
+    }
+    glbuffer->unmap();
   }
-  glbuffer->unmap();
   return glbuffer;
 }
 
 GLBufferObject * 
-GLBufferObject::create(GLenum target, GLenum usage, GLenum type, const std::vector<double> & vec)
+GLBufferObject::create(GLenum target, GLenum usage, GLenum type, GLuint count, vector<double> & vec)
 {
   switch (type) {
   case GL_FLOAT:
-    return GetGLBuffer<GLfloat>(target, usage, vec);
+    return GetGLBuffer<GLfloat>(target, usage, count, vec);
     break;
   case GL_UNSIGNED_INT:
-    return GetGLBuffer<GLuint>(target, usage, vec);
+    return GetGLBuffer<GLuint>(target, usage, count, vec);
     break;
   default:
     throw std::invalid_argument("GLBufferObject::create(): Invalid buffer type");
@@ -126,26 +129,21 @@ GLVertexAttribute::unbind()
 
 // *************************************************************************************************
 
-GLTransformFeedback::GLTransformFeedback(GLenum mode, GLuint buffer, GLuint index)
+GLTransformFeedback::GLTransformFeedback(GLenum mode, GLuint index, GLuint buffer)
   : mode(mode),
     index(index),
     buffer(buffer)
 {
-  glGenTransformFeedbacks(1, &this->id);
-  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
-  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
 GLTransformFeedback::~GLTransformFeedback()
 {
-  glDeleteTransformFeedbacks(1, &this->id);
 }
 
 void
 GLTransformFeedback::bind()
 {
   glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, this->index, this->buffer);
-  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, this->id);
   glEnable(GL_RASTERIZER_DISCARD);
   glBeginTransformFeedback(this->mode);
 }
@@ -155,8 +153,40 @@ GLTransformFeedback::unbind()
 {
   glEndTransformFeedback();
   glDisable(GL_RASTERIZER_DISCARD);
-  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
   glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, this->index, 0);
+}
+
+// *************************************************************************************************
+
+GLQueryObject::GLQueryObject(GLenum target)
+  : target(target)
+{
+  glGenQueries(1, &this->query);
+}
+
+GLQueryObject::~GLQueryObject()
+{
+  glDeleteQueries(1, &this->query);
+}
+
+GLuint 
+GLQueryObject::getResult()
+{
+  GLuint result = 0;
+  glGetQueryObjectuiv(this->query, GL_QUERY_RESULT, &result);
+  return result;
+}
+
+void
+GLQueryObject::bind()
+{
+  glBeginQuery(this->target, this->query);
+}
+ 
+void
+GLQueryObject::unbind()
+{
+  glEndQuery(this->target);
 }
 
 // *************************************************************************************************

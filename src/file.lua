@@ -14,6 +14,20 @@ function avg(a, b)
    return { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2 };
 end
 
+function normalize(vertex)
+   local x = vertex[1];
+   local y = vertex[2];
+   local z = vertex[3];
+   local l = math.sqrt(x * x + y * y + z * z);
+   return { x / l, y / l, z / l };
+end
+
+function normalizeArray(vertices)
+   for i = 1, #vertices do
+      vertices[i] = normalize(vertices[i]);
+   end
+end
+
 function subdivide(indices, vertices, lod)
    for l = 1, lod do
       local num_faces = #indices;
@@ -37,6 +51,7 @@ function subdivide(indices, vertices, lod)
          table.insert(indices, { i, face[2], j });
          indices[face_index] = { k, j, face[3] };
       end
+      normalizeArray(vertices);
    end
 end
 
@@ -61,9 +76,7 @@ function VertexAttribute3f(data)
       size = 3,
       divisor = data.divisor,
       location = data.location,
-      VertexBuffer {
-         values = data.values
-      }
+      buffer = data.values and VertexBuffer { values = data.values } or data.buffer
    }
 end
 
@@ -116,7 +129,7 @@ function Box(data)
       },
       VertexAttribute {
          location = 0,
-         VertexBuffer {
+         buffer = VertexBuffer {
             values = { -1, -1, -1, -1, -1,  1, 
                        -1,  1, -1, -1,  1,  1,
                         1, -1, -1,  1, -1,  1,
@@ -130,28 +143,20 @@ end
 
 function Sphere(data)
    local t = (1 + 5^0.5) / 2; -- golden ratio
+   local indices = { {1, 4, 0},  {4, 9, 0}, {4, 5, 9}, {8, 5, 4}, {1, 8, 4},
+                     {1, 10, 8}, {10, 3, 8}, {8, 3, 5}, {3, 2, 5}, {3, 7, 2},
+                     {3, 10, 7}, {10, 6, 7}, {6, 11, 7}, {6, 0, 11},  {6, 1, 0},
+                     {10, 1, 6}, {11, 0, 9}, {2, 11, 9}, {5, 2, 9}, {11, 2, 7} };
+   
+   local vertices = { {-1, 0, t}, {1, 0, t}, {-1, 0, -t}, {1, 0, -t},
+                      {0, t, 1}, {0, t, -1}, {0, -t, 1}, {0, -t, -1},
+                      {t, 1, 0}, {-t, 1, 0}, {t, -1, 0}, {-t, -1, 0} };
+
+   subdivide(indices, vertices, data.lod and data.lod or 1);
+
    return Separator {
-      Program {
-         VertexShader { source = vertex },
-         FragmentShader { source = fragment },
-      },
-      IndexBuffer {
-         values = { 1,  4, 0,  4, 9, 0, 4, 5,  9, 8, 5,  4,  1,  8, 4,
-                    1, 10, 8, 10, 3, 8, 8, 3,  5, 3, 2,  5,  3,  7, 2,
-                    3, 10, 7, 10, 6, 7, 6, 11, 7, 6, 0, 11,  6,  1, 0,
-                    10, 1, 6, 11, 0, 9, 2, 11, 9, 5, 2,  9, 11, 2, 7 }
-      },
-      -- vertices
-      VertexAttribute {
-         size = 3,
-         location = 0,
-         VertexBuffer { 
-            values = { -1,  0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t,
-                        0,  t,  1,  0,  t, -1,  0, -t,  1,  0, -t, -1,
-                        t,  1,  0, -t,  1,  0,  t, -1,  0, -t, -1,  0 }
-         }
-      },
-      BoundingBox { min = { -1, -1, -1 }, max = { 1, 1, 1 } },
-      DrawElements { mode = "TRIANGLES" }
+      IndexBuffer { values = flatten(indices) },
+      VertexAttribute3f { location = 0, values = flatten(vertices) },
+      DrawElementsInstanced { mode = "TRIANGLES" }
    }
 end
