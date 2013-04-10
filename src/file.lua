@@ -156,6 +156,7 @@ function Sphere(data)
    subdivide(indices, vertices, data.lod and data.lod or 1);
 
    return Separator {
+      Uniform3f { name = "Color", value = data.color },
       IndexBuffer { values = flatten(indices) },
       VertexAttribute3f { location = 0, values = flatten(vertices) },
       DrawElementsInstanced { mode = "TRIANGLES" }

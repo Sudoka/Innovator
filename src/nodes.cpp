@@ -369,7 +369,7 @@ FeedbackBuffer::traverse(RenderAction * action)
   action->state->feedback = nullptr;
 
   self->count = self->glquery->getResult();
-  cout << "count: " << self->count << "\t" << "lodrange: <" << action->state->uniform3felem.value.x << " " << action->state->uniform3felem.value.y << ">" << endl;
+  //cout << "count: " << self->count << "\t" << "lodrange: <" << action->state->uniform3felem.value.x << " " << action->state->uniform3felem.value.y << ">" << endl;
 }
 
 GLuint

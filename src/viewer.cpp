@@ -91,7 +91,7 @@ Viewer::mouseMoved(int x, int y)
 
     switch (self->button) {
     case GLFW_MOUSE_BUTTON_LEFT:
-      self->camera->orbit(vec2(dx * 100.0, dy * 100.0));
+      self->camera->orbit(vec2(dx * 10.0, dy * 10.0));
       break;
     case GLFW_MOUSE_BUTTON_MIDDLE:
       self->camera->pan(vec2(dx, -dy));

@@ -36,8 +36,8 @@ void main()
 }
 ]]
 
-local SIZE = 500;
-local NUM_SPHERES = 10e4;
+local SIZE = 1000;
+local NUM_SPHERES = 10e5;
 
 local InstancePositions = 
    (function() 
@@ -68,6 +68,6 @@ root = Separator {
       FragmentShader { source = fragment }
    },
    Sphere {
-      lod = 4
+      lod = 3
    }
 }

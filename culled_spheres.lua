@@ -79,6 +79,8 @@ local fragment = [[
 #version 330
 layout(location = 0) out vec4 FragColor;
 
+uniform vec3 Color;
+
 in vec4 ViewPosition;
 in vec4 Normal;
 
@@ -88,12 +90,12 @@ void main()
   //vec3 dy = dFdy(ViewPosition.xyz);
   //vec3 n = normalize(cross(dx, dy));
 
-  FragColor = vec4(normalize(Normal).zzz, 1.0);
+  FragColor = vec4(Color * normalize(Normal).zzz, 1.0);
 }
 ]]
 
-local SIZE = 500;
-local NUM_SPHERES = 10e4;
+local SIZE = 1000;
+local NUM_SPHERES = 10e5;
 
 local InstancePositions = 
    (function() 
@@ -106,7 +108,6 @@ local InstancePositions =
 
 function SphereSet(data)
    return Separator {
-      Uniform3f { name = "lod", value = data.lodrange },
       VertexAttribute3f {
          divisor = 1,
          location = 1,
@@ -117,6 +118,10 @@ function SphereSet(data)
                   VertexShader { source = cull_vertex; },
                   GeometryShader { source = cull_geometry; },
                   feedbackVarying = "Position"
+               },
+               Uniform3f { 
+                  name = "lod", 
+                  value = data.lodrange 
                },
                VertexAttribute3f {
                   location = 0,
@@ -132,6 +137,7 @@ function SphereSet(data)
       },
       Sphere {
          lod = data.spherelod,
+         color = data.color;
       }
    };
 end
@@ -142,19 +148,23 @@ root = Separator {
       max = { SIZE, SIZE, SIZE }
    },
    SphereSet {
-      spherelod = 4,
+      color = { 1, 0, 0 },
+      spherelod = 3,
       lodrange = { 0, SIZE / 4, 0 }
    },
    SphereSet {
-      spherelod = 3,
+      color = { 1, 0.5, 0 },
+      spherelod = 2,
       lodrange = { SIZE / 4, SIZE / 2, 0 }
    },
    SphereSet {
-      spherelod = 2,
+      color = { 1, 1, 0 },
+      spherelod = 1,
       lodrange = { SIZE / 2, SIZE, 0 }
    },
    SphereSet {
-      spherelod = 1,
+      color = { 0, 1, 0 },
+      spherelod = 0,
       lodrange = { SIZE, 10000, 0 }
    },
 }
