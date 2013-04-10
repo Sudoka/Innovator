@@ -15,6 +15,7 @@ public:
   vector<VertexElement> vertexstack;
   vector<MatrixElement> modelmatrixstack;
   vector<ViewportElement> viewportstack;
+  vector<Uniform3fElement> uniform3fstack;
 };
 
 State::State()
@@ -36,6 +37,7 @@ State::push()
   self->programstack.push_back(this->program);
   self->vertexstack.push_back(this->vertexelem);
   self->viewportstack.push_back(this->viewportelem);
+  self->uniform3fstack.push_back(this->uniform3felem);
   self->modelmatrixstack.push_back(this->modelmatrixelem);
 }
 
@@ -45,11 +47,13 @@ State::pop()
   this->program = self->programstack.back();
   this->vertexelem = self->vertexstack.back();
   this->viewportelem = self->viewportstack.back();
+  this->uniform3felem = self->uniform3fstack.back();
   this->modelmatrixelem = self->modelmatrixstack.back();
 
+  self->vertexstack.pop_back();
   self->programstack.pop_back();
   self->viewportstack.pop_back();
-  self->vertexstack.pop_back();
+  self->uniform3fstack.pop_back();
   self->modelmatrixstack.pop_back();
 }
 
@@ -58,6 +62,7 @@ State::flush(Draw * draw)
 {
   BindScope program(this->program);
   this->viewportelem.updateGL(this);
+  this->uniform3felem.updateGL(this);
   this->viewmatrixelem.updateGL(this);
   this->projmatrixelem.updateGL(this);
   this->modelmatrixelem.updateGL(this);

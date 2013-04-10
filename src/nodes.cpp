@@ -198,6 +198,33 @@ Separator::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+LUA_NODE_SOURCE(Uniform3f);
+
+void
+Uniform3f::initClass()
+{
+  LUA_NODE_INIT_CLASS(Uniform3f, "Uniform3f");
+}
+
+Uniform3f::Uniform3f()
+{
+  LUA_NODE_ADD_FIELD_3(this->name, "name", "");
+  LUA_NODE_ADD_FIELD_3(this->value, "value", vec3(0));
+}
+
+Uniform3f::~Uniform3f()
+{
+}
+
+void
+Uniform3f::traverse(RenderAction * action)
+{
+  action->state->uniform3felem.name = this->name.value;
+  action->state->uniform3felem.value = this->value.value;
+}
+
+// *************************************************************************************************
+
 LUA_NODE_SOURCE(Transform);
 
 void
@@ -342,7 +369,7 @@ FeedbackBuffer::traverse(RenderAction * action)
   action->state->feedback = nullptr;
 
   self->count = self->glquery->getResult();
-  cout << "count: " << self->count << endl;
+  cout << "count: " << self->count << "\t" << "lodrange: <" << action->state->uniform3felem.value.x << " " << action->state->uniform3felem.value.y << ">" << endl;
 }
 
 GLuint
@@ -509,7 +536,9 @@ DrawArraysInstanced::execute(State * state)
 
   unsigned int count = vertexbuffer->values.vec.size() / 3;
   unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
-  glDrawArraysInstanced(mode, 0, count, instancecount);
+  if (instancecount > 0) {
+    glDrawArraysInstanced(mode, 0, count, instancecount);
+  }
 }
 
 // *************************************************************************************************
@@ -534,6 +563,7 @@ DrawElementsInstanced::execute(State * state)
 
   unsigned int elemcount = elementbuffer->values.vec.size();
   unsigned int instancecount = instancebuffer->getCount();
-  
-  glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
+  if (instancecount > 0) {
+    glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
+  }
 }

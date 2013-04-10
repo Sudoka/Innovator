@@ -121,6 +121,17 @@ private:
   std::unique_ptr<ProgramP> self;
 };
 
+class Uniform3f : public Node {
+  LUA_NODE_HEADER(Uniform3f);
+public:
+  Uniform3f();
+  ~Uniform3f();
+  static void initClass();
+  virtual void traverse(RenderAction * action);
+  SFVec3f value;
+  SFString name;
+};
+
 class Transform : public Node {
   LUA_NODE_HEADER(Transform);
 public:

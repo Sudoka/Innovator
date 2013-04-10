@@ -54,7 +54,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   if (!GLEW_VERSION_4_3) {
     throw std::runtime_error("OpenGL 4.3 not supported.");
   }
-  glfwDisable(GLFW_AUTO_POLL_EVENTS);
+  //glfwDisable(GLFW_AUTO_POLL_EVENTS);
   glfwSetWindowSizeCallback(Innovator::resizeCB);
   glfwSetMousePosCallback(Innovator::mouseMovedCB);
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
@@ -63,6 +63,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   Buffer::initClass();
   Program::initClass();
   Separator::initClass();
+  Uniform3f::initClass();
   Transform::initClass();
   BoundingBox::initClass();
   VertexShader::initClass();
@@ -105,12 +106,13 @@ void
 Innovator::loop()
 {
   while (true) {
-    glfwWaitEvents();
+    //glfwWaitEvents();
     if (glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
       break;
 
     if (self->viewer->needRedraw()) {
       self->viewer->renderGL();
+      self->viewer->scheduleRedraw();
       if (glGetError() != GL_NO_ERROR) {
         cout << "GL error" << endl;
       }

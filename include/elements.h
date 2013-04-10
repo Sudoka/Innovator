@@ -13,6 +13,13 @@ class Buffer;
 class VertexAttribute;
 class GLVertexArrayObject;
 
+class Uniform3fElement {
+public:
+  void updateGL(State * state);
+  std::string name;
+  glm::vec3 value;
+};
+
 class MatrixElement {
 public:
   void updateGL(State * state);

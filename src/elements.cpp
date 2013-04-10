@@ -2,6 +2,7 @@
 #include <state.h>
 #include <nodes.h>
 #include <opengl.h>
+#include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace glm;
@@ -22,10 +23,30 @@ ViewportElement::updateGL(State * state)
 }
 
 void
+Uniform3fElement::updateGL(State * state)
+{
+  if (!this->name.empty()) {
+    GLint loc = glGetUniformLocation(state->program->id, this->name.c_str());
+    if (loc != -1) {
+      glUniform3fv(loc, 1, glm::value_ptr(this->value));
+    } else {
+      //cout << "Uniform3fElement::updateGL(State * state): uniform " << name << " location not found in program";
+    }
+  }
+}
+
+void
 MatrixElement::updateGL(State * state)
 {
-  GLuint loc = glGetUniformLocation(state->program->id, this->name.c_str());
-  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
+  if (this->name.empty()) {
+    throw std::runtime_error("MatrixElement::updateGL(State * state): name is empty");
+  }
+  GLint loc = glGetUniformLocation(state->program->id, this->name.c_str());
+  if (loc != -1) {
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
+  } else {
+    cout << "MatrixElement::updateGL(State * state): uniform " << name << " location not found in program";
+  }
 }
 
 VertexElement::VertexElement()

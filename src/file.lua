@@ -29,6 +29,7 @@ function normalizeArray(vertices)
 end
 
 function subdivide(indices, vertices, lod)
+   normalizeArray(vertices);
    for l = 1, lod do
       local num_faces = #indices;
       for face_index = 1, num_faces do

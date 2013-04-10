@@ -13,20 +13,6 @@ public:
   State();
   ~State();
 
-  enum Uniforms {
-    ViewMatrix,
-    ModelMatrix,
-    ProjectionMatrix,
-    NUM_UNIFORMS
-  };
-
-  enum Attributes {
-    VertexPosition    = 0,
-    VertexNormal      = 1,
-    TextureCoordinate = 2,
-    NUM_ATTRIBUTES    = 3
-  };
-
   void push();
   void pop();
   void flush(Draw * draw);
@@ -39,6 +25,7 @@ public:
   MatrixElement modelmatrixelem;
   MatrixElement projmatrixelem;
   ViewportElement viewportelem;
+  Uniform3fElement uniform3felem;
 
 private:
   class StateP;
