@@ -353,6 +353,8 @@ FeedbackBuffer::traverse(RenderAction * action)
 {
   Buffer::traverse(action);
 
+  if (!Innovator::isLodEnabled()) return;
+
   if (!self->glfeedback.get()) {
     self->glfeedback.reset(new GLTransformFeedback(GL_POINTS, 0, this->buffer->buffer));
   }
@@ -369,7 +371,7 @@ FeedbackBuffer::traverse(RenderAction * action)
   action->state->feedback = nullptr;
 
   self->count = self->glquery->getResult();
-  //cout << "count: " << self->count << "\t" << "lodrange: <" << action->state->uniform3felem.value.x << " " << action->state->uniform3felem.value.y << ">" << endl;
+  //cout << "count: " << self->count << endl;
 }
 
 GLuint

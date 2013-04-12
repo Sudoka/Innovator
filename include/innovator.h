@@ -16,6 +16,7 @@ public:
   void loop();
 
   static void postError(const std::string & msg);
+  static bool isLodEnabled();
   static Lua * lua();
   class InnovatorP;
 private:

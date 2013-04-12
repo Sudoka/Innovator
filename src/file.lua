@@ -137,7 +137,6 @@ function Box(data)
                         1,  1, -1,  1,  1,  1 } 
          }
       },
-      BoundingBox { min = { -1, -1, -1 }, max = { 1, 1, 1 } },
       DrawElements { mode = "TRIANGLES" }
    }
 end
@@ -156,7 +155,6 @@ function Sphere(data)
    subdivide(indices, vertices, data.lod and data.lod or 1);
 
    return Separator {
-      Uniform3f { name = "Color", value = data.color },
       IndexBuffer { values = flatten(indices) },
       VertexAttribute3f { location = 0, values = flatten(vertices) },
       DrawElementsInstanced { mode = "TRIANGLES" }

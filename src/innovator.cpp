@@ -25,6 +25,7 @@ public:
   unique_ptr<Lua> lua;
   unique_ptr<Glfw> glfw;
   unique_ptr<Viewer> viewer;
+  bool lod_enabled;
 };
 
 std::unique_ptr<Innovator::InnovatorP> Innovator::self = nullptr;
@@ -35,6 +36,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
     throw std::runtime_error("Innovator already created.");
   }
   self.reset(new InnovatorP);
+  self->lod_enabled = true;
   self->viewer.reset(new Viewer(width, height));
 
   self->lua.reset(new Lua);
@@ -54,7 +56,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   if (!GLEW_VERSION_4_3) {
     throw std::runtime_error("OpenGL 4.3 not supported.");
   }
-  //glfwDisable(GLFW_AUTO_POLL_EVENTS);
+  glfwDisable(GLFW_AUTO_POLL_EVENTS);
   glfwSetWindowSizeCallback(Innovator::resizeCB);
   glfwSetMousePosCallback(Innovator::mouseMovedCB);
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
@@ -106,13 +108,17 @@ void
 Innovator::loop()
 {
   while (true) {
-    //glfwWaitEvents();
+    glfwWaitEvents();
     if (glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
       break;
 
+    if (glfwGetKey(GLFW_KEY_SPACE)) {
+      self->lod_enabled = !self->lod_enabled;
+      self->viewer->scheduleRedraw();
+    }
+
     if (self->viewer->needRedraw()) {
       self->viewer->renderGL();
-      self->viewer->scheduleRedraw();
       if (glGetError() != GL_NO_ERROR) {
         cout << "GL error" << endl;
       }
@@ -132,3 +138,9 @@ Innovator::lua()
 {
   return self->lua.get();
 }  
+
+bool 
+Innovator::isLodEnabled()
+{
+  return self->lod_enabled;
+}
