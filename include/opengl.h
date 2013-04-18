@@ -104,7 +104,6 @@ public:
   GLVertexArrayObject();
   ~GLVertexArrayObject();
 
-private:
   virtual void bind();
   virtual void unbind();
 

@@ -214,17 +214,15 @@ Separator::initClass()
 void
 Separator::traverse(RenderAction * action)
 {
-  action->state->push();
+  State::Scope scope(action->state);
   Group::traverse(action);
-  action->state->pop();
 }
 
 void
 Separator::traverse(BoundingBoxAction * action)
 {
-  action->state->push();
+  State::Scope scope(action->state);
   Group::traverse(action);
-  action->state->pop();
 }
 
 // *************************************************************************************************
@@ -497,7 +495,7 @@ FeedbackBuffer::traverse(RenderAction * action)
   if (!self->glquery.get()) {
     self->glquery.reset(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN));
   }
-  State::Push push_scope(action->state.get());
+  State::Scope scope(action->state);
   action->state->feedbackbuffer = this;
   this->scene.value->traverse(action);
 }

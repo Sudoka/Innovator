@@ -11,10 +11,10 @@ class FeedbackBuffer;
 
 class State {
 public:
-  class Push {
+  class Scope {
   public:
-    Push(State * state) : state(state) { state->push(); }
-    ~Push() { state->pop(); }
+    Scope(std::unique_ptr<State> & state) : state(state.get()) { state->push(); }
+    ~Scope() { state->pop(); }
   private:
     State * state;
   };
