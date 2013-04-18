@@ -81,6 +81,27 @@ function VertexAttribute3f(data)
    }
 end
 
+function VertexShader(data)
+   return ShaderObject {
+      type = "VERTEX_SHADER",
+      source = data.source
+   };
+end
+
+function GeometryShader(data)
+   return ShaderObject {
+      type = "GEOMETRY_SHADER",
+      source = data.source
+   };
+end
+
+function FragmentShader(data)
+   return ShaderObject {
+      type = "FRAGMENT_SHADER",
+      source = data.source
+   };
+end
+
 local vertex = [[
 #version 330
 layout(location = 0) in vec3 Vertex;
@@ -114,12 +135,28 @@ void main()
 }
 ]]
 
+function Sphere(data)
+   local t = (1 + 5^0.5) / 2; -- golden ratio
+   local indices = { {1, 4, 0},  {4, 9, 0}, {4, 5, 9}, {8, 5, 4}, {1, 8, 4},
+                     {1, 10, 8}, {10, 3, 8}, {8, 3, 5}, {3, 2, 5}, {3, 7, 2},
+                     {3, 10, 7}, {10, 6, 7}, {6, 11, 7}, {6, 0, 11},  {6, 1, 0},
+                     {10, 1, 6}, {11, 0, 9}, {2, 11, 9}, {5, 2, 9}, {11, 2, 7} };
+   
+   local vertices = { {-1, 0, t}, {1, 0, t}, {-1, 0, -t}, {1, 0, -t},
+                      {0, t, 1}, {0, t, -1}, {0, -t, 1}, {0, -t, -1},
+                      {t, 1, 0}, {-t, 1, 0}, {t, -1, 0}, {-t, -1, 0} };
+
+   subdivide(indices, vertices, data.lod and data.lod or 1);
+
+   return Separator {
+      IndexBuffer { values = flatten(indices) },
+      VertexAttribute3f { location = 0, values = flatten(vertices) },
+      DrawElements { mode = "TRIANGLES" }
+   }
+end
+
 function Box(data)
    return Separator {
-      Program {
-         VertexShader { source = vertex },
-         FragmentShader { source = fragment },
-      },
       IndexBuffer {
          values = { 0, 1, 3,  3, 2, 0,
                     1, 5, 7,  7, 3, 1,
@@ -128,20 +165,18 @@ function Box(data)
                     2, 3, 7,  7, 6, 2,
                     1, 0, 4,  4, 5, 1 }
       },
-      VertexAttribute {
+      VertexAttribute3f {
          location = 0,
-         buffer = VertexBuffer {
-            values = { -1, -1, -1, -1, -1,  1, 
-                       -1,  1, -1, -1,  1,  1,
-                        1, -1, -1,  1, -1,  1,
-                        1,  1, -1,  1,  1,  1 } 
-         }
+         values = { -1, -1, -1, -1, -1,  1, 
+                    -1,  1, -1, -1,  1,  1,
+                     1, -1, -1,  1, -1,  1,
+                     1,  1, -1,  1,  1,  1 } 
       },
       DrawElements { mode = "TRIANGLES" }
    }
 end
 
-function Sphere(data)
+function InstancedSphere(data)
    local t = (1 + 5^0.5) / 2; -- golden ratio
    local indices = { {1, 4, 0},  {4, 9, 0}, {4, 5, 9}, {8, 5, 4}, {1, 8, 4},
                      {1, 10, 8}, {10, 3, 8}, {8, 3, 5}, {3, 2, 5}, {3, 7, 2},

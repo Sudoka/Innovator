@@ -1,6 +1,8 @@
 #include <actions.h>
 #include <state.h>
 #include <GL/glew.h>
+#include <opengl.h>
+#include <iostream>
 
 using namespace std;
 
@@ -8,8 +10,11 @@ Action::Action()
   : state(nullptr) {}
 Action::~Action() {}
 
+class RenderAction::RenderActionP {
+};
+
 RenderAction::RenderAction()
-  : Action()
+  : Action(), self(new RenderActionP)
 {}
 
 RenderAction::~RenderAction() {}
@@ -20,9 +25,10 @@ RenderAction::apply(Node::ptr node)
   glEnable(GL_DEPTH_TEST);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  
   state.reset(new State);
   node->traverse(this);
+  glFinish();
 }
 
 BoundingBoxAction::BoundingBoxAction()

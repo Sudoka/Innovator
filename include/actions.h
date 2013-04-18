@@ -22,6 +22,10 @@ public:
 
   void resize(int width, int height);
   void apply(Node::ptr node);
+
+private:
+  class RenderActionP;
+  std::unique_ptr<RenderActionP> self;
 };
 
 class BoundingBoxAction : public Action {

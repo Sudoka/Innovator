@@ -3,70 +3,73 @@
 #include <iostream>
 #include <nodes.h>
 #include <opengl.h>
+#include <glm/glm.hpp>
 
 using namespace std;
+using namespace glm;
 
 class State::StateP {
 public:
   StateP() {}
   ~StateP() {}
-
-  vector<GLProgram*> programstack;
+  vector<Program*> programstack;
+  vector<Viewport*> viewportstack;
   vector<VertexElement> vertexstack;
-  vector<MatrixElement> modelmatrixstack;
-  vector<ViewportElement> viewportstack;
-  vector<Uniform3fElement> uniform3fstack;
+  vector<UniformElement> uniformstack;
+  vector<FeedbackBuffer*> feedbackstack;
+  vector<TransformElement> transformstack;
 };
 
 State::State()
   : self(new StateP), 
-    query(nullptr),
+    camera(nullptr),
     program(nullptr),
-    feedback(nullptr)
+    viewport(nullptr),
+    feedbackbuffer(nullptr)
 {
-  this->viewmatrixelem.name = "ViewMatrix";
-  this->modelmatrixelem.name = "ModelMatrix";
-  this->projmatrixelem.name = "ProjectionMatrix";
 }
 
-State::~State() {}
+State::~State() 
+{
+}
 
 void
 State::push()
 {
   self->programstack.push_back(this->program);
+  self->viewportstack.push_back(this->viewport);
   self->vertexstack.push_back(this->vertexelem);
-  self->viewportstack.push_back(this->viewportelem);
-  self->uniform3fstack.push_back(this->uniform3felem);
-  self->modelmatrixstack.push_back(this->modelmatrixelem);
+  self->uniformstack.push_back(this->uniformelem);
+  self->feedbackstack.push_back(this->feedbackbuffer);
+  self->transformstack.push_back(this->transformelem);
 }
 
 void
 State::pop()
 {
   this->program = self->programstack.back();
+  this->viewport = self->viewportstack.back();
   this->vertexelem = self->vertexstack.back();
-  this->viewportelem = self->viewportstack.back();
-  this->uniform3felem = self->uniform3fstack.back();
-  this->modelmatrixelem = self->modelmatrixstack.back();
+  this->uniformelem = self->uniformstack.back();
+  this->transformelem = self->transformstack.back();
+  this->feedbackbuffer = self->feedbackstack.back();
 
   self->vertexstack.pop_back();
   self->programstack.pop_back();
+  self->uniformstack.pop_back();
   self->viewportstack.pop_back();
-  self->uniform3fstack.pop_back();
-  self->modelmatrixstack.pop_back();
+  self->feedbackstack.pop_back();
+  self->transformstack.pop_back();
 }
 
 void
 State::flush(Draw * draw)
 {
-  BindScope program(this->program);
-  this->viewportelem.updateGL(this);
-  this->uniform3felem.updateGL(this);
-  this->viewmatrixelem.updateGL(this);
-  this->projmatrixelem.updateGL(this);
-  this->modelmatrixelem.updateGL(this);
-  BindScope feedback(this->feedback);
-  BindScope query(this->query);
+  this->program->flush(this);
+  this->camera->flush(this);
+  this->viewport->flush(this);
+  this->uniformelem.flush(this);
+  this->transformelem.flush(this);
+  FeedbackBuffer::Scope feedback_scope(this->feedbackbuffer);
   draw->execute(this);
 }

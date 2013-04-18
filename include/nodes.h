@@ -40,13 +40,15 @@ public:
 };
 
 class Viewport : public Node {
+  LUA_NODE_HEADER(Viewport);
 public:
   Viewport();
   virtual ~Viewport();
   static void initClass();
-  glm::ivec2 origin;
-  glm::ivec2 size;
+  SFVec2i origin;
+  SFVec2i size;
   virtual void traverse(RenderAction * action);
+  void flush(State * state);
   typedef std::shared_ptr<Viewport> ptr;
 };
 
@@ -64,6 +66,7 @@ public:
   Camera();
   virtual ~Camera();
   virtual void traverse(RenderAction * action);
+  void flush(State * state);
   void zoom(float dz);
   void pan(const glm::vec2 & dx);
   void orbit(const glm::vec2 & dx);
@@ -79,31 +82,13 @@ private:
 };
 
 class ShaderObject : public Node {
+  LUA_NODE_HEADER(ShaderObject);
 public:
-  ShaderObject(unsigned int type);
+  ShaderObject();
+  virtual ~ShaderObject();
+  static void initClass();
+  SFEnum type;
   SFString source;
-  unsigned int type;
-};
-
-class VertexShader : public ShaderObject {
-  LUA_NODE_HEADER(VertexShader);
-public:
-  VertexShader();
-  static void initClass();
-};
-
-class GeometryShader : public ShaderObject {
-  LUA_NODE_HEADER(GeometryShader);
-public:
-  GeometryShader();
-  static void initClass();
-};
-
-class FragmentShader : public ShaderObject {
-  LUA_NODE_HEADER(FragmentShader);
-public:
-  FragmentShader();
-  static void initClass();
 };
 
 class Program : public Node {
@@ -112,23 +97,41 @@ public:
   Program();
   virtual ~Program();
   static void initClass();
-  MFNode shaders;
+  MFShader shaders;
   SFString fileName;
   SFString feedbackVarying;
   virtual void traverse(RenderAction * action);
+  void flush(State * state);
 private:
-  class ProgramP;
-  std::unique_ptr<ProgramP> self;
+  std::unique_ptr<GLProgram> glprogram;
 };
 
-class Uniform3f : public Node {
+class Uniform : public Node {
+public:
+  virtual void flush(State * state) = 0;
+};
+
+class Uniform3f : public Uniform {
   LUA_NODE_HEADER(Uniform3f);
 public:
   Uniform3f();
-  ~Uniform3f();
+  virtual ~Uniform3f();
   static void initClass();
   virtual void traverse(RenderAction * action);
+  virtual void flush(State * state);
   SFVec3f value;
+  SFString name;
+};
+
+class UniformMatrix4f : public Uniform {
+  LUA_NODE_HEADER(UniformMatrix4f);
+public:
+  UniformMatrix4f();
+  virtual ~UniformMatrix4f();
+  static void initClass();
+  virtual void traverse(RenderAction * action);
+  virtual void flush(State * state);
+  SFMatrix4f value;
   SFString name;
 };
 
@@ -166,12 +169,23 @@ public:
 class FeedbackBuffer : public Buffer {
   LUA_NODE_HEADER(FeedbackBuffer);
 public:
+  class Scope {
+  public:
+    Scope(FeedbackBuffer * buffer) : buffer(buffer) { if (buffer) { buffer->beginTransformFeedback(); } }
+    ~Scope() { if (buffer) { buffer->endTransformFeedback(); } }
+  private:
+    FeedbackBuffer * buffer;
+  };
+public:
   FeedbackBuffer();
   virtual ~FeedbackBuffer();
   static void initClass();
   SFSeparator scene;
   virtual void traverse(RenderAction * action);
   virtual GLuint getCount() const;
+
+  void beginTransformFeedback();
+  void endTransformFeedback();
 private:
   class FeedbackBufferP;
   std::unique_ptr<FeedbackBufferP> self;
@@ -196,6 +210,37 @@ public:
 private:
   friend class VertexElement;
   std::unique_ptr<GLVertexAttribute> glattrib;
+};
+
+class TextureUnit : public Node {
+  LUA_NODE_HEADER(TextureUnit);
+public:
+  TextureUnit();
+  ~TextureUnit();
+  static void initClass();
+  
+  SFUint unit;
+  virtual void traverse(RenderAction * action);
+};
+
+class Texture2D : public Node {
+  LUA_NODE_HEADER(Texture2D);
+public:
+  Texture2D();
+  ~Texture2D();
+  static void initClass();
+
+  SFUint width;
+  SFUint height;
+  SFEnum format;
+  SFEnum type;
+  SFEnum internalFormat;
+
+  virtual void traverse(RenderAction * action);
+
+private:
+  class Texture2DP;
+  std::unique_ptr<Texture2DP> self;
 };
 
 class BoundingBox : public Node {

@@ -144,9 +144,6 @@
     <ClCompile Include="..\..\src\luawrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\program.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\innovator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -4,12 +4,20 @@
 #include <elements.h>
 
 class Draw;
-class GLProgram;
-class GLQueryObject;
-class GLTransformFeedback;
+class Camera;
+class Program;
+class Viewport;
+class FeedbackBuffer;
 
 class State {
 public:
+  class Push {
+  public:
+    Push(State * state) : state(state) { state->push(); }
+    ~Push() { state->pop(); }
+  private:
+    State * state;
+  };
   State();
   ~State();
 
@@ -17,15 +25,14 @@ public:
   void pop();
   void flush(Draw * draw);
 
-  GLProgram * program;
-  GLQueryObject * query;
-  GLTransformFeedback * feedback;
+  Camera * camera;
+  Program * program;
+  Viewport * viewport;
+  FeedbackBuffer * feedbackbuffer;
+
   VertexElement vertexelem;
-  MatrixElement viewmatrixelem;
-  MatrixElement modelmatrixelem;
-  MatrixElement projmatrixelem;
-  ViewportElement viewportelem;
-  Uniform3fElement uniform3felem;
+  UniformElement uniformelem;
+  TransformElement transformelem;
 
 private:
   class StateP;

@@ -11,6 +11,7 @@
 class Node;
 class Buffer;
 class Separator;
+class ShaderObject;
 
 class Field {
 public:
@@ -159,6 +160,28 @@ public:
   std::vector<std::shared_ptr<Node>> values;
 };
 
+class MFShader : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Array<std::shared_ptr<ShaderObject>> value(L, this->values);
+  }
+  std::vector<std::shared_ptr<ShaderObject>> values;
+};
+
+class SFVec2i : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    std::vector<double> tmp;
+    Array<double> value(L, this->name, tmp);
+    if (tmp.size() == 2) {
+      this->value = glm::ivec2(tmp[0], tmp[1]);
+    }
+  }
+  glm::ivec2 value;
+};
+
 class SFVec3f : public Field {
 public:
   virtual void read(lua_State * L)
@@ -170,6 +193,22 @@ public:
     }
   }
   glm::vec3 value;
+};
+
+class SFMatrix4f : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    std::vector<double> tmp;
+    Array<double> value(L, this->name, tmp);
+    if (tmp.size() == 16) {
+      this->value = glm::mat4(tmp[ 0], tmp[ 1], tmp[ 2], tmp[ 3],
+                              tmp[ 4], tmp[ 5], tmp[ 6], tmp[ 7],
+                              tmp[ 8], tmp[ 9], tmp[10], tmp[11],
+                              tmp[12], tmp[13], tmp[14], tmp[15]);
+    }
+  }
+  glm::mat4 value;
 };
 
 class SFEnum : public Field {

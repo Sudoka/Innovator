@@ -10,32 +10,29 @@
 
 class State;
 class Buffer;
+class Uniform;
+class UniformMatrix4f;
 class VertexAttribute;
 class GLVertexArrayObject;
 
-class Uniform3fElement {
+class UniformElement {
 public:
-  void updateGL(State * state);
-  std::string name;
-  glm::vec3 value;
+  void flush(State * state);
+  void add(Uniform * uniform);
+private:
+  std::vector<Uniform*> uniforms;
 };
 
-class MatrixElement {
+class TransformElement {
 public:
-  void updateGL(State * state);
-  std::string name;
+  TransformElement();
+  ~TransformElement();
+  void mult(const glm::mat4 & mat);
+  void flush(State * state);
   glm::mat4 matrix;
 };
 
-class ViewportElement {
-public:
-  ViewportElement();
-  void updateGL(State * state);
-  glm::ivec2 size;
-  glm::ivec2 origin;
-};
-
-class VertexElement : public Bindable {
+class VertexElement {
 public:
   VertexElement();
   ~VertexElement();
@@ -43,21 +40,12 @@ public:
   void set(Buffer * buffer);
   void set(VertexAttribute * attrib);
 
-  Buffer * getArrayBuffer() const;
-  Buffer * getVertexBuffer() const;
-  Buffer * getElementBuffer() const;
-  Buffer * getInstanceBuffer() const;
-
   GLVertexArrayObject * createVAO();
 
-private:
-  virtual void bind();
-  virtual void unbind();
-
-private:
   Buffer * arraybuffer;
   Buffer * vertexbuffer;
   Buffer * elementbuffer;
   Buffer * instancebuffer;
+private:
   std::vector<Bindable *> statevec;
 };

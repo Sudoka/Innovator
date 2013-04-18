@@ -188,7 +188,6 @@
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\nodes.cpp" />
     <ClCompile Include="..\..\src\opengl.cpp" />
-    <ClCompile Include="..\..\src\program.cpp" />
     <ClCompile Include="..\..\src\state.cpp" />
     <ClCompile Include="..\..\src\viewer.cpp" />
   </ItemGroup>

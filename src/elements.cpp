@@ -8,55 +8,52 @@
 using namespace glm;
 using namespace std;
 
-ViewportElement::ViewportElement()
-  : origin(-1), size(-1)
+void
+UniformElement::add(Uniform * uniform)
+{
+  this->uniforms.push_back(uniform);
+}
+
+void
+UniformElement::flush(State * state)
+{
+  for each (Uniform * uniform in this->uniforms) {
+    uniform->flush(state);
+  }
+}
+
+TransformElement::TransformElement()
+  : matrix(1.0)
+{
+}
+
+TransformElement::~TransformElement()
 {
 }
 
 void
-ViewportElement::updateGL(State * state)
+TransformElement::mult(const mat4 & mat)
 {
-  if (size == ivec2(-1) || origin == ivec2(-1)) {
-    throw std::invalid_argument("invalid viewport");
-  }
-  glViewport(origin.x, origin.y, size.x, size.y);
+  this->matrix *= mat;
 }
 
 void
-Uniform3fElement::updateGL(State * state)
+TransformElement::flush(State * state)
 {
-  if (!this->name.empty()) {
-    GLint loc = glGetUniformLocation(state->program->id, this->name.c_str());
-    if (loc != -1) {
-      glUniform3fv(loc, 1, glm::value_ptr(this->value));
-    } else {
-      //cout << "Uniform3fElement::updateGL(State * state): uniform " << name << " location not found in program";
-    }
-  }
-}
-
-void
-MatrixElement::updateGL(State * state)
-{
-  if (this->name.empty()) {
-    throw std::runtime_error("MatrixElement::updateGL(State * state): name is empty");
-  }
-  GLint loc = glGetUniformLocation(state->program->id, this->name.c_str());
-  if (loc != -1) {
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
-  } else {
-    cout << "MatrixElement::updateGL(State * state): uniform " << name << " location not found in program";
-  }
+  GLMatrix4f glmat("ModelMatrix", this->matrix);
+  glmat.bind();
 }
 
 VertexElement::VertexElement()
   : arraybuffer(nullptr),
     elementbuffer(nullptr),
     instancebuffer(nullptr)
-{}
+{
+}
 
 VertexElement::~VertexElement() 
-{}
+{
+}
 
 void
 VertexElement::set(Buffer * buffer)
@@ -86,54 +83,19 @@ VertexElement::set(VertexAttribute * attrib)
   this->statevec.push_back(attrib->glattrib.get());
 }
 
-Buffer * 
-VertexElement::getArrayBuffer() const
-{
-  return this->arraybuffer;
-}
-
-Buffer * 
-VertexElement::getVertexBuffer() const
-{
-  return this->vertexbuffer;
-}
-
-Buffer * 
-VertexElement::getElementBuffer() const
-{
-  return this->elementbuffer;
-}
-
-Buffer * 
-VertexElement::getInstanceBuffer() const
-{
-  return this->instancebuffer;
-}
-
 GLVertexArrayObject * 
 VertexElement::createVAO()
 {
   GLVertexArrayObject * vao = new GLVertexArrayObject;
-  {
-    BindScope vao_scope(vao);
-    this->bind();
+  vao->bind();
+
+  for each (Bindable * bindable in this->statevec) {
+    bindable->bind();
   }
-  this->unbind();
+  vao->unbind();
+
+  for each (Bindable * bindable in this->statevec) {
+    bindable->unbind();
+  }
   return vao;
-}
-
-void
-VertexElement::bind()
-{
-  for (unsigned int i = 0; i < this->statevec.size(); i++) {
-    this->statevec[i]->bind();
-  }
-}
-
-void
-VertexElement::unbind()
-{
-  for (unsigned int i = 0; i < this->statevec.size(); i++) {
-    this->statevec[i]->unbind();
-  }
 }

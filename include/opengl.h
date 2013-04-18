@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 #include <vector>
 
 class Bindable {
@@ -46,6 +47,30 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
+class GLVector3f : public Bindable {
+public:
+  GLVector3f(const std::string & name, const glm::vec3 & value);
+  ~GLVector3f();
+
+  virtual void bind();
+  virtual void unbind();
+
+  glm::vec3 vec;
+  std::string name;
+};
+
+class GLMatrix4f : public Bindable {
+public:
+  GLMatrix4f(const std::string & name, const glm::mat4 & mat);
+  ~GLMatrix4f();
+
+  virtual void bind();
+  virtual void unbind();
+
+  glm::mat4 matrix;
+  std::string name;
+};
+
 class GLProgram : public Bindable {
 public:
   GLProgram();
@@ -53,7 +78,6 @@ public:
   void attach(const char * shader, GLenum type);
   void link();
   GLuint id;
-private:
   virtual void bind();
   virtual void unbind();
 };
@@ -128,4 +152,52 @@ public:
 private:
   GLuint query;
   GLenum target;
+};
+
+class GLTextureObject : public Bindable {
+public:
+  GLTextureObject(GLenum target, 
+                  GLint level, 
+                  GLint internalFormat, 
+                  GLsizei width, 
+                  GLsizei height, 
+                  GLint border, 
+                  GLenum format, 
+                  GLenum type, 
+                  const GLvoid * data);
+  ~GLTextureObject();
+
+  virtual void bind();
+  virtual void unbind();
+
+  GLuint id;
+  GLenum target;
+};
+
+class GLTextureSampler : public Bindable {
+public:
+  GLTextureSampler(GLuint unit);
+  ~GLTextureSampler();
+
+  void parameteri(GLenum pname, GLint param);
+
+  virtual void bind();
+  virtual void unbind();
+
+  GLuint id;
+  GLuint unit;
+};
+
+class GLFramebufferObject : public Bindable {
+public:
+  GLFramebufferObject();
+  ~GLFramebufferObject();
+
+  void attach(GLenum attachment, GLuint texture);
+  void checkStatus();
+
+  virtual void bind();
+  virtual void unbind();
+
+  GLuint id;
 };

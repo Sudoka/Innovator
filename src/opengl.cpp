@@ -1,8 +1,65 @@
 #include <opengl.h>
 #include <innovator.h>
 #include <string>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
+using namespace glm;
+
+GLVector3f::GLVector3f(const string & name, const vec3 & vec)
+  : vec(vec), name(name)
+{
+}
+
+GLVector3f::~GLVector3f()
+{
+}
+
+void
+GLVector3f::bind()
+{
+  GLint program;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+  assert(program > 0);
+  
+  GLint loc = glGetUniformLocation(program, this->name.c_str());
+  assert(loc != -1);
+  glUniform3fv(loc, 1, glm::value_ptr(this->vec));
+}
+
+void
+GLVector3f::unbind()
+{
+
+}
+
+GLMatrix4f::GLMatrix4f(const string & name, const mat4 & mat)
+  : matrix(mat), name(name)
+{
+
+}
+
+GLMatrix4f::~GLMatrix4f()
+{
+}
+
+void
+GLMatrix4f::bind()
+{
+  GLint program;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+  assert(program > 0);
+  
+  GLint loc = glGetUniformLocation(program, this->name.c_str());
+  assert(loc != -1);
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
+}
+
+void
+GLMatrix4f::unbind()
+{
+
+}
 
 template <typename T>
 GLBufferObject * GetGLBuffer(GLenum target, GLenum usage, GLuint count, vector<double> & vec)
@@ -251,3 +308,110 @@ GLProgram::unbind()
 {
   glUseProgram(0);
 }
+
+// *************************************************************************************************
+
+GLTextureObject::GLTextureObject(GLenum target, 
+                                 GLint level,
+                                 GLint internalFormat,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLint border,
+                                 GLenum format,
+                                 GLenum type,
+                                 const GLvoid * data)
+  : target(target)
+{
+  glGenTextures(1, &this->id);
+  glBindTexture(GL_TEXTURE_2D, this->id);
+  glTexImage2D(this->target, level, internalFormat, width, height, border, format, type, data);
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+GLTextureObject::~GLTextureObject()
+{
+  glDeleteTextures(1, &this->id);
+}
+
+void
+GLTextureObject::bind()
+{
+  glBindTexture(this->target, this->id);
+}
+
+void
+GLTextureObject::unbind()
+{
+  glBindTexture(this->target, 0);
+}
+
+// *************************************************************************************************
+
+GLTextureSampler::GLTextureSampler(GLuint unit)
+  : unit(unit)
+{
+  glGenSamplers(1, &this->id);
+}
+
+GLTextureSampler::~GLTextureSampler()
+{
+  glDeleteSamplers(1, &this->id);
+}
+
+void 
+GLTextureSampler::parameteri(GLenum pname, GLint param)
+{
+  glSamplerParameteri(this->id, pname, param);
+}
+
+void
+GLTextureSampler::bind()
+{
+  glBindSampler(this->unit, this->id);
+}
+
+void
+GLTextureSampler::unbind()
+{
+  glBindSampler(this->unit, 0);
+}
+
+// *************************************************************************************************
+
+GLFramebufferObject::GLFramebufferObject()
+{
+  glGenFramebuffers(1, &this->id);
+}
+
+GLFramebufferObject::~GLFramebufferObject()
+{
+  glDeleteFramebuffers(1, &this->id);
+}
+
+void
+GLFramebufferObject::attach(GLenum attachment, GLuint texture)
+{
+  glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture, 0);
+}
+
+void
+GLFramebufferObject::checkStatus()
+{
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    throw std::runtime_error("framebuffer incomplete");
+  }
+}
+
+void
+GLFramebufferObject::bind()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, this->id);
+}
+
+void
+GLFramebufferObject::unbind()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// *************************************************************************************************
