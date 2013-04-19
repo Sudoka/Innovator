@@ -3,10 +3,9 @@
 #include <opengl.h>
 #include <state.h>
 #include <box3.h>
-#include <math.h>
-#include <iostream>
-#include <glm/gtc/matrix_transform.hpp>
+#include <map>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace glm;
 using namespace std;
@@ -16,20 +15,15 @@ using namespace std;
 class Camera::CameraP {
 public:
   vec3 up, pos, fpt;
-
   mat4 orientation;
   mat4 translation;
-
-  mat4 viewmatrix;
   mat4 projmatrix;
+  mat4 viewmatrix;
 };
 
 Camera::Camera()
   : self(new CameraP)
 {
-  self->viewmatrix = mat4(1.0);
-  self->projmatrix = mat4(1.0);
-
   self->up  = vec3(0, 1, 0);
   self->pos = vec3(0, 0, 1);
   self->fpt = vec3(0, 0, 0);
@@ -42,17 +36,15 @@ Camera::~Camera()
 void 
 Camera::traverse(RenderAction * action)
 {
+  self->viewmatrix = glm::transpose(self->orientation) * self->translation;
   action->state->camera = this;
 }
 
 void
 Camera::flush(State * state)
 {
-  self->viewmatrix = glm::transpose(self->orientation) * self->translation;
-  GLMatrix4f glviewmatrix("ViewMatrix", self->viewmatrix);
-  GLMatrix4f glprojmatrix("ProjectionMatrix", self->projmatrix);
-  glviewmatrix.bind();
-  glprojmatrix.bind();
+  glUniformMatrix4fv(state->program->getUniformLocation("ViewMatrix"), 1, GL_FALSE, glm::value_ptr(self->viewmatrix));
+  glUniformMatrix4fv(state->program->getUniformLocation("ProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(self->projmatrix));
 }
 
 vec3
@@ -227,6 +219,24 @@ Separator::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+Uniform::Uniform()
+{
+  LUA_NODE_ADD_FIELD_2(this->name, "name");
+  LUA_NODE_ADD_FIELD_3(this->location, "location", -1);
+}
+
+Uniform::~Uniform()
+{
+}
+
+void
+Uniform::traverse(RenderAction * action)
+{
+  action->state->uniformelem.add(this);
+}
+
+// *************************************************************************************************
+
 LUA_NODE_SOURCE(Uniform3f);
 
 void
@@ -237,7 +247,6 @@ Uniform3f::initClass()
 
 Uniform3f::Uniform3f()
 {
-  LUA_NODE_ADD_FIELD_3(this->name, "name", "");
   LUA_NODE_ADD_FIELD_3(this->value, "value", vec3(0));
 }
 
@@ -246,16 +255,12 @@ Uniform3f::~Uniform3f()
 }
 
 void
-Uniform3f::traverse(RenderAction * action)
-{
-  action->state->uniformelem.add(this);
-}
-
-void
 Uniform3f::flush(State * state)
 {
-  GLVector3f glvector(this->name.value, this->value.value);
-  glvector.bind();
+  if (this->location.value == -1) {
+    this->location.value = state->program->getUniformLocation(this->name.value);
+  }
+  glUniform3fv(this->location.value, 1, glm::value_ptr(this->value.value));
 }
 
 // *************************************************************************************************
@@ -270,8 +275,7 @@ UniformMatrix4f::initClass()
 
 UniformMatrix4f::UniformMatrix4f()
 {
-  LUA_NODE_ADD_FIELD_2(this->name, "name");
-  LUA_NODE_ADD_FIELD_3(this->value, "value", mat4(1));
+  LUA_NODE_ADD_FIELD_3(this->value, "value", mat4(1.0));
 }
 
 UniformMatrix4f::~UniformMatrix4f()
@@ -279,16 +283,12 @@ UniformMatrix4f::~UniformMatrix4f()
 }
 
 void
-UniformMatrix4f::traverse(RenderAction * action)
-{
-  action->state->uniformelem.add(this);
-}
-
-void
 UniformMatrix4f::flush(State * state)
 {
-  GLMatrix4f matrix(this->name.value, this->value.value);
-  matrix.bind();  
+  if (this->location.value == -1) {
+    this->location.value = state->program->getUniformLocation(this->name.value);
+  }
+  glUniformMatrix4fv(this->location.value, 1, GL_FALSE, glm::value_ptr(this->value.value));
 }
 
 // *************************************************************************************************
@@ -307,7 +307,6 @@ ShaderObject::ShaderObject()
   LUA_ENUM_DEFINE_VALUE(this->type, "VERTEX_SHADER", GL_VERTEX_SHADER);
   LUA_ENUM_DEFINE_VALUE(this->type, "GEOMETRY_SHADER", GL_GEOMETRY_SHADER);
   LUA_ENUM_DEFINE_VALUE(this->type, "FRAGMENT_SHADER", GL_FRAGMENT_SHADER);
-
   LUA_NODE_ADD_FIELD_2(this->source, "source");
 }
 
@@ -319,6 +318,23 @@ ShaderObject::~ShaderObject()
 
 LUA_NODE_SOURCE(Program);
 
+class Program::ProgramP {
+public:
+  ProgramP(Program * self) {
+    this->glprogram.reset(new GLProgram);
+    for each (const shared_ptr<ShaderObject> shader in self->shaders.values) {
+      this->glprogram->attach(shader->source.value.c_str(), shader->type.value);
+    }
+    if (!self->feedbackVarying.value.empty()) {
+      const char * varyings[] = { self->feedbackVarying.value.c_str() };
+      glTransformFeedbackVaryings(this->glprogram->id, 1, varyings, GL_SEPARATE_ATTRIBS);
+    }
+    this->glprogram->link();
+  }
+  unique_ptr<GLProgram> glprogram;
+  map<string, GLint> uniformLocations;
+};
+
 void
 Program::initClass()
 {
@@ -326,27 +342,22 @@ Program::initClass()
 }
 
 Program::Program() 
-  : glprogram(nullptr)
+  : self(nullptr)
 {
   LUA_NODE_ADD_FIELD_1(this->shaders);
+  LUA_NODE_ADD_FIELD_2(this->uniforms, "uniforms");
   LUA_NODE_ADD_FIELD_3(this->feedbackVarying, "feedbackVarying", "");
 }
 
-Program::~Program() {}
+Program::~Program() 
+{
+}
 
 void
 Program::traverse(RenderAction * action)
 {
-  if (this->glprogram.get() == nullptr) {
-    this->glprogram.reset(new GLProgram);
-    for each (const shared_ptr<ShaderObject> shader in this->shaders.values) {
-      this->glprogram->attach(shader->source.value.c_str(), shader->type.value);
-    }
-    if (!this->feedbackVarying.value.empty()) {
-      const char * varyings[] = { this->feedbackVarying.value.c_str() };
-      glTransformFeedbackVaryings(this->glprogram->id, 1, varyings, GL_SEPARATE_ATTRIBS);
-    }
-    this->glprogram->link();
+  if (self.get() == nullptr) {
+    self.reset(new ProgramP(this));
   }
   action->state->program = this;
 }
@@ -354,7 +365,19 @@ Program::traverse(RenderAction * action)
 void
 Program::flush(State * state)
 {
-  this->glprogram->bind();
+  self->glprogram->bind();
+  for each (const shared_ptr<Uniform> uniform in this->uniforms.values) {
+    uniform->flush(state);
+  }
+}
+
+GLint
+Program::getUniformLocation(const std::string & name)
+{
+  if (self->uniformLocations.find(name) == self->uniformLocations.end()) {
+    self->uniformLocations[name] = glGetUniformLocation(self->glprogram->id, name.c_str());
+  }
+  return self->uniformLocations[name];
 }
 
 // *************************************************************************************************
@@ -473,7 +496,7 @@ FeedbackBuffer::initClass()
 }
 
 FeedbackBuffer::FeedbackBuffer()
-  : self(new FeedbackBufferP)
+  : self(nullptr)
 {
   LUA_NODE_ADD_FIELD_3(this->scene, "scene", nullptr);
 }
@@ -489,10 +512,9 @@ FeedbackBuffer::traverse(RenderAction * action)
 
   if (!Innovator::isLodEnabled()) return;
 
-  if (!self->glfeedback.get()) {
+  if (self.get() == nullptr) {
+    self.reset(new FeedbackBufferP);
     self->glfeedback.reset(new GLTransformFeedback(GL_POINTS, 0, this->buffer->buffer));
-  }
-  if (!self->glquery.get()) {
     self->glquery.reset(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN));
   }
   State::Scope scope(action->state);
@@ -577,43 +599,45 @@ TextureUnit::initClass()
 }
 
 TextureUnit::TextureUnit()
+  : gltexunit(nullptr)
 {
   LUA_NODE_ADD_FIELD_3(this->unit, "unit", 0);
 }
 
 TextureUnit::~TextureUnit()
 {
-
 }
 
 void
 TextureUnit::traverse(RenderAction * action)
 {
-
+  if (this->gltexunit.get() == nullptr) {
+    this->gltexunit.reset(new GLTextureUnit(this->unit.value));
+  }
+  action->state->textureelem.set(this);
 }
 
 
 // *************************************************************************************************
 
-class Texture2D::Texture2DP {
-public:
-  unique_ptr<GLTextureObject> gltexture;
-  unique_ptr<GLTextureSampler> glsampler;
-};
-
-LUA_NODE_SOURCE(Texture2D);
+LUA_NODE_SOURCE(Texture);
 
 void
-Texture2D::initClass()
+Texture::initClass()
 {
-  LUA_NODE_INIT_CLASS(Texture2D, "Texture2D");
+  LUA_NODE_INIT_CLASS(Texture, "Texture");
 }
 
-Texture2D::Texture2D()
-  : self(nullptr)
+Texture::Texture()
+  : gltexture(nullptr)
 {
+  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_TEXTURE_2D);
+
   LUA_NODE_ADD_FIELD_3(this->width, "width", 0);
   LUA_NODE_ADD_FIELD_3(this->height, "height", 0);
+
+  LUA_NODE_ADD_FIELD_3(this->level, "level", 0);
+  LUA_NODE_ADD_FIELD_3(this->border, "border", 0);
 
   LUA_NODE_ADD_FIELD_3(this->format, "format", GL_RGBA);
   LUA_ENUM_DEFINE_VALUE(this->format, "RGBA", GL_RGBA);
@@ -624,16 +648,121 @@ Texture2D::Texture2D()
   LUA_ENUM_DEFINE_VALUE(this->internalFormat, "DEPTH_COMPONENT32", GL_DEPTH_COMPONENT32);
 }
 
-Texture2D::~Texture2D()
+Texture::~Texture()
 {
-
 }
 
 void
-Texture2D::traverse(RenderAction * action)
+Texture::traverse(RenderAction * action)
+{
+  if (this->gltexture.get() == nullptr) {
+    this->gltexture.reset(new GLTextureObject(this->target.value,
+                                              this->level.value, 
+                                              this->internalFormat.value,
+                                              this->width.value,
+                                              this->height.value,
+                                              this->border.value,
+                                              this->format.value,
+                                              this->type.value,
+                                              nullptr));
+  }
+  action->state->textureelem.set(this);
+}
+
+// *************************************************************************************************
+
+LUA_NODE_SOURCE(TextureSampler);
+
+void
+TextureSampler::initClass()
+{
+  LUA_NODE_INIT_CLASS(TextureSampler, "TextureSampler");
+}
+
+TextureSampler::TextureSampler()
+  : glsampler(nullptr)
+{
+  LUA_NODE_ADD_FIELD_3(this->wrapS, "wrapS", GL_CLAMP_TO_EDGE);
+  LUA_NODE_ADD_FIELD_3(this->wrapT, "wrapT", GL_CLAMP_TO_EDGE);
+  LUA_NODE_ADD_FIELD_3(this->wrapR, "wrapR", GL_CLAMP_TO_EDGE);
+  
+  LUA_NODE_ADD_FIELD_3(this->minFilter, "minFilter", GL_NEAREST);
+  LUA_NODE_ADD_FIELD_3(this->magFilter, "magFilter", GL_NEAREST);
+}
+
+TextureSampler::~TextureSampler()
+{
+}
+
+void
+TextureSampler::traverse(RenderAction * action)
+{
+  if (this->glsampler.get() == nullptr) {
+    this->glsampler.reset(new GLTextureSampler(this->wrapS.value,
+                                               this->wrapT.value,
+                                               this->wrapR.value,
+                                               this->minFilter.value,
+                                               this->magFilter.value));
+  }
+  action->state->textureelem.set(this);
+}
+
+// *************************************************************************************************
+
+class SceneTexture::SceneTextureP {
+public:
+  unique_ptr<GLTextureObject> color_texture;
+  unique_ptr<GLTextureObject> depth_texture;
+  unique_ptr<GLTextureSampler> color_sampler;
+  unique_ptr<GLFramebufferObject> framebuffer;
+};
+
+LUA_NODE_SOURCE(SceneTexture);
+
+void
+SceneTexture::initClass()
+{
+  LUA_NODE_INIT_CLASS(SceneTexture, "SceneTexture");
+}
+
+SceneTexture::SceneTexture()
+  : self(nullptr)
+{
+  LUA_NODE_ADD_FIELD_2(this->scene, "scene");
+  LUA_NODE_ADD_FIELD_3(this->size, "size", ivec2(-1));
+}
+
+SceneTexture::~SceneTexture()
+{
+}
+
+void
+SceneTexture::traverse(RenderAction * action)
 {
   if (self.get() == nullptr) {
-    self.reset(new Texture2DP);
+    self.reset(new SceneTextureP);
+    ivec2 size = (this->size.value != ivec2(-1)) ? this->size.value : action->state->viewport->size.value;
+    self->color_texture.reset(new GLTextureObject(GL_TEXTURE_2D, 0, GL_RGBA8, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
+    self->depth_texture.reset(new GLTextureObject(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, size.x, size.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
+    self->color_sampler.reset(new GLTextureSampler(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST));
+    self->framebuffer.reset(new GLFramebufferObject);
+    BindScope framebuffer(self->framebuffer.get());
+    self->framebuffer->attach(GL_COLOR_ATTACHMENT0, self->color_texture->id);
+    self->framebuffer->attach(GL_DEPTH_ATTACHMENT, self->depth_texture->id);
+    self->framebuffer->checkStatus();
+/*
+    static GLfloat vertices[] = { -1, -1, -1, 1, 1, -1, 1, 1 };
+    
+    glDisable(GL_DEPTH_TEST);
+    BindScope program(this->program.get());
+    BindScope sampler(this->color_sampler.get());
+    glActiveTexture(GL_TEXTURE0);
+    BindScope texture(this->color_texture.get());
+    
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+*/
   }
 }
 

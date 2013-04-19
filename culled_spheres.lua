@@ -105,14 +105,13 @@ function SceneBuffer(data)
    return FeedbackBuffer {
       count = data.count,
       scene = Separator {
-         Uniform3f { 
-            name = "lod", 
-            value = data.lodrange 
-         },
          Program {
             VertexShader { source = cull_vertex; },
             GeometryShader { source = cull_geometry; },
             feedbackVarying = data.varying,
+            uniforms = {
+               Uniform3f { name = "lod",  value = data.lodrange }
+            }
          },
          VertexAttribute3f {
             location = 0,
@@ -135,10 +134,12 @@ function ShapeSet(data)
             lodrange = data.lodrange
          }
       },
-      Uniform3f { name = "Color", value = data.color },
       Program {
          VertexShader   { source = vertex },
-         FragmentShader { source = fragment }
+         FragmentShader { source = fragment },
+         uniforms = {
+            Uniform3f { name = "Color", value = data.color },
+         }
       },
       data.shape
    };
@@ -154,32 +155,36 @@ SceneRoot = Separator {
          color = { 1, 0, 0 },
          lodrange = { 0, LOD_RANGE, 0 },
          positions = InstancePositions,
-         shape = InstancedSphere {
+         shape = Sphere {
             lod = 3,
+            instanced = true
          }
       },
       ShapeSet {
          color = { 1, 0.5, 0 },
          lodrange = { 1 * LOD_RANGE, 2 * LOD_RANGE, 0 },
          positions = InstancePositions,
-         shape = InstancedSphere {
+         shape = Sphere {
             lod = 2,
+            instanced = true
          }
       },
       ShapeSet {
          color = { 1, 1, 0 },
          lodrange = { 2 * LOD_RANGE, 3 * LOD_RANGE, 0 },
          positions = InstancePositions,
-         shape = InstancedSphere {
+         shape = Sphere {
             lod = 1,
+            instanced = true
          }
       },
       ShapeSet {
          color = { 0, 1, 0 },
          lodrange = { 3 * LOD_RANGE, 10000, 0 },
          positions = InstancePositions,
-         shape = InstancedSphere {
+         shape = Sphere {
             lod = 0,
+            instanced = true
          }
       },
    --}

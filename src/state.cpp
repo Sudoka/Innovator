@@ -16,6 +16,7 @@ public:
   vector<Viewport*> viewportstack;
   vector<VertexElement> vertexstack;
   vector<UniformElement> uniformstack;
+  vector<TextureElement> texturestack;
   vector<FeedbackBuffer*> feedbackstack;
   vector<TransformElement> transformstack;
 };
@@ -40,6 +41,7 @@ State::push()
   self->viewportstack.push_back(this->viewport);
   self->vertexstack.push_back(this->vertexelem);
   self->uniformstack.push_back(this->uniformelem);
+  self->texturestack.push_back(this->textureelem);
   self->feedbackstack.push_back(this->feedbackbuffer);
   self->transformstack.push_back(this->transformelem);
 }
@@ -51,12 +53,14 @@ State::pop()
   this->viewport = self->viewportstack.back();
   this->vertexelem = self->vertexstack.back();
   this->uniformelem = self->uniformstack.back();
+  this->textureelem = self->texturestack.back();
   this->transformelem = self->transformstack.back();
   this->feedbackbuffer = self->feedbackstack.back();
 
   self->vertexstack.pop_back();
   self->programstack.pop_back();
   self->uniformstack.pop_back();
+  self->texturestack.pop_back();
   self->viewportstack.pop_back();
   self->feedbackstack.pop_back();
   self->transformstack.pop_back();
@@ -68,6 +72,7 @@ State::flush(Draw * draw)
   this->program->flush(this);
   this->camera->flush(this);
   this->viewport->flush(this);
+  this->textureelem.flush(this);
   this->uniformelem.flush(this);
   this->transformelem.flush(this);
   FeedbackBuffer::Scope feedback_scope(this->feedbackbuffer);

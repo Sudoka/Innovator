@@ -5,13 +5,12 @@ layout(location = 0) in vec3 Position;
 uniform mat4 ViewMatrix = mat4(1.0);
 uniform mat4 ModelMatrix = mat4(1.0);
 uniform mat4 ProjectionMatrix = mat4(1.0);
-uniform mat4 MatrixUniform = mat4(1.0);
 
 out vec4 ViewPosition;
 
 void main() 
 {
-   ViewPosition = MatrixUniform * ViewMatrix * ModelMatrix * vec4(Position, 1.0);
+   ViewPosition = ViewMatrix * ModelMatrix * vec4(Position, 1.0);
    gl_Position = ProjectionMatrix * ViewPosition;
 }
 ]]
@@ -32,13 +31,6 @@ void main()
 ]]
 
 SceneRoot = Separator {
-   UniformMatrix4f {
-      name = "MatrixUniform",
-      value = { 1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1 }
-   },
    Program {
       VertexShader { source = vertex },
       FragmentShader { source = fragment },

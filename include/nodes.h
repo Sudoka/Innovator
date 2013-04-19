@@ -7,7 +7,10 @@
 #include <elements.h>
 
 class GLProgram;
+class GLTextureUnit;
 class GLBufferObject;
+class GLTextureObject;
+class GLTextureSampler;
 class GLVertexAttribute;
 class GLTransformFeedback;
 class GLVertexArrayObject;
@@ -98,17 +101,25 @@ public:
   virtual ~Program();
   static void initClass();
   MFShader shaders;
+  MFUniform uniforms;
   SFString fileName;
   SFString feedbackVarying;
   virtual void traverse(RenderAction * action);
   void flush(State * state);
+  GLint getUniformLocation(const std::string & name);
 private:
-  std::unique_ptr<GLProgram> glprogram;
+  class ProgramP;
+  std::unique_ptr<ProgramP> self;
 };
 
 class Uniform : public Node {
 public:
+  Uniform();
+  virtual ~Uniform();
+  virtual void traverse(RenderAction * action);
   virtual void flush(State * state) = 0;
+  SFInt location;
+  SFString name;
 };
 
 class Uniform3f : public Uniform {
@@ -117,10 +128,8 @@ public:
   Uniform3f();
   virtual ~Uniform3f();
   static void initClass();
-  virtual void traverse(RenderAction * action);
   virtual void flush(State * state);
   SFVec3f value;
-  SFString name;
 };
 
 class UniformMatrix4f : public Uniform {
@@ -129,10 +138,8 @@ public:
   UniformMatrix4f();
   virtual ~UniformMatrix4f();
   static void initClass();
-  virtual void traverse(RenderAction * action);
   virtual void flush(State * state);
   SFMatrix4f value;
-  SFString name;
 };
 
 class Transform : public Node {
@@ -216,31 +223,72 @@ class TextureUnit : public Node {
   LUA_NODE_HEADER(TextureUnit);
 public:
   TextureUnit();
-  ~TextureUnit();
+  virtual ~TextureUnit();
   static void initClass();
   
   SFUint unit;
   virtual void traverse(RenderAction * action);
+
+private:
+  friend class TextureElement;
+  std::unique_ptr<GLTextureUnit> gltexunit;
 };
 
-class Texture2D : public Node {
-  LUA_NODE_HEADER(Texture2D);
+class Texture : public Node {
+  LUA_NODE_HEADER(Texture);
 public:
-  Texture2D();
-  ~Texture2D();
+  Texture();
+  virtual ~Texture();
   static void initClass();
 
+  SFEnum target;
+  SFInt level;
   SFUint width;
   SFUint height;
   SFEnum format;
+  SFInt border;
   SFEnum type;
   SFEnum internalFormat;
 
   virtual void traverse(RenderAction * action);
 
 private:
-  class Texture2DP;
-  std::unique_ptr<Texture2DP> self;
+  friend class TextureElement;
+  std::unique_ptr<GLTextureObject> gltexture;
+};
+
+class TextureSampler : public Node {
+  LUA_NODE_HEADER(TextureSampler);
+public:
+  TextureSampler();
+  ~TextureSampler();
+  static void initClass();
+
+  SFEnum wrapS;
+  SFEnum wrapT;
+  SFEnum wrapR;
+  SFEnum minFilter;
+  SFEnum magFilter;
+
+  virtual void traverse(RenderAction * action);
+
+private:
+  friend class TextureElement;
+  std::unique_ptr<GLTextureSampler> glsampler;
+};
+
+class SceneTexture : public Node {
+  LUA_NODE_HEADER(SceneTexture);
+public:
+  SceneTexture();
+  virtual ~SceneTexture();
+  static void initClass();
+  virtual void traverse(RenderAction * action);
+  SFVec2i size;
+  SFSeparator scene;
+private:
+  class SceneTextureP;
+  std::unique_ptr<SceneTextureP> self;
 };
 
 class BoundingBox : public Node {

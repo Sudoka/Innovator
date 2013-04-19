@@ -30,6 +30,12 @@ FieldValue<shared_ptr<Separator>>::readValue(lua_State * L)
   return shared_ptr<Separator>(ReadUserData<Separator>(L));
 }
 
+shared_ptr<Uniform>
+FieldValue<shared_ptr<Uniform>>::readValue(lua_State * L)
+{
+  return shared_ptr<Uniform>(ReadUserData<Uniform>(L));
+}
+
 shared_ptr<ShaderObject>
 FieldValue<shared_ptr<ShaderObject>>::readValue(lua_State * L)
 {

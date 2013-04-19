@@ -11,7 +11,9 @@
 class State;
 class Buffer;
 class Uniform;
-class UniformMatrix4f;
+class Texture;
+class TextureUnit;
+class TextureSampler;
 class VertexAttribute;
 class GLVertexArrayObject;
 
@@ -47,5 +49,20 @@ public:
   Buffer * elementbuffer;
   Buffer * instancebuffer;
 private:
-  std::vector<Bindable *> statevec;
+  std::vector<Bindable*> statevec;
+};
+
+class TextureElement {
+public:
+  TextureElement();
+  ~TextureElement();
+
+  void set(Texture * texture);
+  void set(TextureUnit * unit);
+  void set(TextureSampler * sampler);
+
+  void flush(State * state);
+private:
+  GLuint unit;
+  std::vector<Bindable*> statevec;
 };

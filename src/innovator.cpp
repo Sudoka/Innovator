@@ -63,18 +63,19 @@ Innovator::Innovator(int width, int height, const std::string & filename)
 
   Group::initClass();
   Buffer::initClass();
+  Texture::initClass();
   Program::initClass();
-  Separator::initClass();
   Uniform3f::initClass();
+  Separator::initClass();
   Transform::initClass();
-  Texture2D::initClass();
+  DrawArrays::initClass();
   TextureUnit::initClass();
   BoundingBox::initClass();
   ShaderObject::initClass();
+  DrawElements::initClass();
+  TextureSampler::initClass();
   FeedbackBuffer::initClass();
   VertexAttribute::initClass();
-  DrawArrays::initClass();
-  DrawElements::initClass();
   UniformMatrix4f::initClass();
   DrawArraysInstanced::initClass();
   DrawElementsInstanced::initClass();

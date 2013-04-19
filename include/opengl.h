@@ -47,30 +47,6 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
-class GLVector3f : public Bindable {
-public:
-  GLVector3f(const std::string & name, const glm::vec3 & value);
-  ~GLVector3f();
-
-  virtual void bind();
-  virtual void unbind();
-
-  glm::vec3 vec;
-  std::string name;
-};
-
-class GLMatrix4f : public Bindable {
-public:
-  GLMatrix4f(const std::string & name, const glm::mat4 & mat);
-  ~GLMatrix4f();
-
-  virtual void bind();
-  virtual void unbind();
-
-  glm::mat4 matrix;
-  std::string name;
-};
-
 class GLProgram : public Bindable {
 public:
   GLProgram();
@@ -153,6 +129,17 @@ private:
   GLenum target;
 };
 
+class GLTextureUnit : public Bindable {
+public:
+  GLTextureUnit(GLuint unit);
+  ~GLTextureUnit();
+
+  virtual void bind();
+  virtual void unbind();
+
+  GLuint unit;
+};
+
 class GLTextureObject : public Bindable {
 public:
   GLTextureObject(GLenum target, 
@@ -175,10 +162,14 @@ public:
 
 class GLTextureSampler : public Bindable {
 public:
-  GLTextureSampler(GLuint unit);
+  GLTextureSampler(GLint wraps, 
+                   GLint wrapt, 
+                   GLint wrapr, 
+                   GLint min_filter, 
+                   GLint mag_filter);
   ~GLTextureSampler();
 
-  void parameteri(GLenum pname, GLint param);
+  void setUnit(GLuint unit);
 
   virtual void bind();
   virtual void unbind();

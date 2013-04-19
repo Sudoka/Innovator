@@ -6,61 +6,6 @@
 using namespace std;
 using namespace glm;
 
-GLVector3f::GLVector3f(const string & name, const vec3 & vec)
-  : vec(vec), name(name)
-{
-}
-
-GLVector3f::~GLVector3f()
-{
-}
-
-void
-GLVector3f::bind()
-{
-  GLint program;
-  glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-  assert(program > 0);
-  
-  GLint loc = glGetUniformLocation(program, this->name.c_str());
-  assert(loc != -1);
-  glUniform3fv(loc, 1, glm::value_ptr(this->vec));
-}
-
-void
-GLVector3f::unbind()
-{
-
-}
-
-GLMatrix4f::GLMatrix4f(const string & name, const mat4 & mat)
-  : matrix(mat), name(name)
-{
-
-}
-
-GLMatrix4f::~GLMatrix4f()
-{
-}
-
-void
-GLMatrix4f::bind()
-{
-  GLint program;
-  glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-  assert(program > 0);
-  
-  GLint loc = glGetUniformLocation(program, this->name.c_str());
-  assert(loc != -1);
-  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(this->matrix));
-}
-
-void
-GLMatrix4f::unbind()
-{
-
-}
-
 template <typename T>
 GLBufferObject * GetGLBuffer(GLenum target, GLenum usage, GLuint count, vector<double> & vec)
 {
@@ -311,6 +256,29 @@ GLProgram::unbind()
 
 // *************************************************************************************************
 
+GLTextureUnit::GLTextureUnit(GLuint unit)
+  : unit(unit)
+{
+}
+
+GLTextureUnit::~GLTextureUnit()
+{
+}
+
+void
+GLTextureUnit::bind()
+{
+  glActiveTexture(GL_TEXTURE0 + this->unit);
+}
+
+void
+GLTextureUnit::unbind()
+{
+  glActiveTexture(GL_TEXTURE0);
+}
+
+// *************************************************************************************************
+
 GLTextureObject::GLTextureObject(GLenum target, 
                                  GLint level,
                                  GLint internalFormat,
@@ -323,9 +291,9 @@ GLTextureObject::GLTextureObject(GLenum target,
   : target(target)
 {
   glGenTextures(1, &this->id);
-  glBindTexture(GL_TEXTURE_2D, this->id);
+  glBindTexture(this->target, this->id);
   glTexImage2D(this->target, level, internalFormat, width, height, border, format, type, data);
-  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(this->target, 0);
 }
 
 GLTextureObject::~GLTextureObject()
@@ -347,10 +315,19 @@ GLTextureObject::unbind()
 
 // *************************************************************************************************
 
-GLTextureSampler::GLTextureSampler(GLuint unit)
-  : unit(unit)
+GLTextureSampler::GLTextureSampler(GLint wraps, 
+                                   GLint wrapt,
+                                   GLint wrapr,
+                                   GLint min_filter,
+                                   GLint mag_filter)
+  : unit(0)
 {
   glGenSamplers(1, &this->id);
+  glSamplerParameteri(this->id, GL_TEXTURE_WRAP_S, wraps);
+  glSamplerParameteri(this->id, GL_TEXTURE_WRAP_T, wrapt);
+  glSamplerParameteri(this->id, GL_TEXTURE_WRAP_R, wrapr);
+  glSamplerParameteri(this->id, GL_TEXTURE_MIN_FILTER, min_filter);
+  glSamplerParameteri(this->id, GL_TEXTURE_MAG_FILTER, mag_filter);
 }
 
 GLTextureSampler::~GLTextureSampler()
@@ -358,10 +335,10 @@ GLTextureSampler::~GLTextureSampler()
   glDeleteSamplers(1, &this->id);
 }
 
-void 
-GLTextureSampler::parameteri(GLenum pname, GLint param)
+void
+GLTextureSampler::setUnit(GLuint unit)
 {
-  glSamplerParameteri(this->id, pname, param);
+  this->unit = unit;
 }
 
 void

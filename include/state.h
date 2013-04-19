@@ -32,6 +32,7 @@ public:
 
   VertexElement vertexelem;
   UniformElement uniformelem;
+  TextureElement textureelem;
   TransformElement transformelem;
 
 private:

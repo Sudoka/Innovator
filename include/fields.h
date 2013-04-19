@@ -10,6 +10,7 @@
 
 class Node;
 class Buffer;
+class Uniform;
 class Separator;
 class ShaderObject;
 
@@ -167,6 +168,15 @@ public:
     Array<std::shared_ptr<ShaderObject>> value(L, this->values);
   }
   std::vector<std::shared_ptr<ShaderObject>> values;
+};
+
+class MFUniform : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Array<std::shared_ptr<Uniform>> value(L, this->name, this->values);
+  }
+  std::vector<std::shared_ptr<Uniform>> values;
 };
 
 class SFVec2i : public Field {

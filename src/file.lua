@@ -77,7 +77,9 @@ function VertexAttribute3f(data)
       size = 3,
       divisor = data.divisor,
       location = data.location,
-      buffer = data.values and VertexBuffer { values = data.values } or data.buffer
+      buffer = data.values and 
+         VertexBuffer { values = data.values } or 
+         data.buffer
    }
 end
 
@@ -102,96 +104,43 @@ function FragmentShader(data)
    };
 end
 
-local vertex = [[
-#version 330
-layout(location = 0) in vec3 Vertex;
-
-uniform mat4 ViewMatrix = mat4(1.0);
-uniform mat4 ModelMatrix = mat4(1.0);
-uniform mat4 ProjectionMatrix = mat4(1.0);
-
-out vec3 Position;
-
-void main() 
-{
-  mat4 MV = ViewMatrix * ModelMatrix;
-  Position = vec3(MV * vec4(Vertex, 1.0));
-  gl_Position = ProjectionMatrix * vec4(Position, 1.0);
-}
-]]
-
-local fragment = [[
-#version 330
-layout(location = 0) out vec4 FragColor;
-
-in vec3 Position;
-
-void main()
-{
-  vec3 dx = dFdx(Position);
-  vec3 dy = dFdy(Position);
-  vec3 n = normalize(cross(dx, dy));
-  FragColor = vec4(n.zzz, 1.0);
-}
-]]
-
 function Sphere(data)
    local t = (1 + 5^0.5) / 2; -- golden ratio
-   local indices = { {1, 4, 0},  {4, 9, 0}, {4, 5, 9}, {8, 5, 4}, {1, 8, 4},
-                     {1, 10, 8}, {10, 3, 8}, {8, 3, 5}, {3, 2, 5}, {3, 7, 2},
-                     {3, 10, 7}, {10, 6, 7}, {6, 11, 7}, {6, 0, 11},  {6, 1, 0},
-                     {10, 1, 6}, {11, 0, 9}, {2, 11, 9}, {5, 2, 9}, {11, 2, 7} };
+   local indices = { {  1,  4, 0 }, {  4, 9, 0 }, { 4,  5, 9 }, { 8, 5, 4 }, {  1, 8, 4 },
+                     {  1, 10, 8 }, { 10, 3, 8 }, { 8,  3, 5 }, { 3, 2, 5 }, {  3, 7, 2 },
+                     {  3, 10, 7 }, { 10, 6, 7 }, { 6, 11, 7 }, { 6, 0,11 }, {  6, 1, 0 },
+                     { 10,  1, 6 }, { 11, 0, 9 }, { 2, 11, 9 }, { 5, 2, 9 }, { 11, 2, 7 } };
    
-   local vertices = { {-1, 0, t}, {1, 0, t}, {-1, 0, -t}, {1, 0, -t},
-                      {0, t, 1}, {0, t, -1}, {0, -t, 1}, {0, -t, -1},
-                      {t, 1, 0}, {-t, 1, 0}, {t, -1, 0}, {-t, -1, 0} };
+   local vertices = { {-1, 0, t }, { 1, 0, t }, {-1, 0,-t }, { 1, 0,-t },
+                      { 0, t, 1 }, { 0, t,-1 }, { 0,-t, 1 }, { 0,-t,-1 },
+                      { t, 1, 0 }, {-t, 1, 0 }, { t,-1, 0 }, {-t,-1, 0 } };
 
    subdivide(indices, vertices, data.lod and data.lod or 1);
+
+   local drawnode = data.instanced and
+      DrawElementsInstanced { mode = "TRIANGLES" } or
+      DrawElements { mode = "TRIANGLES" }
 
    return Separator {
       IndexBuffer { values = flatten(indices) },
       VertexAttribute3f { location = 0, values = flatten(vertices) },
-      DrawElements { mode = "TRIANGLES" }
+      drawnode
    }
 end
 
 function Box(data)
    return Separator {
       IndexBuffer {
-         values = { 0, 1, 3,  3, 2, 0,
-                    1, 5, 7,  7, 3, 1,
-                    5, 4, 6,  6, 7, 5,
-                    4, 0, 2,  2, 6, 4,
-                    2, 3, 7,  7, 6, 2,
-                    1, 0, 4,  4, 5, 1 }
+         values = { 0, 1, 3, 3, 2, 0, 1, 5, 7, 7, 3, 1, 5, 4, 6, 6, 7, 5, 
+                    4, 0, 2, 2, 6, 4, 2, 3, 7, 7, 6, 2, 1, 0, 4, 4, 5, 1 }
       },
       VertexAttribute3f {
          location = 0,
-         values = { -1, -1, -1, -1, -1,  1, 
-                    -1,  1, -1, -1,  1,  1,
-                     1, -1, -1,  1, -1,  1,
-                     1,  1, -1,  1,  1,  1 } 
+         values = { -1, -1, -1, -1, -1,  1, -1,  1, -1, -1,  1,  1,
+                     1, -1, -1,  1, -1,  1,  1,  1, -1,  1,  1,  1 } 
       },
-      DrawElements { mode = "TRIANGLES" }
-   }
-end
-
-function InstancedSphere(data)
-   local t = (1 + 5^0.5) / 2; -- golden ratio
-   local indices = { {1, 4, 0},  {4, 9, 0}, {4, 5, 9}, {8, 5, 4}, {1, 8, 4},
-                     {1, 10, 8}, {10, 3, 8}, {8, 3, 5}, {3, 2, 5}, {3, 7, 2},
-                     {3, 10, 7}, {10, 6, 7}, {6, 11, 7}, {6, 0, 11},  {6, 1, 0},
-                     {10, 1, 6}, {11, 0, 9}, {2, 11, 9}, {5, 2, 9}, {11, 2, 7} };
-   
-   local vertices = { {-1, 0, t}, {1, 0, t}, {-1, 0, -t}, {1, 0, -t},
-                      {0, t, 1}, {0, t, -1}, {0, -t, 1}, {0, -t, -1},
-                      {t, 1, 0}, {-t, 1, 0}, {t, -1, 0}, {-t, -1, 0} };
-
-   subdivide(indices, vertices, data.lod and data.lod or 1);
-
-   return Separator {
-      IndexBuffer { values = flatten(indices) },
-      VertexAttribute3f { location = 0, values = flatten(vertices) },
-      DrawElementsInstanced { mode = "TRIANGLES" }
+      DrawElements { 
+         mode = "TRIANGLES" 
+      }
    }
 end
