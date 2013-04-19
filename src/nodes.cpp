@@ -518,22 +518,9 @@ FeedbackBuffer::traverse(RenderAction * action)
     self->glquery.reset(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN));
   }
   State::Scope scope(action->state);
-  action->state->feedbackbuffer = this;
+  action->state->feedbackelem.set(self->glquery.get());
+  action->state->feedbackelem.set(self->glfeedback.get());
   this->scene.value->traverse(action);
-}
-
-void
-FeedbackBuffer::beginTransformFeedback()
-{
-  self->glquery->bind();
-  self->glfeedback->bind();
-}
-
-void
-FeedbackBuffer::endTransformFeedback()
-{
-  self->glquery->unbind();
-  self->glfeedback->unbind();
 }
 
 GLuint

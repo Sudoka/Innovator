@@ -17,16 +17,15 @@ public:
   vector<VertexElement> vertexstack;
   vector<UniformElement> uniformstack;
   vector<TextureElement> texturestack;
-  vector<FeedbackBuffer*> feedbackstack;
   vector<TransformElement> transformstack;
+  vector<TransformFeedbackElement> feedbackstack;
 };
 
 State::State()
   : self(new StateP), 
     camera(nullptr),
     program(nullptr),
-    viewport(nullptr),
-    feedbackbuffer(nullptr)
+    viewport(nullptr)
 {
 }
 
@@ -42,7 +41,7 @@ State::push()
   self->vertexstack.push_back(this->vertexelem);
   self->uniformstack.push_back(this->uniformelem);
   self->texturestack.push_back(this->textureelem);
-  self->feedbackstack.push_back(this->feedbackbuffer);
+  self->feedbackstack.push_back(this->feedbackelem);
   self->transformstack.push_back(this->transformelem);
 }
 
@@ -54,8 +53,8 @@ State::pop()
   this->vertexelem = self->vertexstack.back();
   this->uniformelem = self->uniformstack.back();
   this->textureelem = self->texturestack.back();
+  this->feedbackelem = self->feedbackstack.back();
   this->transformelem = self->transformstack.back();
-  this->feedbackbuffer = self->feedbackstack.back();
 
   self->vertexstack.pop_back();
   self->programstack.pop_back();
@@ -75,6 +74,8 @@ State::flush(Draw * draw)
   this->textureelem.flush(this);
   this->uniformelem.flush(this);
   this->transformelem.flush(this);
-  FeedbackBuffer::Scope feedback_scope(this->feedbackbuffer);
+
+  this->feedbackelem.begin();
   draw->execute(this);
+  this->feedbackelem.end();
 }

@@ -176,14 +176,6 @@ public:
 class FeedbackBuffer : public Buffer {
   LUA_NODE_HEADER(FeedbackBuffer);
 public:
-  class Scope {
-  public:
-    Scope(FeedbackBuffer * buffer) : buffer(buffer) { if (buffer) { buffer->beginTransformFeedback(); } }
-    ~Scope() { if (buffer) { buffer->endTransformFeedback(); } }
-  private:
-    FeedbackBuffer * buffer;
-  };
-public:
   FeedbackBuffer();
   virtual ~FeedbackBuffer();
   static void initClass();
@@ -194,6 +186,7 @@ public:
   void beginTransformFeedback();
   void endTransformFeedback();
 private:
+  friend class TransformFeedbackElement;
   class FeedbackBufferP;
   std::unique_ptr<FeedbackBufferP> self;
 };

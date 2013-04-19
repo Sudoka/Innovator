@@ -7,7 +7,6 @@ class Draw;
 class Camera;
 class Program;
 class Viewport;
-class FeedbackBuffer;
 
 class State {
 public:
@@ -28,12 +27,12 @@ public:
   Camera * camera;
   Program * program;
   Viewport * viewport;
-  FeedbackBuffer * feedbackbuffer;
 
   VertexElement vertexelem;
   UniformElement uniformelem;
   TextureElement textureelem;
   TransformElement transformelem;
+  TransformFeedbackElement feedbackelem;
 
 private:
   class StateP;

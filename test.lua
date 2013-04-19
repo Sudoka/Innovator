@@ -37,13 +37,10 @@ SceneRoot = Separator {
    },
    BoundingBox { min = { -3, -3, -3 }, max = { 3, 3, 3 } },
 
-   Separator {
-      Transform { translation = { -2, -2, -2 } },
-      Box {}
-   },
+   Transform { translation = { -2, -2, -2 } },
+   Box {},
+   Transform { translation = { 2, 2, 2 } },
    Sphere { lod = 0 },
-   Separator {
-      Transform { translation = { 2, 2, 2 } },
-      Sphere { lod = 3 }
-   }
+   Transform { translation = { 2, 2, 2 } },
+   Sphere { lod = 3 }
 }

@@ -14,8 +14,11 @@ class Uniform;
 class Texture;
 class TextureUnit;
 class TextureSampler;
+class FeedbackBuffer;
+
 class VertexAttribute;
 class GLVertexArrayObject;
+class GLTransformFeedback;
 
 class UniformElement {
 public:
@@ -65,4 +68,19 @@ public:
 private:
   GLuint unit;
   std::vector<Bindable*> statevec;
+};
+
+class TransformFeedbackElement {
+public:
+  TransformFeedbackElement();
+  ~TransformFeedbackElement();
+
+  void set(GLQueryObject * queryobject);
+  void set(GLTransformFeedback * transformfeedback);
+  void begin();
+  void end();
+
+private:
+  GLQueryObject * queryobject;
+  GLTransformFeedback * transformfeedback;
 };
