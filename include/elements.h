@@ -10,7 +10,6 @@
 
 class State;
 class Buffer;
-class Uniform;
 class Texture;
 class TextureUnit;
 class TextureSampler;
@@ -19,14 +18,6 @@ class FeedbackBuffer;
 class VertexAttribute;
 class GLVertexArrayObject;
 class GLTransformFeedback;
-
-class UniformElement {
-public:
-  void flush(State * state);
-  void add(Uniform * uniform);
-private:
-  std::vector<Uniform*> uniforms;
-};
 
 class TransformElement {
 public:
@@ -46,6 +37,10 @@ public:
   void set(VertexAttribute * attrib);
 
   GLVertexArrayObject * createVAO();
+
+  GLuint vertexCount;
+  GLuint elementCount;
+  GLuint instanceCount;
 
   Buffer * arraybuffer;
   Buffer * vertexbuffer;

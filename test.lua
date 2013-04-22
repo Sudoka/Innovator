@@ -35,8 +35,6 @@ SceneRoot = Separator {
       VertexShader { source = vertex },
       FragmentShader { source = fragment },
    },
-   BoundingBox { min = { -3, -3, -3 }, max = { 3, 3, 3 } },
-
    Transform { translation = { -2, -2, -2 } },
    Box {},
    Transform { translation = { 2, 2, 2 } },

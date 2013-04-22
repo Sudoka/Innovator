@@ -20,8 +20,9 @@ static void RegisterClass(const std::string & name)
 #define LUA_NODE_HEADER(_class_) \
 public: \
   static _class_ * createInstance(lua_State * L); \
+  static void initClass();
 
-#define LUA_NODE_SOURCE(_class_) \
+#define LUA_NODE_SOURCE(_class_, _name_) \
 _class_ * _class_::createInstance(lua_State * L) \
 { \
   _class_ * self = new _class_; \
@@ -29,6 +30,10 @@ _class_ * _class_::createInstance(lua_State * L) \
     (*it)->read(L); \
   } \
   return self; \
+} \
+void _class_::initClass() \
+{ \
+  RegisterClass<_class_>(_name_); \
 }
 
 #define LUA_NODE_ADD_FIELD_1(_field_) \
@@ -42,9 +47,6 @@ _class_ * _class_::createInstance(lua_State * L) \
   _field_.name = _name_; \
   _field_.value = _value_; \
   fields.push_back(&_field_); \
-
-#define LUA_NODE_INIT_CLASS(_class_, _name_) \
-  RegisterClass<_class_>(_name_); \
 
 #define LUA_ENUM_DEFINE_VALUE(_field_, _name_, _value_) \
   _field_.enums[_name_] = _value_; \

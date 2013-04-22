@@ -62,23 +62,20 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
 
   Group::initClass();
+  Shape::initClass();
   Buffer::initClass();
   Texture::initClass();
   Program::initClass();
   Uniform3f::initClass();
   Separator::initClass();
   Transform::initClass();
-  DrawArrays::initClass();
   TextureUnit::initClass();
   BoundingBox::initClass();
   ShaderObject::initClass();
-  DrawElements::initClass();
   TextureSampler::initClass();
   FeedbackBuffer::initClass();
   VertexAttribute::initClass();
   UniformMatrix4f::initClass();
-  DrawArraysInstanced::initClass();
-  DrawElementsInstanced::initClass();
 
   self->lua->dofile("src/file.lua");
   self->lua->dofile(filename);

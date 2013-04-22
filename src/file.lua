@@ -117,14 +117,11 @@ function Sphere(data)
 
    subdivide(indices, vertices, data.lod and data.lod or 1);
 
-   local drawnode = data.instanced and
-      DrawElementsInstanced { mode = "TRIANGLES" } or
-      DrawElements { mode = "TRIANGLES" }
-
    return Separator {
       IndexBuffer { values = flatten(indices) },
       VertexAttribute3f { location = 0, values = flatten(vertices) },
-      drawnode
+      BoundingBox {},
+      Shape { mode = "TRIANGLES" }
    }
 end
 
@@ -139,7 +136,8 @@ function Box(data)
          values = { -1, -1, -1, -1, -1,  1, -1,  1, -1, -1,  1,  1,
                      1, -1, -1,  1, -1,  1,  1,  1, -1,  1,  1,  1 } 
       },
-      DrawElements { 
+      BoundingBox {},
+      Shape { 
          mode = "TRIANGLES" 
       }
    }

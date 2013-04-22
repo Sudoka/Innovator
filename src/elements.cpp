@@ -8,20 +8,6 @@
 using namespace glm;
 using namespace std;
 
-void
-UniformElement::add(Uniform * uniform)
-{
-  this->uniforms.push_back(uniform);
-}
-
-void
-UniformElement::flush(State * state)
-{
-  for each (Uniform * uniform in this->uniforms) {
-    uniform->flush(state);
-  }
-}
-
 TransformElement::TransformElement()
   : matrix(1.0)
 {
@@ -44,7 +30,11 @@ TransformElement::flush(State * state)
 }
 
 VertexElement::VertexElement()
-  : arraybuffer(nullptr),
+  : vertexCount(0),
+    elementCount(0),
+    instanceCount(0),
+    arraybuffer(nullptr),
+    vertexbuffer(nullptr),
     elementbuffer(nullptr),
     instancebuffer(nullptr)
 {
@@ -58,11 +48,11 @@ void
 VertexElement::set(Buffer * buffer)
 {
   switch (buffer->target.value) {
-  case GL_ELEMENT_ARRAY_BUFFER: {
-    this->elementbuffer = buffer;
-  } break;
   case GL_ARRAY_BUFFER:
     this->arraybuffer = buffer;
+    break;
+  case GL_ELEMENT_ARRAY_BUFFER:
+    this->elementbuffer = buffer;
     break;
   default:
     throw std::invalid_argument("Invalid buffer type");
@@ -73,6 +63,9 @@ VertexElement::set(Buffer * buffer)
 void 
 VertexElement::set(VertexAttribute * attrib)
 {
+  if (!this->arraybuffer) {
+    throw std::runtime_error("VertexElement::set(): no array buffer found");
+  }
   if (attrib->index.value == 0) {
     this->vertexbuffer = this->arraybuffer;
   }

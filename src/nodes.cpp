@@ -126,13 +126,7 @@ Camera::perspective(float fovy, float aspect, float near, float far)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Viewport);
-
-void
-Viewport::initClass()
-{
-  LUA_NODE_INIT_CLASS(Viewport, "Viewport");
-}
+LUA_NODE_SOURCE(Viewport, "Viewport");
 
 Viewport::Viewport()
 {
@@ -161,13 +155,7 @@ Viewport::flush(State * state)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Group);
-
-void
-Group::initClass()
-{
-  LUA_NODE_INIT_CLASS(Group, "Group");
-}
+LUA_NODE_SOURCE(Group, "Group");
 
 Group::Group() 
 {
@@ -195,26 +183,22 @@ Group::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Separator);
-
-void
-Separator::initClass()
-{
-  LUA_NODE_INIT_CLASS(Separator, "Separator");
-}
+LUA_NODE_SOURCE(Separator, "Separator");
 
 void
 Separator::traverse(RenderAction * action)
 {
-  State::Scope scope(action->state);
+  action->state->push();
   Group::traverse(action);
+  action->state->pop();
 }
 
 void
 Separator::traverse(BoundingBoxAction * action)
 {
-  State::Scope scope(action->state);
+  action->state->push();
   Group::traverse(action);
+  action->state->pop();
 }
 
 // *************************************************************************************************
@@ -222,28 +206,15 @@ Separator::traverse(BoundingBoxAction * action)
 Uniform::Uniform()
 {
   LUA_NODE_ADD_FIELD_2(this->name, "name");
-  LUA_NODE_ADD_FIELD_3(this->location, "location", -1);
 }
 
 Uniform::~Uniform()
 {
 }
 
-void
-Uniform::traverse(RenderAction * action)
-{
-  action->state->uniformelem.add(this);
-}
-
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Uniform3f);
-
-void
-Uniform3f::initClass()
-{
-  LUA_NODE_INIT_CLASS(Uniform3f, "Uniform3f");
-}
+LUA_NODE_SOURCE(Uniform3f, "Uniform3f");
 
 Uniform3f::Uniform3f()
 {
@@ -257,21 +228,13 @@ Uniform3f::~Uniform3f()
 void
 Uniform3f::flush(State * state)
 {
-  if (this->location.value == -1) {
-    this->location.value = state->program->getUniformLocation(this->name.value);
-  }
-  glUniform3fv(this->location.value, 1, glm::value_ptr(this->value.value));
+  GLint location = state->program->getUniformLocation(this->name.value);
+  glUniform3fv(location, 1, glm::value_ptr(this->value.value));
 }
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(UniformMatrix4f);
-
-void
-UniformMatrix4f::initClass()
-{
-  LUA_NODE_INIT_CLASS(UniformMatrix4f, "UniformMatrix4f");
-}
+LUA_NODE_SOURCE(UniformMatrix4f, "UniformMatrix3f");
 
 UniformMatrix4f::UniformMatrix4f()
 {
@@ -285,21 +248,13 @@ UniformMatrix4f::~UniformMatrix4f()
 void
 UniformMatrix4f::flush(State * state)
 {
-  if (this->location.value == -1) {
-    this->location.value = state->program->getUniformLocation(this->name.value);
-  }
-  glUniformMatrix4fv(this->location.value, 1, GL_FALSE, glm::value_ptr(this->value.value));
+  GLint location = state->program->getUniformLocation(this->name.value);
+  glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(this->value.value));
 }
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(ShaderObject);
-
-void
-ShaderObject::initClass()
-{
-  LUA_NODE_INIT_CLASS(ShaderObject, "ShaderObject");
-}
+LUA_NODE_SOURCE(ShaderObject, "ShaderObject");
 
 ShaderObject::ShaderObject()
 {
@@ -316,7 +271,7 @@ ShaderObject::~ShaderObject()
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Program);
+LUA_NODE_SOURCE(Program, "Program");
 
 class Program::ProgramP {
 public:
@@ -334,12 +289,6 @@ public:
   unique_ptr<GLProgram> glprogram;
   map<string, GLint> uniformLocations;
 };
-
-void
-Program::initClass()
-{
-  LUA_NODE_INIT_CLASS(Program, "Program");
-}
 
 Program::Program() 
   : self(nullptr)
@@ -382,13 +331,7 @@ Program::getUniformLocation(const std::string & name)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Transform);
-
-void
-Transform::initClass()
-{
-  LUA_NODE_INIT_CLASS(Transform, "Transform");
-}
+LUA_NODE_SOURCE(Transform, "Transform");
 
 Transform::Transform()
 {
@@ -421,13 +364,7 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Buffer);
-
-void
-Buffer::initClass()
-{
-  LUA_NODE_INIT_CLASS(Buffer, "Buffer");
-}
+LUA_NODE_SOURCE(Buffer, "Buffer");
 
 Buffer::Buffer()
   : buffer(nullptr)
@@ -465,12 +402,6 @@ Buffer::traverse(RenderAction * action)
   action->state->vertexelem.set(this);
 }
 
-void
-Buffer::traverse(BoundingBoxAction * action)
-{
-  action->state->vertexelem.set(this);
-}
-
 GLuint
 Buffer::getCount() const
 {
@@ -487,13 +418,7 @@ public:
   std::unique_ptr<GLTransformFeedback> glfeedback;
 };
 
-LUA_NODE_SOURCE(FeedbackBuffer);
-
-void
-FeedbackBuffer::initClass()
-{
-  LUA_NODE_INIT_CLASS(FeedbackBuffer, "FeedbackBuffer");
-}
+LUA_NODE_SOURCE(FeedbackBuffer, "FeedbackBuffer");
 
 FeedbackBuffer::FeedbackBuffer()
   : self(nullptr)
@@ -517,10 +442,11 @@ FeedbackBuffer::traverse(RenderAction * action)
     self->glfeedback.reset(new GLTransformFeedback(GL_POINTS, 0, this->buffer->buffer));
     self->glquery.reset(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN));
   }
-  State::Scope scope(action->state);
+  action->state->push();
   action->state->feedbackelem.set(self->glquery.get());
   action->state->feedbackelem.set(self->glfeedback.get());
   this->scene.value->traverse(action);
+  action->state->pop();
 }
 
 GLuint
@@ -531,13 +457,7 @@ FeedbackBuffer::getCount() const
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(VertexAttribute);
-
-void
-VertexAttribute::initClass()
-{
-  LUA_NODE_INIT_CLASS(VertexAttribute, "VertexAttribute");
-}
+LUA_NODE_SOURCE(VertexAttribute, "VertexAttribute");
 
 VertexAttribute::VertexAttribute()
   : glattrib(nullptr)
@@ -566,24 +486,9 @@ VertexAttribute::traverse(RenderAction * action)
   action->state->vertexelem.set(this);
 }
 
-void
-VertexAttribute::traverse(BoundingBoxAction * action)
-{
-  if (this->buffer.value.get()) {
-    this->buffer.value->traverse(action);
-  }
-  action->state->vertexelem.set(this);
-}
-
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(TextureUnit);
-
-void
-TextureUnit::initClass()
-{
-  LUA_NODE_INIT_CLASS(TextureUnit, "TextureUnit");
-}
+LUA_NODE_SOURCE(TextureUnit, "TextureUnit");
 
 TextureUnit::TextureUnit()
   : gltexunit(nullptr)
@@ -607,13 +512,7 @@ TextureUnit::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Texture);
-
-void
-Texture::initClass()
-{
-  LUA_NODE_INIT_CLASS(Texture, "Texture");
-}
+LUA_NODE_SOURCE(Texture, "Texture");
 
 Texture::Texture()
   : gltexture(nullptr)
@@ -658,13 +557,7 @@ Texture::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(TextureSampler);
-
-void
-TextureSampler::initClass()
-{
-  LUA_NODE_INIT_CLASS(TextureSampler, "TextureSampler");
-}
+LUA_NODE_SOURCE(TextureSampler, "TextureSampler");
 
 TextureSampler::TextureSampler()
   : glsampler(nullptr)
@@ -704,13 +597,7 @@ public:
   unique_ptr<GLFramebufferObject> framebuffer;
 };
 
-LUA_NODE_SOURCE(SceneTexture);
-
-void
-SceneTexture::initClass()
-{
-  LUA_NODE_INIT_CLASS(SceneTexture, "SceneTexture");
-}
+LUA_NODE_SOURCE(SceneTexture, "SceneTexture");
 
 SceneTexture::SceneTexture()
   : self(nullptr)
@@ -755,13 +642,7 @@ SceneTexture::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(BoundingBox);
-
-void
-BoundingBox::initClass()
-{
-  LUA_NODE_INIT_CLASS(BoundingBox, "BoundingBox");
-}
+LUA_NODE_SOURCE(BoundingBox, "BoundingBox");
 
 BoundingBox::BoundingBox()
 {
@@ -779,8 +660,10 @@ BoundingBox::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-Draw::Draw() 
-  : vao(nullptr) 
+LUA_NODE_SOURCE(Shape, "Shape");
+
+Shape::Shape()
+  : vao(nullptr)
 {
   LUA_NODE_ADD_FIELD_3(this->mode, "mode", GL_POINTS);
   LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", GL_POINTS);
@@ -788,8 +671,12 @@ Draw::Draw()
   LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLE_STRIP", GL_TRIANGLE_STRIP);
 }
 
+Shape::~Shape()
+{
+}
+
 void
-Draw::traverse(RenderAction * action)
+Shape::traverse(RenderAction * action)
 {
   if (this->vao.get() == nullptr) {
     this->vao.reset(action->state->vertexelem.createVAO());
@@ -797,100 +684,33 @@ Draw::traverse(RenderAction * action)
   action->state->flush(this);
 }
 
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawArrays);
-
 void
-DrawArrays::initClass()
+Shape::render(State * state)
 {
-  LUA_NODE_INIT_CLASS(DrawArrays, "DrawArrays"); 
-}
-
-void
-DrawArrays::execute(State * state)
-{
-  if (!state->vertexelem.vertexbuffer) {
-    throw std::runtime_error("DrawArrays::execute(): invalid state");
-  }
   BindScope vao(this->vao.get());
-  GLenum mode = this->mode.value;
-  unsigned int count = state->vertexelem.vertexbuffer->getCount();
-  glDrawArrays(mode, 0, count);
-}
 
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawElements);
-
-void
-DrawElements::initClass()
-{
-  LUA_NODE_INIT_CLASS(DrawElements, "DrawElements"); 
-}
-
-void
-DrawElements::execute(State * state)
-{
-  if (!state->vertexelem.elementbuffer) throw std::runtime_error("DrawElements::execute(): invalid state");
-
-  BindScope vao(this->vao.get());
-  GLenum mode = this->mode.value;
-
-  unsigned int count = state->vertexelem.elementbuffer->values.vec.size();
-  glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawArraysInstanced);
-
-void
-DrawArraysInstanced::initClass()
-{
-  LUA_NODE_INIT_CLASS(DrawArraysInstanced, "DrawArraysInstanced"); 
-}
-
-void
-DrawArraysInstanced::execute(State * state)
-{
   Buffer * vertexbuffer = state->vertexelem.vertexbuffer;
-  Buffer * instancebuffer = state->vertexelem.instancebuffer;
-  if (!instancebuffer || !vertexbuffer) throw std::runtime_error("DrawArraysInstanced::execute(): invalid state");
-
-  BindScope vao(this->vao.get());
-  GLenum mode = this->mode.value;
-
-  unsigned int count = vertexbuffer->values.vec.size() / 3;
-  unsigned int instancecount = instancebuffer->values.vec.size() / 3; // FIXME
-  if (instancecount > 0) {
-    glDrawArraysInstanced(mode, 0, count, instancecount);
-  }
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(DrawElementsInstanced);
-
-void
-DrawElementsInstanced::initClass()
-{
-  LUA_NODE_INIT_CLASS(DrawElementsInstanced, "DrawElementsInstanced"); 
-}
-
-void
-DrawElementsInstanced::execute(State * state)
-{
   Buffer * elementbuffer = state->vertexelem.elementbuffer;
   Buffer * instancebuffer = state->vertexelem.instancebuffer;
-  if (!elementbuffer || !instancebuffer) throw std::runtime_error("DrawElementsInstanced::execute(): invalid state");
 
-  BindScope vao(this->vao.get());
-  GLenum mode = this->mode.value;
-
-  unsigned int elemcount = elementbuffer->values.vec.size();
-  unsigned int instancecount = instancebuffer->getCount();
-  if (instancecount > 0) {
-    glDrawElementsInstanced(mode, elemcount, GL_UNSIGNED_INT, 0, instancecount);
+  if (instancebuffer) {
+    GLuint instancecount = instancebuffer->getCount();
+    if (elementbuffer) {
+      GLuint elementcount = elementbuffer->values.vec.size();
+      glDrawElementsInstanced(this->mode.value, elementcount, GL_UNSIGNED_INT, 0, instancecount);
+    } else {
+      GLuint vertexcount = vertexbuffer->getCount();
+      glDrawArraysInstanced(this->mode.value, 0, vertexcount, instancecount);
+    }
+  } else {
+    if (elementbuffer > 0) {
+      GLuint elementcount = elementbuffer->values.vec.size();
+      glDrawElements(this->mode.value, elementcount, GL_UNSIGNED_INT, nullptr);
+    } else {
+      GLuint vertexcount = vertexbuffer->getCount();
+      glDrawArrays(this->mode.value, 0, vertexcount);
+    }
   }
 }
+
+// *************************************************************************************************

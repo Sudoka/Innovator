@@ -3,33 +3,25 @@
 #include <memory>
 #include <elements.h>
 
-class Draw;
+class Shape;
 class Camera;
 class Program;
 class Viewport;
 
 class State {
 public:
-  class Scope {
-  public:
-    Scope(std::unique_ptr<State> & state) : state(state.get()) { state->push(); }
-    ~Scope() { state->pop(); }
-  private:
-    State * state;
-  };
   State();
   ~State();
 
   void push();
   void pop();
-  void flush(Draw * draw);
+  void flush(Shape * shape);
 
   Camera * camera;
   Program * program;
   Viewport * viewport;
 
   VertexElement vertexelem;
-  UniformElement uniformelem;
   TextureElement textureelem;
   TransformElement transformelem;
   TransformFeedbackElement feedbackelem;

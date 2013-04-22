@@ -7,17 +7,22 @@
 using namespace std;
 
 Action::Action()
-  : state(nullptr) {}
-Action::~Action() {}
+  : state(nullptr) 
+{
+}
 
-class RenderAction::RenderActionP {
-};
+Action::~Action() 
+{
+}
 
 RenderAction::RenderAction()
-  : Action(), self(new RenderActionP)
-{}
+  : Action()
+{
+}
 
-RenderAction::~RenderAction() {}
+RenderAction::~RenderAction() 
+{
+}
 
 void
 RenderAction::apply(Node::ptr node)
@@ -32,9 +37,13 @@ RenderAction::apply(Node::ptr node)
 }
 
 BoundingBoxAction::BoundingBoxAction()
-  : Action() {}
+  : Action() 
+{
+}
 
-BoundingBoxAction::~BoundingBoxAction() {}
+BoundingBoxAction::~BoundingBoxAction() 
+{
+}
 
 void
 BoundingBoxAction::extendBy(const box3 & box)

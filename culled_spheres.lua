@@ -117,7 +117,7 @@ function SceneBuffer(data)
             location = 0,
             values = data.values
          },
-         DrawArrays { mode = "POINTS" }
+         Shape { mode = "POINTS" }
       }
    }
 end
@@ -156,8 +156,7 @@ SceneRoot = Separator {
          lodrange = { 0, LOD_RANGE, 0 },
          positions = InstancePositions,
          shape = Sphere {
-            lod = 3,
-            instanced = true
+            lod = 3
          }
       },
       ShapeSet {
@@ -165,8 +164,7 @@ SceneRoot = Separator {
          lodrange = { 1 * LOD_RANGE, 2 * LOD_RANGE, 0 },
          positions = InstancePositions,
          shape = Sphere {
-            lod = 2,
-            instanced = true
+            lod = 2
          }
       },
       ShapeSet {
@@ -174,8 +172,7 @@ SceneRoot = Separator {
          lodrange = { 2 * LOD_RANGE, 3 * LOD_RANGE, 0 },
          positions = InstancePositions,
          shape = Sphere {
-            lod = 1,
-            instanced = true
+            lod = 1
          }
       },
       ShapeSet {
@@ -183,8 +180,7 @@ SceneRoot = Separator {
          lodrange = { 3 * LOD_RANGE, 10000, 0 },
          positions = InstancePositions,
          shape = Sphere {
-            lod = 0,
-            instanced = true
+            lod = 0
          }
       },
    --}
@@ -231,7 +227,7 @@ PostProcess = Separator {
       location = 0,
       values = { -1, -1, 0.5, -1, 1, 0.5, 1, -1, 0.5, 1, 1, 0.5 };
    },
-   DrawArrays {
+   Shape {
       mode = "TRIANGLE_STRIP"
    }
 }
