@@ -30,10 +30,7 @@ TransformElement::flush(State * state)
 }
 
 VertexElement::VertexElement()
-  : vertexCount(0),
-    elementCount(0),
-    instanceCount(0),
-    arraybuffer(nullptr),
+  : arraybuffer(nullptr),
     vertexbuffer(nullptr),
     elementbuffer(nullptr),
     instancebuffer(nullptr)

@@ -405,15 +405,22 @@ Buffer::traverse(RenderAction * action)
 GLuint
 Buffer::getCount() const
 {
-  return (this->count.value > 0) ? this->count.value : this->values.vec.size() / 3;
+  if (this->count.value > 0) {
+    return this->count.value;
+  }
+  if (this->target.value == GL_ARRAY_BUFFER) {
+    return this->values.vec.size() / 3;
+  }
+  return this->values.vec.size();
 }
 
 // *************************************************************************************************
 
 class FeedbackBuffer::FeedbackBufferP {
 public:
-  FeedbackBufferP() 
-    : glquery(nullptr), glfeedback(nullptr) {}
+  FeedbackBufferP(FeedbackBuffer * self) 
+    : glquery(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN)),
+      glfeedback(new GLTransformFeedback(GL_POINTS, 0, self->buffer->buffer)) {}
   std::unique_ptr<GLQueryObject> glquery;
   std::unique_ptr<GLTransformFeedback> glfeedback;
 };
@@ -434,14 +441,11 @@ void
 FeedbackBuffer::traverse(RenderAction * action)
 {
   Buffer::traverse(action);
-
+  if (self.get() == nullptr) {
+    self.reset(new FeedbackBufferP(this));
+  }
   if (!Innovator::isLodEnabled()) return;
 
-  if (self.get() == nullptr) {
-    self.reset(new FeedbackBufferP);
-    self->glfeedback.reset(new GLTransformFeedback(GL_POINTS, 0, this->buffer->buffer));
-    self->glquery.reset(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN));
-  }
   action->state->push();
   action->state->feedbackelem.set(self->glquery.get());
   action->state->feedbackelem.set(self->glfeedback.get());
@@ -694,21 +698,25 @@ Shape::render(State * state)
   Buffer * instancebuffer = state->vertexelem.instancebuffer;
 
   if (instancebuffer) {
-    GLuint instancecount = instancebuffer->getCount();
     if (elementbuffer) {
-      GLuint elementcount = elementbuffer->values.vec.size();
-      glDrawElementsInstanced(this->mode.value, elementcount, GL_UNSIGNED_INT, 0, instancecount);
+      glDrawElementsInstanced(this->mode.value, 
+                              elementbuffer->getCount(), 
+                              elementbuffer->type.value, 
+                              nullptr,
+                              instancebuffer->getCount());
     } else {
-      GLuint vertexcount = vertexbuffer->getCount();
-      glDrawArraysInstanced(this->mode.value, 0, vertexcount, instancecount);
+      glDrawArraysInstanced(this->mode.value, 0, 
+                            vertexbuffer->getCount(), 
+                            instancebuffer->getCount());
     }
   } else {
-    if (elementbuffer > 0) {
-      GLuint elementcount = elementbuffer->values.vec.size();
-      glDrawElements(this->mode.value, elementcount, GL_UNSIGNED_INT, nullptr);
+    if (elementbuffer) {
+      glDrawElements(this->mode.value, 
+                     elementbuffer->getCount(), 
+                     elementbuffer->type.value, 
+                     nullptr);
     } else {
-      GLuint vertexcount = vertexbuffer->getCount();
-      glDrawArrays(this->mode.value, 0, vertexcount);
+      glDrawArrays(this->mode.value, 0, vertexbuffer->getCount());
     }
   }
 }

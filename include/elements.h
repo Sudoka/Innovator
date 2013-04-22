@@ -38,10 +38,6 @@ public:
 
   GLVertexArrayObject * createVAO();
 
-  GLuint vertexCount;
-  GLuint elementCount;
-  GLuint instanceCount;
-
   Buffer * arraybuffer;
   Buffer * vertexbuffer;
   Buffer * elementbuffer;
