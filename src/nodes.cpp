@@ -6,6 +6,7 @@
 #include <map>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <gli/gli.hpp>
 
 using namespace glm;
 using namespace std;
@@ -521,6 +522,7 @@ LUA_NODE_SOURCE(Texture, "Texture");
 Texture::Texture()
   : gltexture(nullptr)
 {
+  LUA_NODE_ADD_FIELD_2(this->fileName, "fileName");
   LUA_NODE_ADD_FIELD_3(this->target, "target", GL_TEXTURE_2D);
 
   LUA_NODE_ADD_FIELD_3(this->width, "width", 0);

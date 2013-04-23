@@ -216,6 +216,7 @@ public:
   Texture();
   virtual ~Texture();
 
+  SFString fileName;
   SFEnum target;
   SFInt level;
   SFUint width;
