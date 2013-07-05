@@ -69,7 +69,7 @@ Camera::lookAt(const vec3 & focalpoint)
 }
 
 void
-Camera::viewAll(Separator::ptr root)
+Camera::viewAll(Separator * root)
 {
   BoundingBoxAction action;
   action.apply(root);

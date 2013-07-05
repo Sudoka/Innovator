@@ -29,9 +29,9 @@ public:
   int button;
   bool redraw;
   bool mousedown;
-  Separator::ptr root;
-  Camera::ptr camera;
-  Viewport::ptr viewport;
+  shared_ptr<Separator> root;
+  shared_ptr<Camera> camera;
+  shared_ptr<Viewport> viewport;
   unique_ptr<RenderAction> renderaction;
 };
 
@@ -68,18 +68,18 @@ Viewer::resize(int width, int height)
 void
 Viewer::renderGL()
 {
-  self->renderaction->apply(self->root);
+  self->renderaction->apply(self->root.get());
   self->redraw = false;
 }
 
 void
-Viewer::setSceneGraph(Separator::ptr root)
+Viewer::setSceneGraph(shared_ptr<Separator> root)
 {
   self->root.reset(new Separator);
   self->root->children.values.push_back(self->camera);
   self->root->children.values.push_back(self->viewport);
   self->root->children.values.push_back(root);
-  self->camera->viewAll(root);
+  self->camera->viewAll(root.get());
 }
 
 void 

@@ -25,7 +25,7 @@ RenderAction::~RenderAction()
 }
 
 void
-RenderAction::apply(Node::ptr node)
+RenderAction::apply(Node * node)
 {
   glEnable(GL_DEPTH_TEST);
   glClearColor(0, 0, 0, 0);
@@ -53,7 +53,7 @@ BoundingBoxAction::extendBy(const box3 & box)
 }
 
 void
-BoundingBoxAction::apply(Node::ptr node)
+BoundingBoxAction::apply(Node * node)
 {
   state.reset(new State);
   this->box.makeEmpty();

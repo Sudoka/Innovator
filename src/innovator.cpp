@@ -79,7 +79,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
 
   self->lua->dofile("src/file.lua");
   self->lua->dofile(filename);
-  Separator::ptr root(static_cast<Separator*>(self->lua->getglobaluserdata("SceneRoot")));
+  shared_ptr<Separator> root(static_cast<Separator*>(self->lua->getglobaluserdata("SceneRoot")));
   self->viewer->setSceneGraph(root);
 }
 

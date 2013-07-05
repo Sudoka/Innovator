@@ -55,7 +55,6 @@ public:
   virtual ~Node() {}
   virtual void traverse(RenderAction * action) {}
   virtual void traverse(BoundingBoxAction * action) {}
-  typedef std::shared_ptr<Node> ptr;
 };
 
 class Group : public Node {
@@ -64,7 +63,6 @@ public:
   virtual ~Group();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  typedef std::shared_ptr<Group> ptr;
   MFNode children;
 };
 
@@ -76,14 +74,12 @@ public:
   SFVec2i size;
   virtual void traverse(RenderAction * action);
   void flush(State * state);
-  typedef std::shared_ptr<Viewport> ptr;
 };
 
 class Separator : public Group {
 public:
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
-  typedef std::shared_ptr<Separator> ptr;
 };
 
 class Camera : public Node {
@@ -97,10 +93,9 @@ public:
   void orbit(const glm::vec2 & dx);
   void moveTo(const glm::vec3 & position);
   void lookAt(const glm::vec3 & focalpoint);
-  void viewAll(Separator::ptr root);
+  void viewAll(Separator * root);
   glm::vec3 getFocalDir() const;
   void perspective(float fovy, float aspect, float near, float far);
-  typedef std::shared_ptr<Camera> ptr;
 private:
   class CameraP;
   std::unique_ptr<CameraP> self;
