@@ -121,7 +121,7 @@ function Sphere(data)
       IndexBuffer { values = flatten(indices) },
       VertexAttribute3f { location = 0, values = flatten(vertices) },
       BoundingBox {},
-      Shape { mode = "TRIANGLES" }
+      DrawElements { mode = "TRIANGLES" }
    }
 end
 
@@ -137,8 +137,6 @@ function Box(data)
                      1, -1, -1,  1, -1,  1,  1,  1, -1,  1,  1,  1 } 
       },
       BoundingBox {},
-      Shape { 
-         mode = "TRIANGLES" 
-      }
+      DrawElements { mode = "TRIANGLES" }
    }
 end

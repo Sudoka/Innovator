@@ -88,15 +88,17 @@ void main()
 }
 ]]
 
-local SIZE = 500;
+local SIZE = 1000;
 local LOD_RANGE = SIZE / 5;
-local NUM_SPHERES = 10e4;
+local NUM_SPHERES = 1000000;
 
 local InstancePositions = 
    (function() 
        positions = {};
-       for i = 1, NUM_SPHERES * 3 do 
-          positions[i] = math.random() * SIZE;
+       for i = 1, NUM_SPHERES, 3 do 
+          positions[i + 0] = math.random() * SIZE;
+          positions[i + 1] = math.random() * SIZE;
+          positions[i + 2] = SIZE / 2;
        end
        return positions;
     end)();

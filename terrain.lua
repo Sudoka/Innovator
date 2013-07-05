@@ -35,21 +35,5 @@ SceneRoot = Separator {
       VertexShader { source = vertex },
       FragmentShader { source = fragment },
    },
-   Transform { translation = { -2, -2, -2 } },
-   Box {},
-   Transform { translation = { 2, 2, 2 } },
-   Sphere { lod = 0 },
-   Transform { translation = { 2, 2, 2 } },
    Sphere { lod = 3 }
 }
-
---[[
-Window {
-   size = { 640, 480 },
-   framebuffer = fb,
-   keyPressed = function() end,
-   mouseMoved = function() end,
-   resize = function() end,
-   paint = function() end,
-}
---]]

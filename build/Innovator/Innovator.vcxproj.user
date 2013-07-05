@@ -4,6 +4,12 @@
     <LocalDebuggerEnvironment>
     </LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>test.lua</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>..\..</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerEnvironment />
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>geometry_cubes.lua</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>..\..</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
@@ -11,7 +17,13 @@
     <LocalDebuggerEnvironment>
     </LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>geometry_cubes.lua</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>instance_spheres.lua</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>..\..</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerEnvironment />
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>instance_spheres.lua</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>..\..</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

@@ -30,10 +30,11 @@ TransformElement::flush(State * state)
 }
 
 VertexElement::VertexElement()
-  : arraybuffer(nullptr),
-    vertexbuffer(nullptr),
-    elementbuffer(nullptr),
-    instancebuffer(nullptr)
+  : vertexCount(0),
+    elementCount(0),
+    instanceCount(0),
+    arraybuffer(nullptr),
+    elementBuffer(nullptr)
 {
 }
 
@@ -49,7 +50,7 @@ VertexElement::set(Buffer * buffer)
     this->arraybuffer = buffer;
     break;
   case GL_ELEMENT_ARRAY_BUFFER:
-    this->elementbuffer = buffer;
+    this->elementBuffer = buffer;
     break;
   default:
     throw std::invalid_argument("Invalid buffer type");
@@ -60,15 +61,19 @@ VertexElement::set(Buffer * buffer)
 void 
 VertexElement::set(VertexAttribute * attrib)
 {
-  if (!this->arraybuffer) {
-    throw std::runtime_error("VertexElement::set(): no array buffer found");
+  if (this->arraybuffer == nullptr) {
+    throw std::runtime_error("VertexElement::set(): No current array buffer");
   }
-  if (attrib->index.value == 0) {
-    this->vertexbuffer = this->arraybuffer;
+
+  GLsizei attribcount = this->arraybuffer->values.vec.size() / attrib->size.value;
+
+  if (attrib->divisor.value == 0) {
+    this->vertexCount = attribcount;
   }
-  if (attrib->divisor.value == 1) {
-    this->instancebuffer = this->arraybuffer;
+  else if (attrib->divisor.value == 1) { 
+    this->instanceCount = attribcount;
   }
+
   this->statevec.push_back(attrib->glattrib.get());
 }
 

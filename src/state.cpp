@@ -62,7 +62,7 @@ State::pop()
 }
 
 void
-State::flush(Shape * shape)
+State::flush(DrawCall * drawcall)
 {
   this->program->flush(this);
   this->camera->flush(this);
@@ -71,6 +71,6 @@ State::flush(Shape * shape)
   this->transformelem.flush(this);
 
   this->feedbackelem.begin();
-  shape->render(this);
+  drawcall->execute(this);
   this->feedbackelem.end();
 }

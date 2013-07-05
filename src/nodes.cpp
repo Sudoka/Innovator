@@ -4,9 +4,9 @@
 #include <state.h>
 #include <box3.h>
 #include <map>
+#include <functional>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <gli/gli.hpp>
 
 using namespace glm;
 using namespace std;
@@ -127,12 +127,10 @@ Camera::perspective(float fovy, float aspect, float near, float far)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Viewport, "Viewport");
-
 Viewport::Viewport()
 {
-  LUA_NODE_ADD_FIELD_3(this->size, "size", ivec2(-1));
-  LUA_NODE_ADD_FIELD_3(this->origin, "origin", ivec2(-1));
+  this->registerField(this->size, "size", ivec2(-1));
+  this->registerField(this->origin, "origin", ivec2(-1));
 }
 
 Viewport::~Viewport()
@@ -156,11 +154,10 @@ Viewport::flush(State * state)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Group, "Group");
 
 Group::Group() 
 {
-  LUA_NODE_ADD_FIELD_1(this->children);
+  this->registerField(this->children);
 }
 Group::~Group() {}
 
@@ -184,7 +181,6 @@ Group::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Separator, "Separator");
 
 void
 Separator::traverse(RenderAction * action)
@@ -206,7 +202,7 @@ Separator::traverse(BoundingBoxAction * action)
 
 Uniform::Uniform()
 {
-  LUA_NODE_ADD_FIELD_2(this->name, "name");
+  this->registerField(this->name, "name");
 }
 
 Uniform::~Uniform()
@@ -215,11 +211,10 @@ Uniform::~Uniform()
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Uniform3f, "Uniform3f");
 
 Uniform3f::Uniform3f()
 {
-  LUA_NODE_ADD_FIELD_3(this->value, "value", vec3(0));
+  this->registerField(this->value, "value", vec3(0));
 }
 
 Uniform3f::~Uniform3f()
@@ -235,11 +230,10 @@ Uniform3f::flush(State * state)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(UniformMatrix4f, "UniformMatrix3f");
 
 UniformMatrix4f::UniformMatrix4f()
 {
-  LUA_NODE_ADD_FIELD_3(this->value, "value", mat4(1.0));
+  this->registerField(this->value, "value", mat4(1.0));
 }
 
 UniformMatrix4f::~UniformMatrix4f()
@@ -255,15 +249,14 @@ UniformMatrix4f::flush(State * state)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(ShaderObject, "ShaderObject");
 
 ShaderObject::ShaderObject()
 {
-  LUA_NODE_ADD_FIELD_3(this->type, "type", GL_INVALID_VALUE);
-  LUA_ENUM_DEFINE_VALUE(this->type, "VERTEX_SHADER", GL_VERTEX_SHADER);
-  LUA_ENUM_DEFINE_VALUE(this->type, "GEOMETRY_SHADER", GL_GEOMETRY_SHADER);
-  LUA_ENUM_DEFINE_VALUE(this->type, "FRAGMENT_SHADER", GL_FRAGMENT_SHADER);
-  LUA_NODE_ADD_FIELD_2(this->source, "source");
+  this->registerField(this->type, "type", GL_INVALID_VALUE);
+  this->registerEnum(this->type, "VERTEX_SHADER", GL_VERTEX_SHADER);
+  this->registerEnum(this->type, "GEOMETRY_SHADER", GL_GEOMETRY_SHADER);
+  this->registerEnum(this->type, "FRAGMENT_SHADER", GL_FRAGMENT_SHADER);
+  this->registerField(this->source, "source");
 }
 
 ShaderObject::~ShaderObject()
@@ -272,7 +265,6 @@ ShaderObject::~ShaderObject()
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Program, "Program");
 
 class Program::ProgramP {
 public:
@@ -294,9 +286,9 @@ public:
 Program::Program() 
   : self(nullptr)
 {
-  LUA_NODE_ADD_FIELD_1(this->shaders);
-  LUA_NODE_ADD_FIELD_2(this->uniforms, "uniforms");
-  LUA_NODE_ADD_FIELD_3(this->feedbackVarying, "feedbackVarying", "");
+  this->registerField(this->shaders);
+  this->registerField(this->uniforms, "uniforms");
+  this->registerField(this->feedbackVarying, "feedbackVarying", "");
 }
 
 Program::~Program() 
@@ -332,12 +324,11 @@ Program::getUniformLocation(const std::string & name)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Transform, "Transform");
 
 Transform::Transform()
 {
-  LUA_NODE_ADD_FIELD_3(this->translation, "translation", vec3(0));
-  LUA_NODE_ADD_FIELD_3(this->scaleFactor, "scaleFactor", vec3(1));
+  this->registerField(this->translation, "translation", vec3(0));
+  this->registerField(this->scaleFactor, "scaleFactor", vec3(1));
 }
 
 Transform::~Transform() {}
@@ -365,25 +356,24 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Buffer, "Buffer");
 
 Buffer::Buffer()
   : buffer(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->type, "type", GL_FLOAT);
-  LUA_ENUM_DEFINE_VALUE(this->type, "FLOAT", GL_FLOAT);
-  LUA_ENUM_DEFINE_VALUE(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
+  this->registerField(this->type, "type", GL_FLOAT);
+  this->registerEnum(this->type, "FLOAT", GL_FLOAT);
+  this->registerEnum(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
 
-  LUA_NODE_ADD_FIELD_3(this->usage, "usage", GL_STATIC_DRAW);
-  LUA_ENUM_DEFINE_VALUE(this->usage, "STATIC_DRAW", GL_STATIC_DRAW);
-  LUA_ENUM_DEFINE_VALUE(this->usage, "DYNAMIC_DRAW", GL_DYNAMIC_DRAW);
+  this->registerField(this->usage, "usage", GL_STATIC_DRAW);
+  this->registerEnum(this->usage, "STATIC_DRAW", GL_STATIC_DRAW);
+  this->registerEnum(this->usage, "DYNAMIC_DRAW", GL_DYNAMIC_DRAW);
 
-  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_ARRAY_BUFFER);
-  LUA_ENUM_DEFINE_VALUE(this->target, "ARRAY", GL_ARRAY_BUFFER);
-  LUA_ENUM_DEFINE_VALUE(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
+  this->registerField(this->target, "target", GL_ARRAY_BUFFER);
+  this->registerEnum(this->target, "ARRAY", GL_ARRAY_BUFFER);
+  this->registerEnum(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
 
-  LUA_NODE_ADD_FIELD_3(this->count, "count", 0);
-  LUA_NODE_ADD_FIELD_2(this->values, "values");
+  this->registerField(this->count, "count", 0);
+  this->registerField(this->values, "values");
 }
 
 Buffer::~Buffer()
@@ -403,75 +393,17 @@ Buffer::traverse(RenderAction * action)
   action->state->vertexelem.set(this);
 }
 
-GLuint
-Buffer::getCount() const
-{
-  if (this->count.value > 0) {
-    return this->count.value;
-  }
-  if (this->target.value == GL_ARRAY_BUFFER) {
-    return this->values.vec.size() / 3;
-  }
-  return this->values.vec.size();
-}
-
 // *************************************************************************************************
 
-class FeedbackBuffer::FeedbackBufferP {
-public:
-  FeedbackBufferP(FeedbackBuffer * self) 
-    : glquery(new GLQueryObject(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN)),
-      glfeedback(new GLTransformFeedback(GL_POINTS, 0, self->buffer->buffer)) {}
-  std::unique_ptr<GLQueryObject> glquery;
-  std::unique_ptr<GLTransformFeedback> glfeedback;
-};
-
-LUA_NODE_SOURCE(FeedbackBuffer, "FeedbackBuffer");
-
-FeedbackBuffer::FeedbackBuffer()
-  : self(nullptr)
-{
-  LUA_NODE_ADD_FIELD_3(this->scene, "scene", nullptr);
-}
-
-FeedbackBuffer::~FeedbackBuffer()
-{
-}
-
-void
-FeedbackBuffer::traverse(RenderAction * action)
-{
-  Buffer::traverse(action);
-  if (self.get() == nullptr) {
-    self.reset(new FeedbackBufferP(this));
-  }
-  if (!Innovator::isLodEnabled()) return;
-
-  action->state->push();
-  action->state->feedbackelem.set(self->glquery.get());
-  action->state->feedbackelem.set(self->glfeedback.get());
-  this->scene.value->traverse(action);
-  action->state->pop();
-}
-
-GLuint
-FeedbackBuffer::getCount() const
-{
-  return self->glquery->getResult();
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(VertexAttribute, "VertexAttribute");
 
 VertexAttribute::VertexAttribute()
   : glattrib(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->type, "type", GL_FLOAT);
-  LUA_NODE_ADD_FIELD_3(this->size, "size", 3);
-  LUA_NODE_ADD_FIELD_3(this->index, "location", 0);
-  LUA_NODE_ADD_FIELD_3(this->divisor, "divisor", 0);
-  LUA_NODE_ADD_FIELD_3(this->buffer, "buffer", nullptr);
+  this->registerField(this->type, "type", GL_FLOAT);
+  this->registerField(this->size, "size", 3);
+  this->registerField(this->index, "location", 0);
+  this->registerField(this->divisor, "divisor", 0);
+  this->registerField(this->buffer, "buffer", nullptr);
 }
 
 VertexAttribute::~VertexAttribute() {}
@@ -493,12 +425,11 @@ VertexAttribute::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(TextureUnit, "TextureUnit");
 
 TextureUnit::TextureUnit()
   : gltexunit(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->unit, "unit", 0);
+  this->registerField(this->unit, "unit", 0);
 }
 
 TextureUnit::~TextureUnit()
@@ -517,27 +448,26 @@ TextureUnit::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Texture, "Texture");
 
 Texture::Texture()
   : gltexture(nullptr)
 {
-  LUA_NODE_ADD_FIELD_2(this->fileName, "fileName");
-  LUA_NODE_ADD_FIELD_3(this->target, "target", GL_TEXTURE_2D);
+  this->registerField(this->fileName, "fileName");
+  this->registerField(this->target, "target", GL_TEXTURE_2D);
 
-  LUA_NODE_ADD_FIELD_3(this->width, "width", 0);
-  LUA_NODE_ADD_FIELD_3(this->height, "height", 0);
+  this->registerField(this->width, "width", 0);
+  this->registerField(this->height, "height", 0);
 
-  LUA_NODE_ADD_FIELD_3(this->level, "level", 0);
-  LUA_NODE_ADD_FIELD_3(this->border, "border", 0);
+  this->registerField(this->level, "level", 0);
+  this->registerField(this->border, "border", 0);
 
-  LUA_NODE_ADD_FIELD_3(this->format, "format", GL_RGBA);
-  LUA_ENUM_DEFINE_VALUE(this->format, "RGBA", GL_RGBA);
-  LUA_ENUM_DEFINE_VALUE(this->format, "DEPTH_COMPONENT", GL_DEPTH_COMPONENT);
+  this->registerField(this->format, "format", GL_RGBA);
+  this->registerEnum(this->format, "RGBA", GL_RGBA);
+  this->registerEnum(this->format, "DEPTH_COMPONENT", GL_DEPTH_COMPONENT);
 
-  LUA_NODE_ADD_FIELD_3(this->internalFormat, "internalFormat", GL_RGBA8);
-  LUA_ENUM_DEFINE_VALUE(this->internalFormat, "RGBA8", GL_RGBA8);
-  LUA_ENUM_DEFINE_VALUE(this->internalFormat, "DEPTH_COMPONENT32", GL_DEPTH_COMPONENT32);
+  this->registerField(this->internalFormat, "internalFormat", GL_RGBA8);
+  this->registerEnum(this->internalFormat, "RGBA8", GL_RGBA8);
+  this->registerEnum(this->internalFormat, "DEPTH_COMPONENT32", GL_DEPTH_COMPONENT32);
 }
 
 Texture::~Texture()
@@ -563,17 +493,16 @@ Texture::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(TextureSampler, "TextureSampler");
 
 TextureSampler::TextureSampler()
   : glsampler(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->wrapS, "wrapS", GL_CLAMP_TO_EDGE);
-  LUA_NODE_ADD_FIELD_3(this->wrapT, "wrapT", GL_CLAMP_TO_EDGE);
-  LUA_NODE_ADD_FIELD_3(this->wrapR, "wrapR", GL_CLAMP_TO_EDGE);
+  this->registerField(this->wrapS, "wrapS", GL_CLAMP_TO_EDGE);
+  this->registerField(this->wrapT, "wrapT", GL_CLAMP_TO_EDGE);
+  this->registerField(this->wrapR, "wrapR", GL_CLAMP_TO_EDGE);
   
-  LUA_NODE_ADD_FIELD_3(this->minFilter, "minFilter", GL_NEAREST);
-  LUA_NODE_ADD_FIELD_3(this->magFilter, "magFilter", GL_NEAREST);
+  this->registerField(this->minFilter, "minFilter", GL_NEAREST);
+  this->registerField(this->magFilter, "magFilter", GL_NEAREST);
 }
 
 TextureSampler::~TextureSampler()
@@ -595,65 +524,11 @@ TextureSampler::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-class SceneTexture::SceneTextureP {
-public:
-  unique_ptr<GLTextureObject> color_texture;
-  unique_ptr<GLTextureObject> depth_texture;
-  unique_ptr<GLTextureSampler> color_sampler;
-  unique_ptr<GLFramebufferObject> framebuffer;
-};
-
-LUA_NODE_SOURCE(SceneTexture, "SceneTexture");
-
-SceneTexture::SceneTexture()
-  : self(nullptr)
-{
-  LUA_NODE_ADD_FIELD_2(this->scene, "scene");
-  LUA_NODE_ADD_FIELD_3(this->size, "size", ivec2(-1));
-}
-
-SceneTexture::~SceneTexture()
-{
-}
-
-void
-SceneTexture::traverse(RenderAction * action)
-{
-  if (self.get() == nullptr) {
-    self.reset(new SceneTextureP);
-    ivec2 size = (this->size.value != ivec2(-1)) ? this->size.value : action->state->viewport->size.value;
-    self->color_texture.reset(new GLTextureObject(GL_TEXTURE_2D, 0, GL_RGBA8, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
-    self->depth_texture.reset(new GLTextureObject(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, size.x, size.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr));
-    self->color_sampler.reset(new GLTextureSampler(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST));
-    self->framebuffer.reset(new GLFramebufferObject);
-    BindScope framebuffer(self->framebuffer.get());
-    self->framebuffer->attach(GL_COLOR_ATTACHMENT0, self->color_texture->id);
-    self->framebuffer->attach(GL_DEPTH_ATTACHMENT, self->depth_texture->id);
-    self->framebuffer->checkStatus();
-/*
-    static GLfloat vertices[] = { -1, -1, -1, 1, 1, -1, 1, 1 };
-    
-    glDisable(GL_DEPTH_TEST);
-    BindScope program(this->program.get());
-    BindScope sampler(this->color_sampler.get());
-    glActiveTexture(GL_TEXTURE0);
-    BindScope texture(this->color_texture.get());
-    
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-*/
-  }
-}
-
-// *************************************************************************************************
-
-LUA_NODE_SOURCE(BoundingBox, "BoundingBox");
 
 BoundingBox::BoundingBox()
 {
-  LUA_NODE_ADD_FIELD_3(this->min, "min", vec3(-1));
-  LUA_NODE_ADD_FIELD_3(this->max, "max", vec3( 1));
+  this->registerField(this->min, "min", vec3(-1));
+  this->registerField(this->max, "max", vec3( 1));
 }
 
 void
@@ -666,23 +541,21 @@ BoundingBox::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-LUA_NODE_SOURCE(Shape, "Shape");
-
-Shape::Shape()
+DrawCall::DrawCall()
   : vao(nullptr)
 {
-  LUA_NODE_ADD_FIELD_3(this->mode, "mode", GL_POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "POINTS", GL_POINTS);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLES", GL_TRIANGLES);
-  LUA_ENUM_DEFINE_VALUE(this->mode, "TRIANGLE_STRIP", GL_TRIANGLE_STRIP);
+  this->registerField(this->mode, "mode", GL_POINTS);
+  this->registerEnum(this->mode, "POINTS", GL_POINTS);
+  this->registerEnum(this->mode, "TRIANGLES", GL_TRIANGLES);
+  this->registerEnum(this->mode, "TRIANGLE_STRIP", GL_TRIANGLE_STRIP);
 }
 
-Shape::~Shape()
+DrawCall::~DrawCall()
 {
 }
 
 void
-Shape::traverse(RenderAction * action)
+DrawCall::traverse(RenderAction * action)
 {
   if (this->vao.get() == nullptr) {
     this->vao.reset(action->state->vertexelem.createVAO());
@@ -690,37 +563,43 @@ Shape::traverse(RenderAction * action)
   action->state->flush(this);
 }
 
+// *************************************************************************************************
+
+
+DrawElements::DrawElements()
+{
+}
+
+DrawElements::~DrawElements()
+{
+}
+
 void
-Shape::render(State * state)
+DrawElements::execute(State * state)
+{
+  Buffer * elementbuffer = state->vertexelem.elementBuffer;
+  BindScope vao(this->vao.get());
+  glDrawElements(this->mode.value, elementbuffer->values.vec.size(), elementbuffer->type.value, nullptr);
+}
+
+// *************************************************************************************************
+
+
+DrawArrays::DrawArrays()
+{
+  this->registerField(this->first, "first", 0);
+  this->registerField(this->count, "count", 0);
+}
+
+DrawArrays::~DrawArrays()
+{
+}
+
+void
+DrawArrays::execute(State * state)
 {
   BindScope vao(this->vao.get());
-
-  Buffer * vertexbuffer = state->vertexelem.vertexbuffer;
-  Buffer * elementbuffer = state->vertexelem.elementbuffer;
-  Buffer * instancebuffer = state->vertexelem.instancebuffer;
-
-  if (instancebuffer) {
-    if (elementbuffer) {
-      glDrawElementsInstanced(this->mode.value, 
-                              elementbuffer->getCount(), 
-                              elementbuffer->type.value, 
-                              nullptr,
-                              instancebuffer->getCount());
-    } else {
-      glDrawArraysInstanced(this->mode.value, 0, 
-                            vertexbuffer->getCount(), 
-                            instancebuffer->getCount());
-    }
-  } else {
-    if (elementbuffer) {
-      glDrawElements(this->mode.value, 
-                     elementbuffer->getCount(), 
-                     elementbuffer->type.value, 
-                     nullptr);
-    } else {
-      glDrawArrays(this->mode.value, 0, vertexbuffer->getCount());
-    }
-  }
+  glDrawArrays(this->mode.value, 0, state->vertexelem.vertexCount);
 }
 
 // *************************************************************************************************

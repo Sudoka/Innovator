@@ -2,9 +2,9 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <luanode.h>
 #include <fields.h>
 #include <elements.h>
+#include <functional>
 
 class GLProgram;
 class GLTextureUnit;
@@ -12,7 +12,6 @@ class GLBufferObject;
 class GLTextureObject;
 class GLTextureSampler;
 class GLVertexAttribute;
-class GLTransformFeedback;
 class GLVertexArrayObject;
 
 class State;
@@ -21,7 +20,33 @@ class RenderAction;
 class BoundingBoxAction;
 
 class FieldContainer {
+public:
+  template <typename T>
+  static int CreateInstance(lua_State * L) {
+    T * self = new T;
+    for each(Field * field in self->fields) {
+      field->read(L);
+    }
+    lua_pushlightuserdata(L, self);
+    return 1;
+  }
 protected:
+  void registerField(Field & field) {
+    this->fields.push_back(&field);
+  }
+  void registerField(Field & field, const std::string & name) {
+    field.name = name;
+    this->fields.push_back(&field);
+  }
+  template<typename FieldType, typename ValueType>
+  void registerField(FieldType & field, const std::string & name, const ValueType & value) {
+    field.name = name;
+    field.value = value;
+    this->fields.push_back(&field);
+  }
+  void registerEnum(SFEnum & field, const std::string & name, GLenum value) {
+    field.enums[name] = value;
+  }
   std::vector<Field*> fields;
 };
 
@@ -34,7 +59,6 @@ public:
 };
 
 class Group : public Node {
-  LUA_NODE_HEADER(Group);
 public:
   Group();
   virtual ~Group();
@@ -45,7 +69,6 @@ public:
 };
 
 class Viewport : public Node {
-  LUA_NODE_HEADER(Viewport);
 public:
   Viewport();
   virtual ~Viewport();
@@ -57,7 +80,6 @@ public:
 };
 
 class Separator : public Group {
-  LUA_NODE_HEADER(Separator);
 public:
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
@@ -85,7 +107,6 @@ private:
 };
 
 class ShaderObject : public FieldContainer {
-  LUA_NODE_HEADER(ShaderObject);
 public:
   ShaderObject();
   virtual ~ShaderObject();
@@ -94,7 +115,6 @@ public:
 };
 
 class Program : public Node {
-  LUA_NODE_HEADER(Program);
 public:
   Program();
   virtual ~Program();
@@ -119,7 +139,6 @@ public:
 };
 
 class Uniform3f : public Uniform {
-  LUA_NODE_HEADER(Uniform3f);
 public:
   Uniform3f();
   virtual ~Uniform3f();
@@ -128,7 +147,6 @@ public:
 };
 
 class UniformMatrix4f : public Uniform {
-  LUA_NODE_HEADER(UniformMatrix4f);
 public:
   UniformMatrix4f();
   virtual ~UniformMatrix4f();
@@ -137,7 +155,6 @@ public:
 };
 
 class Transform : public Node {
-  LUA_NODE_HEADER(Transform);
 public:
   Transform();
   virtual ~Transform();
@@ -150,7 +167,6 @@ private:
 };
 
 class Buffer : public Node {
-  LUA_NODE_HEADER(Buffer);
 public:
   Buffer();
   virtual ~Buffer();
@@ -160,26 +176,10 @@ public:
   SFEnum target;
   MFNumber values;
   virtual void traverse(RenderAction * action);
-  virtual GLuint getCount() const;
   std::unique_ptr<GLBufferObject> buffer;
 };
 
-class FeedbackBuffer : public Buffer {
-  LUA_NODE_HEADER(FeedbackBuffer);
-public:
-  FeedbackBuffer();
-  virtual ~FeedbackBuffer();
-  SFSeparator scene;
-  virtual void traverse(RenderAction * action);
-  virtual GLuint getCount() const;
-private:
-  friend class TransformFeedbackElement;
-  class FeedbackBufferP;
-  std::unique_ptr<FeedbackBufferP> self;
-};
-
 class VertexAttribute : public Node {
-  LUA_NODE_HEADER(VertexAttribute);
 public:
   VertexAttribute();
   virtual ~VertexAttribute();
@@ -197,7 +197,6 @@ private:
 };
 
 class TextureUnit : public Node {
-  LUA_NODE_HEADER(TextureUnit);
 public:
   TextureUnit();
   virtual ~TextureUnit();
@@ -211,7 +210,6 @@ private:
 };
 
 class Texture : public Node {
-  LUA_NODE_HEADER(Texture);
 public:
   Texture();
   virtual ~Texture();
@@ -234,7 +232,6 @@ private:
 };
 
 class TextureSampler : public Node {
-  LUA_NODE_HEADER(TextureSampler);
 public:
   TextureSampler();
   ~TextureSampler();
@@ -252,21 +249,7 @@ private:
   std::unique_ptr<GLTextureSampler> glsampler;
 };
 
-class SceneTexture : public Node {
-  LUA_NODE_HEADER(SceneTexture);
-public:
-  SceneTexture();
-  virtual ~SceneTexture();
-  virtual void traverse(RenderAction * action);
-  SFVec2i size;
-  SFSeparator scene;
-private:
-  class SceneTextureP;
-  std::unique_ptr<SceneTextureP> self;
-};
-
 class BoundingBox : public Node {
-  LUA_NODE_HEADER(BoundingBox);
 public:
   BoundingBox();
   SFVec3f min;
@@ -274,14 +257,29 @@ public:
   virtual void traverse(BoundingBoxAction * action);
 };
 
-class Shape : public Node {
-  LUA_NODE_HEADER(Shape);
+class DrawCall : public Node {
 public:
-  Shape();
-  virtual ~Shape();
+  DrawCall();
+  virtual ~DrawCall();
   SFEnum mode;
   virtual void traverse(RenderAction * action);
-  void render(State * state);
-private:
+  virtual void execute(State * state) = 0;
+protected:
   std::unique_ptr<GLVertexArrayObject> vao;
+};
+
+class DrawArrays : public DrawCall {
+public:
+  DrawArrays();
+  virtual ~DrawArrays();
+  SFInt first;
+  SFInt count;
+  virtual void execute(State * state);
+};
+
+class DrawElements : public DrawCall {
+public:
+  DrawElements();
+  virtual ~DrawElements();
+  virtual void execute(State * state);
 };

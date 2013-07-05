@@ -1,9 +1,10 @@
 
-- opengl error checking
-  - define macros for calling opengl with glGetError()
+- texture node(s)
 
-- BoundingBoxAction -> BoundingSphereAction
-- Separator render cache, bsphere cache, frustum culling
+- screen-space effects
+  - scenetexture node
+
+- Separator render cache, bbox cache, frustum culling
 
 - port LEGO model import to Lua?
 
@@ -11,5 +12,3 @@
 
 - text node
 
-- screen-space effects
-  - scenetexture node

@@ -38,11 +38,12 @@ public:
 
   GLVertexArrayObject * createVAO();
 
-  Buffer * arraybuffer;
-  Buffer * vertexbuffer;
-  Buffer * elementbuffer;
-  Buffer * instancebuffer;
+  GLsizei vertexCount;
+  GLsizei elementCount;
+  GLsizei instanceCount;
+  Buffer * elementBuffer;
 private:
+  Buffer * arraybuffer;
   std::vector<Bindable*> statevec;
 };
 

@@ -179,9 +179,6 @@
     <ClInclude Include="..\..\include\innovator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\luanode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\fields.h">
       <Filter>Header Files</Filter>
     </ClInclude>

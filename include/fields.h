@@ -235,6 +235,6 @@ public:
     }
     this->value = this->enums[name];
   }
-  int value;
-  std::map<std::string, int> enums;
+  GLenum value;
+  std::map<std::string, GLenum> enums;
 };

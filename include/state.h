@@ -3,10 +3,10 @@
 #include <memory>
 #include <elements.h>
 
-class Shape;
 class Camera;
 class Program;
 class Viewport;
+class DrawCall;
 
 class State {
 public:
@@ -15,7 +15,7 @@ public:
 
   void push();
   void pop();
-  void flush(Shape * shape);
+  void flush(DrawCall * drawcall);
 
   Camera * camera;
   Program * program;

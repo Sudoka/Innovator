@@ -86,18 +86,18 @@ void
 Viewer::mouseMoved(int x, int y)
 {
   if (self->mousedown) {
-    float dx = (self->prev_x - x) / 100.0f;
-    float dy = (self->prev_y - y) / 100.0f;
+    float dx = (self->prev_x - x);
+    float dy = (self->prev_y - y);
 
     switch (self->button) {
     case GLFW_MOUSE_BUTTON_LEFT:
-      self->camera->orbit(vec2(dx * 10.0, dy * 10.0));
+      self->camera->orbit(vec2(dx, dy));
       break;
     case GLFW_MOUSE_BUTTON_MIDDLE:
-      self->camera->pan(vec2(dx, -dy));
+      self->camera->pan(vec2(dx / 10.0, -dy / 10.0f));
       break;
     case GLFW_MOUSE_BUTTON_RIGHT:
-      self->camera->zoom(-dy);
+      self->camera->zoom(-dy / 10.0f);
       break;
     }
     self->redraw = true;
