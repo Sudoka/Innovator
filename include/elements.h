@@ -33,17 +33,10 @@ public:
   VertexElement();
   ~VertexElement();
 
-  void set(Buffer * buffer);
-  void set(VertexAttribute * attrib);
-
+  void set(Bindable * bindable);
   GLVertexArrayObject * createVAO();
 
-  GLsizei vertexCount;
-  GLsizei elementCount;
-  GLsizei instanceCount;
-  Buffer * elementBuffer;
 private:
-  Buffer * arraybuffer;
   std::vector<Bindable*> statevec;
 };
 

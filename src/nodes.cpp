@@ -185,17 +185,15 @@ Group::traverse(BoundingBoxAction * action)
 void
 Separator::traverse(RenderAction * action)
 {
-  action->state->push();
+  StateScope scope(action->state.get());
   Group::traverse(action);
-  action->state->pop();
 }
 
 void
 Separator::traverse(BoundingBoxAction * action)
 {
-  action->state->push();
+  StateScope scope(action->state.get());
   Group::traverse(action);
-  action->state->pop();
 }
 
 // *************************************************************************************************
@@ -390,7 +388,7 @@ Buffer::traverse(RenderAction * action)
                                               this->count.value,
                                               this->values.vec));
   }
-  action->state->vertexelem.set(this);
+  action->state->vertexelem.set(this->buffer.get());
 }
 
 // *************************************************************************************************
@@ -420,7 +418,7 @@ VertexAttribute::traverse(RenderAction * action)
   if (this->buffer.value.get()) {
     this->buffer.value->traverse(action);
   }
-  action->state->vertexelem.set(this);
+  action->state->vertexelem.set(this->glattrib.get());
 }
 
 // *************************************************************************************************
@@ -560,6 +558,7 @@ DrawCall::traverse(RenderAction * action)
   if (this->vao.get() == nullptr) {
     this->vao.reset(action->state->vertexelem.createVAO());
   }
+  BindScope vao(this->vao.get());
   action->state->flush(this);
 }
 
@@ -568,6 +567,11 @@ DrawCall::traverse(RenderAction * action)
 
 DrawElements::DrawElements()
 {
+  this->registerField(this->count, "count", 0);
+  this->registerField(this->type, "type", GL_UNSIGNED_INT);
+  this->registerEnum(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
+  this->registerEnum(this->type, "UNSIGNED_BYTE", GL_UNSIGNED_BYTE);
+  this->registerEnum(this->type, "UNSIGNED_SHORT", GL_UNSIGNED_SHORT);
 }
 
 DrawElements::~DrawElements()
@@ -577,9 +581,7 @@ DrawElements::~DrawElements()
 void
 DrawElements::execute(State * state)
 {
-  Buffer * elementbuffer = state->vertexelem.elementBuffer;
-  BindScope vao(this->vao.get());
-  glDrawElements(this->mode.value, elementbuffer->values.vec.size(), elementbuffer->type.value, nullptr);
+  glDrawElements(this->mode.value, this->count.value, this->type.value, nullptr);
 }
 
 // *************************************************************************************************
@@ -598,8 +600,7 @@ DrawArrays::~DrawArrays()
 void
 DrawArrays::execute(State * state)
 {
-  BindScope vao(this->vao.get());
-  glDrawArrays(this->mode.value, 0, state->vertexelem.vertexCount);
+  glDrawArrays(this->mode.value, this->first.value, this->count.value);
 }
 
 // *************************************************************************************************

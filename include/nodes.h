@@ -276,5 +276,7 @@ class DrawElements : public DrawCall {
 public:
   DrawElements();
   virtual ~DrawElements();
+  SFEnum type;
+  SFInt count;
   virtual void execute(State * state);
 };

@@ -13,8 +13,6 @@ public:
   State();
   ~State();
 
-  void push();
-  void pop();
   void flush(DrawCall * drawcall);
 
   Camera * camera;
@@ -27,6 +25,22 @@ public:
   TransformFeedbackElement feedbackelem;
 
 private:
+  void push();
+  void pop();
+  friend class StateScope;
+
   class StateP;
   std::unique_ptr<StateP> self;
+};
+
+class StateScope {
+public:
+  StateScope(State * state) : state(state) {
+    state->push();
+  }
+  ~StateScope() {
+    state->pop();
+  }
+private:
+  State * state;
 };

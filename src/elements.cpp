@@ -30,11 +30,6 @@ TransformElement::flush(State * state)
 }
 
 VertexElement::VertexElement()
-  : vertexCount(0),
-    elementCount(0),
-    instanceCount(0),
-    arraybuffer(nullptr),
-    elementBuffer(nullptr)
 {
 }
 
@@ -43,38 +38,9 @@ VertexElement::~VertexElement()
 }
 
 void
-VertexElement::set(Buffer * buffer)
+VertexElement::set(Bindable * bindable)
 {
-  switch (buffer->target.value) {
-  case GL_ARRAY_BUFFER:
-    this->arraybuffer = buffer;
-    break;
-  case GL_ELEMENT_ARRAY_BUFFER:
-    this->elementBuffer = buffer;
-    break;
-  default:
-    throw std::invalid_argument("Invalid buffer type");
-  }
-  this->statevec.push_back(buffer->buffer.get());
-}
-
-void 
-VertexElement::set(VertexAttribute * attrib)
-{
-  if (this->arraybuffer == nullptr) {
-    throw std::runtime_error("VertexElement::set(): No current array buffer");
-  }
-
-  GLsizei attribcount = this->arraybuffer->values.vec.size() / attrib->size.value;
-
-  if (attrib->divisor.value == 0) {
-    this->vertexCount = attribcount;
-  }
-  else if (attrib->divisor.value == 1) { 
-    this->instanceCount = attribcount;
-  }
-
-  this->statevec.push_back(attrib->glattrib.get());
+  this->statevec.push_back(bindable);
 }
 
 GLVertexArrayObject * 
