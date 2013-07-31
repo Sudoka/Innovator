@@ -54,18 +54,3 @@ private:
   GLuint unit;
   std::vector<Bindable*> statevec;
 };
-
-class TransformFeedbackElement {
-public:
-  TransformFeedbackElement();
-  ~TransformFeedbackElement();
-
-  void set(GLQueryObject * queryobject);
-  void set(GLTransformFeedback * transformfeedback);
-  void begin();
-  void end();
-
-private:
-  GLQueryObject * queryobject;
-  GLTransformFeedback * transformfeedback;
-};

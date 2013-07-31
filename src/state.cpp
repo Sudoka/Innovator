@@ -17,7 +17,6 @@ public:
   vector<VertexElement> vertexstack;
   vector<TextureElement> texturestack;
   vector<TransformElement> transformstack;
-  vector<TransformFeedbackElement> feedbackstack;
 };
 
 State::State()
@@ -39,7 +38,6 @@ State::push()
   self->viewportstack.push_back(this->viewport);
   self->vertexstack.push_back(this->vertexelem);
   self->texturestack.push_back(this->textureelem);
-  self->feedbackstack.push_back(this->feedbackelem);
   self->transformstack.push_back(this->transformelem);
 }
 
@@ -50,14 +48,12 @@ State::pop()
   this->viewport = self->viewportstack.back();
   this->vertexelem = self->vertexstack.back();
   this->textureelem = self->texturestack.back();
-  this->feedbackelem = self->feedbackstack.back();
   this->transformelem = self->transformstack.back();
 
   self->vertexstack.pop_back();
   self->programstack.pop_back();
   self->texturestack.pop_back();
   self->viewportstack.pop_back();
-  self->feedbackstack.pop_back();
   self->transformstack.pop_back();
 }
 
@@ -70,7 +66,5 @@ State::flush(DrawCall * drawcall)
   this->textureelem.flush(this);
   this->transformelem.flush(this);
 
-  this->feedbackelem.begin();
   drawcall->execute(this);
-  this->feedbackelem.end();
 }

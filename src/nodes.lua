@@ -1,7 +1,6 @@
 local Utils = require "Utils"
-local Nodes = {}
 
-function Nodes.IndexBuffer(data)
+local function IndexBuffer(data)
    return Buffer {
       type = "UNSIGNED_INT",
       target = "ELEMENT_ARRAY",
@@ -9,7 +8,7 @@ function Nodes.IndexBuffer(data)
    }
 end
 
-function Nodes.VertexBuffer(data)
+local function VertexBuffer(data)
    return Buffer {
       type = "FLOAT",
       target = "ARRAY",
@@ -17,39 +16,36 @@ function Nodes.VertexBuffer(data)
    }
 end
 
-function Nodes.VertexAttribute3f(data)
+local function VertexAttribute3f(data)
    return VertexAttribute {
       size = 3,
       divisor = data.divisor,
-      location = data.location,
-      buffer = data.values and 
-         Nodes.VertexBuffer { values = data.values } or 
-         data.buffer
+      location = data.location
    }
 end
 
-function Nodes.VertexShader(data)
+local function VertexShader(data)
    return ShaderObject {
       type = "VERTEX_SHADER",
       source = data.source
    };
 end
 
-function Nodes.GeometryShader(data)
+local function GeometryShader(data)
    return ShaderObject {
       type = "GEOMETRY_SHADER",
       source = data.source
    };
 end
 
-function Nodes.FragmentShader(data)
+local function FragmentShader(data)
    return ShaderObject {
       type = "FRAGMENT_SHADER",
       source = data.source
    };
 end
 
-function Nodes.Sphere(data)
+local function Sphere(data)
    local t = (1 + 5^0.5) / 2; -- golden ratio
    local indices = { {  1,  4, 0 }, {  4, 9, 0 }, { 4,  5, 9 }, { 8, 5, 4 }, {  1, 8, 4 },
                      {  1, 10, 8 }, { 10, 3, 8 }, { 8,  3, 5 }, { 3, 2, 5 }, {  3, 7, 2 },
@@ -63,9 +59,19 @@ function Nodes.Sphere(data)
    Utils.subdivide(indices, vertices, data.lod and data.lod or 1);
 
    return Separator {
-      Nodes.IndexBuffer { values = Utils.flatten(indices) },
-      Nodes.VertexAttribute3f { location = 0, values = Utils.flatten(vertices) },
-      BoundingBox {},
+      IndexBuffer { 
+         values = Utils.flatten(indices) 
+      },
+      VertexBuffer { 
+         values = Utils.flatten(vertices) 
+      },
+      VertexAttribute3f { 
+         location = 0, 
+      },
+      BoundingBox { 
+         min = { -1, -1, -1 }, 
+         max = {  1,  1,  1 }
+      },
       DrawElements { 
          mode = "TRIANGLES",
          type = "UNSIGNED_INT",
@@ -74,18 +80,23 @@ function Nodes.Sphere(data)
    }
 end
 
-function Nodes.Box(data)
+local function Box(data)
    return Separator {
-      Nodes.IndexBuffer {
+      IndexBuffer {
          values = { 0, 1, 3, 3, 2, 0, 1, 5, 7, 7, 3, 1, 5, 4, 6, 6, 7, 5, 
                     4, 0, 2, 2, 6, 4, 2, 3, 7, 7, 6, 2, 1, 0, 4, 4, 5, 1 }
       },
-      Nodes.VertexAttribute3f {
-         location = 0,
+      VertexBuffer {
          values = { -1, -1, -1, -1, -1,  1, -1,  1, -1, -1,  1,  1,
                      1, -1, -1,  1, -1,  1,  1,  1, -1,  1,  1,  1 } 
       },
-      BoundingBox {},
+      VertexAttribute3f {
+         location = 0
+      },
+      BoundingBox { 
+         min = { -1, -1, -1 }, 
+         max = {  1,  1,  1 }
+      },
       DrawElements { 
          mode = "TRIANGLES",
          type = "UNSIGNED_INT",
@@ -94,4 +105,13 @@ function Nodes.Box(data)
    }
 end
 
-return Nodes;
+return {
+   Box = Box,
+   Sphere = Sphere,
+   Program = Program,
+   Separator = Separator,
+   Transform = Transform,
+   VertexShader = VertexShader,
+   GeometryShader = GeometryShader,
+   FragmentShader = FragmentShader,
+}

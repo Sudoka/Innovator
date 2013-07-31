@@ -32,26 +32,15 @@ void main()
 }
 ]]
 
-SceneRoot = Separator {
-   Program {
+SceneRoot = Nodes.Separator {
+   Nodes.Program {
       Nodes.VertexShader { source = vertex },
       Nodes.FragmentShader { source = fragment },
    },
-   Transform { translation = { -2, -2, -2 } },
+   Nodes.Transform { translation = { -2, -2, -2 } },
    Nodes.Box {},
-   Transform { translation = { 2, 2, 2 } },
+   Nodes.Transform { translation = { 2, 2, 2 } },
    Nodes.Sphere { lod = 0 },
-   Transform { translation = { 2, 2, 2 } },
+   Nodes.Transform { translation = { 2, 2, 2 } },
    Nodes.Sphere { lod = 3 }
 }
-
---[[
-Window {
-   size = { 640, 480 },
-   framebuffer = fb,
-   keyPressed = function() end,
-   mouseMoved = function() end,
-   resize = function() end,
-   paint = function() end,
-}
---]]

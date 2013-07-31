@@ -22,7 +22,6 @@ public:
   VertexElement vertexelem;
   TextureElement textureelem;
   TransformElement transformelem;
-  TransformFeedbackElement feedbackelem;
 
 private:
   void push();

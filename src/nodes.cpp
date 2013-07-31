@@ -15,7 +15,6 @@ using namespace std;
 
 class Camera::CameraP {
 public:
-  vec3 up, pos, fpt;
   mat4 orientation;
   mat4 translation;
   mat4 projmatrix;
@@ -25,9 +24,9 @@ public:
 Camera::Camera()
   : self(new CameraP)
 {
-  self->up  = vec3(0, 1, 0);
-  self->pos = vec3(0, 0, 1);
-  self->fpt = vec3(0, 0, 0);
+  this->registerField(this->up, "up", vec3(0, 1, 0));
+  this->registerField(this->position, "position", vec3(0, 0, 1));
+  this->registerField(this->focalPoint, "focalPoint", vec3(0, 0, 0));
 }
 
 Camera::~Camera()
@@ -51,16 +50,16 @@ Camera::flush(State * state)
 vec3
 Camera::getFocalDir() const
 {
-  return self->pos - self->fpt;
+  return this->position.value - this->focalPoint.value;
 }
 
 void
 Camera::lookAt(const vec3 & focalpoint)
 {
-  self->fpt = focalpoint;
+  this->focalPoint.value = focalpoint;
 
   vec3 z = glm::normalize(this->getFocalDir());
-  vec3 x = glm::normalize(glm::cross(self->up, z));
+  vec3 x = glm::normalize(glm::cross(this->up.value, z));
   vec3 y = glm::normalize(glm::cross(z, x));
 
   self->orientation[0] = vec4(x, 0.0);
@@ -85,7 +84,7 @@ Camera::viewAll(Separator * root)
 void
 Camera::moveTo(const vec3 & position)
 {
-  self->pos = position;
+  this->position.value = position;
   self->translation = glm::translate(mat4(1.0), -position);
 }
 
@@ -96,7 +95,7 @@ Camera::zoom(float dy)
   float oldfocaldist = length(direction);
   float newfocaldist = oldfocaldist * exp(dy);
   vec3 dpos = normalize(direction) * (newfocaldist - oldfocaldist);
-  this->moveTo(self->pos + dpos);
+  this->moveTo(this->position.value + dpos);
 }
 
 void
@@ -105,8 +104,8 @@ Camera::pan(const vec2 & dx)
   vec3 x = vec3(self->orientation * vec4(1, 0, 0, 0));
   vec3 y = vec3(self->orientation * vec4(0, 1, 0, 0));
   vec3 dpos = x * dx.x + y * dx.y;
-  this->moveTo(self->pos + dpos);
-  self->fpt += dpos;
+  this->moveTo(this->position.value + dpos);
+  this->focalPoint.value += dpos;
 }
 
 void
@@ -116,7 +115,7 @@ Camera::orbit(const vec2 & dx)
   self->orientation = glm::rotate(self->orientation, dx.x, vec3(0, 1, 0));
   float z = glm::length(this->getFocalDir());
   vec3 newdir = vec3(self->orientation * vec4(0, 0, z, 0));
-  this->moveTo(self->fpt + newdir);
+  this->moveTo(this->focalPoint.value + newdir);
 }
 
 void 
@@ -166,7 +165,7 @@ Group::~Group() {}
 void
 Group::traverse(RenderAction * action)
 {
-  for each (shared_ptr<Node> node in this->children.values) {
+  for each (const shared_ptr<Node> & node in this->children.values) {
     node->traverse(action);
   }
 }
@@ -174,13 +173,12 @@ Group::traverse(RenderAction * action)
 void
 Group::traverse(BoundingBoxAction * action)
 {
-  for each (shared_ptr<Node> node in this->children.values) {
+  for each (const shared_ptr<Node> & node in this->children.values) {
     node->traverse(action);
   }
 }
 
 // *************************************************************************************************
-
 
 void
 Separator::traverse(RenderAction * action)
@@ -208,7 +206,6 @@ Uniform::~Uniform()
 }
 
 // *************************************************************************************************
-
 
 Uniform3f::Uniform3f()
 {
@@ -263,12 +260,11 @@ ShaderObject::~ShaderObject()
 
 // *************************************************************************************************
 
-
 class Program::ProgramP {
 public:
   ProgramP(Program * self) {
     this->glprogram.reset(new GLProgram);
-    for each (const shared_ptr<ShaderObject> shader in self->shaders.values) {
+    for each (const shared_ptr<ShaderObject> & shader in self->shaders.values) {
       this->glprogram->attach(shader->source.value.c_str(), shader->type.value);
     }
     if (!self->feedbackVarying.value.empty()) {
@@ -306,7 +302,7 @@ void
 Program::flush(State * state)
 {
   self->glprogram->bind();
-  for each (const shared_ptr<Uniform> uniform in this->uniforms.values) {
+  for each (const shared_ptr<Uniform> & uniform in this->uniforms.values) {
     uniform->flush(state);
   }
 }
@@ -321,7 +317,6 @@ Program::getUniformLocation(const std::string & name)
 }
 
 // *************************************************************************************************
-
 
 Transform::Transform()
 {
@@ -353,7 +348,6 @@ Transform::traverse(BoundingBoxAction * action)
 }
 
 // *************************************************************************************************
-
 
 Buffer::Buffer()
   : buffer(nullptr)
@@ -393,7 +387,6 @@ Buffer::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-
 VertexAttribute::VertexAttribute()
   : glattrib(nullptr)
 {
@@ -401,7 +394,6 @@ VertexAttribute::VertexAttribute()
   this->registerField(this->size, "size", 3);
   this->registerField(this->index, "location", 0);
   this->registerField(this->divisor, "divisor", 0);
-  this->registerField(this->buffer, "buffer", nullptr);
 }
 
 VertexAttribute::~VertexAttribute() {}
@@ -415,14 +407,10 @@ VertexAttribute::traverse(RenderAction * action)
                                                this->type.value,
                                                this->divisor.value));
   }
-  if (this->buffer.value.get()) {
-    this->buffer.value->traverse(action);
-  }
   action->state->vertexelem.set(this->glattrib.get());
 }
 
 // *************************************************************************************************
-
 
 TextureUnit::TextureUnit()
   : gltexunit(nullptr)
@@ -443,9 +431,7 @@ TextureUnit::traverse(RenderAction * action)
   action->state->textureelem.set(this);
 }
 
-
 // *************************************************************************************************
-
 
 Texture::Texture()
   : gltexture(nullptr)
@@ -491,7 +477,6 @@ Texture::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-
 TextureSampler::TextureSampler()
   : glsampler(nullptr)
 {
@@ -521,7 +506,6 @@ TextureSampler::traverse(RenderAction * action)
 }
 
 // *************************************************************************************************
-
 
 BoundingBox::BoundingBox()
 {
@@ -564,10 +548,10 @@ DrawCall::traverse(RenderAction * action)
 
 // *************************************************************************************************
 
-
 DrawElements::DrawElements()
 {
   this->registerField(this->count, "count", 0);
+  this->registerField(this->indices, "indices");
   this->registerField(this->type, "type", GL_UNSIGNED_INT);
   this->registerEnum(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
   this->registerEnum(this->type, "UNSIGNED_BYTE", GL_UNSIGNED_BYTE);
@@ -585,7 +569,6 @@ DrawElements::execute(State * state)
 }
 
 // *************************************************************************************************
-
 
 DrawArrays::DrawArrays()
 {

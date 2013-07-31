@@ -86,6 +86,9 @@ class Camera : public Node {
 public:
   Camera();
   virtual ~Camera();
+  SFVec3f up;
+  SFVec3f position;
+  SFVec3f focalPoint;
   virtual void traverse(RenderAction * action);
   void flush(State * state);
   void zoom(float dz);
@@ -183,7 +186,6 @@ public:
   SFUint size;
   SFUint index;
   SFUint divisor;
-  SFBuffer buffer;
 
   virtual void traverse(RenderAction * action);
 private:
@@ -278,5 +280,6 @@ public:
   virtual ~DrawElements();
   SFEnum type;
   SFInt count;
+  MFNumber indices;
   virtual void execute(State * state);
 };
