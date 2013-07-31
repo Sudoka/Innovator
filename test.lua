@@ -1,4 +1,6 @@
 
+local Nodes = require "Nodes"
+
 local vertex = [[
 #version 330
 layout(location = 0) in vec3 Position;
@@ -32,15 +34,15 @@ void main()
 
 SceneRoot = Separator {
    Program {
-      VertexShader { source = vertex },
-      FragmentShader { source = fragment },
+      Nodes.VertexShader { source = vertex },
+      Nodes.FragmentShader { source = fragment },
    },
    Transform { translation = { -2, -2, -2 } },
-   Box {},
+   Nodes.Box {},
    Transform { translation = { 2, 2, 2 } },
-   Sphere { lod = 0 },
+   Nodes.Sphere { lod = 0 },
    Transform { translation = { 2, 2, 2 } },
-   Sphere { lod = 3 }
+   Nodes.Sphere { lod = 3 }
 }
 
 --[[
