@@ -48,6 +48,12 @@ FieldValue<double>::readValue(lua_State * L)
   return luaL_checknumber(L, -1);
 }
 
+GLfloat
+FieldValue<GLfloat>::readValue(lua_State * L)
+{
+  return (GLfloat)luaL_checknumber(L, -1);
+}
+
 GLint
 FieldValue<GLint>::readValue(lua_State * L)
 {

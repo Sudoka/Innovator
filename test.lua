@@ -1,7 +1,10 @@
 
 local Nodes = require "Nodes"
 
-local vertex = [[
+local shader = 
+Nodes.Program {
+   Nodes.VertexShader { 
+      source = [[ 
 #version 330
 layout(location = 0) in vec3 Position;
 uniform mat4 ViewMatrix = mat4(1.0);
@@ -16,8 +19,9 @@ void main()
    gl_Position = ProjectionMatrix * ViewPosition;
 }
 ]]
-
-local fragment = [[
+  },
+   Nodes.FragmentShader {
+      source = [[
 #version 330
 layout(location = 0) out vec4 FragColor;
 
@@ -31,12 +35,11 @@ void main()
   FragColor = vec4(n.zzz, 1.0);
 }
 ]]
+  }
+}
 
 SceneRoot = Nodes.Separator {
-   Nodes.Program {
-      Nodes.VertexShader { source = vertex },
-      Nodes.FragmentShader { source = fragment },
-   },
+   shader,
    Nodes.Transform { translation = { -2, -2, -2 } },
    Nodes.Box {},
    Nodes.Transform { translation = { 2, 2, 2 } },

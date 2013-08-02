@@ -87,16 +87,18 @@ public:
   Camera();
   virtual ~Camera();
   SFVec3f up;
+  SFVec3f look;
   SFVec3f position;
   SFVec3f focalPoint;
+  SFFloat focalDistance;
   virtual void traverse(RenderAction * action);
   void flush(State * state);
   void zoom(float dz);
   void pan(const glm::vec2 & dx);
   void orbit(const glm::vec2 & dx);
-  void moveTo(const glm::vec3 & position);
   void lookAt(const glm::vec3 & focalpoint);
   void viewAll(Separator * root);
+  glm::mat4 getOrientation() const;
   glm::vec3 getFocalDir() const;
   void perspective(float fovy, float aspect, float near, float far);
 private:

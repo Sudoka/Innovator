@@ -16,17 +16,21 @@ using namespace std;
 class Camera::CameraP {
 public:
   mat4 orientation;
-  mat4 translation;
-  mat4 projmatrix;
-  mat4 viewmatrix;
+  UniformMatrix4f projmatrix;
+  UniformMatrix4f viewmatrix;
 };
 
 Camera::Camera()
   : self(new CameraP)
 {
   this->registerField(this->up, "up", vec3(0, 1, 0));
+  this->registerField(this->look, "look", vec3(0, 0, 1));
   this->registerField(this->position, "position", vec3(0, 0, 1));
   this->registerField(this->focalPoint, "focalPoint", vec3(0, 0, 0));
+  this->registerField(this->focalDistance, "focalDistance", 1.0f);
+
+  self->viewmatrix.name.value = "ViewMatrix";
+  self->projmatrix.name.value = "ProjectionMatrix";
 }
 
 Camera::~Camera()
@@ -36,15 +40,16 @@ Camera::~Camera()
 void 
 Camera::traverse(RenderAction * action)
 {
-  self->viewmatrix = glm::transpose(self->orientation) * self->translation;
   action->state->camera = this;
 }
 
 void
 Camera::flush(State * state)
 {
-  glUniformMatrix4fv(state->program->getUniformLocation("ViewMatrix"), 1, GL_FALSE, glm::value_ptr(self->viewmatrix));
-  glUniformMatrix4fv(state->program->getUniformLocation("ProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(self->projmatrix));
+  self->viewmatrix.value.value = glm::transpose(self->orientation);
+  self->viewmatrix.value.value = glm::translate(self->viewmatrix.value.value, -this->position.value);
+  self->viewmatrix.flush(state);
+  self->projmatrix.flush(state);
 }
 
 vec3
@@ -53,18 +58,26 @@ Camera::getFocalDir() const
   return this->position.value - this->focalPoint.value;
 }
 
+mat4
+Camera::getOrientation() const
+{
+  mat4 orientation = mat4(1.0);
+//  orientation[0] = vec4(left, 0.0);
+  orientation[1] = vec4(this->up.value, 0.0);
+  orientation[2] = vec4(this->look.value, 0.0);
+  return orientation;
+}
+
 void
 Camera::lookAt(const vec3 & focalpoint)
 {
-  this->focalPoint.value = focalpoint;
+  this->look.value = glm::normalize(this->position.value - focalpoint);
+  vec3 left = glm::normalize(glm::cross(this->up.value, this->look.value));
+  this->up.value = glm::normalize(glm::cross(this->look.value, left));
 
-  vec3 z = glm::normalize(this->getFocalDir());
-  vec3 x = glm::normalize(glm::cross(this->up.value, z));
-  vec3 y = glm::normalize(glm::cross(z, x));
-
-  self->orientation[0] = vec4(x, 0.0);
-  self->orientation[1] = vec4(y, 0.0);
-  self->orientation[2] = vec4(z, 0.0);
+  self->orientation[0] = vec4(left, 0.0);
+  self->orientation[1] = vec4(this->up.value, 0.0);
+  self->orientation[2] = vec4(this->look.value, 0.0);
 }
 
 void
@@ -73,38 +86,29 @@ Camera::viewAll(Separator * root)
   BoundingBoxAction action;
   action.apply(root);
   box3 box = action.getBoundingBox();
-  float focaldist = box.size();
   vec3 focalpoint = box.center();
-  vec3 focaldir = glm::normalize(this->getFocalDir()) * focaldist;
+  this->focalDistance.value = box.size();
 
-  this->moveTo(focalpoint + focaldir);
+  this->position.value = focalpoint + this->look.value * this->focalDistance.value;
   this->lookAt(focalpoint);
-}
-
-void
-Camera::moveTo(const vec3 & position)
-{
-  this->position.value = position;
-  self->translation = glm::translate(mat4(1.0), -position);
 }
 
 void 
 Camera::zoom(float dy)
 {
-  vec3 direction = -this->getFocalDir();
-  float oldfocaldist = length(direction);
-  float newfocaldist = oldfocaldist * exp(dy);
-  vec3 dpos = normalize(direction) * (newfocaldist - oldfocaldist);
-  this->moveTo(this->position.value + dpos);
+  float oldfocaldist = this->focalDistance.value;
+  this->focalDistance.value *= exp(dy);
+  vec3 dpos = -this->look.value * (this->focalDistance.value - oldfocaldist);
+  this->position.value += dpos;
 }
 
 void
 Camera::pan(const vec2 & dx)
 {
-  vec3 x = vec3(self->orientation * vec4(1, 0, 0, 0));
-  vec3 y = vec3(self->orientation * vec4(0, 1, 0, 0));
+  vec3 y = this->up.value;
+  vec3 x = glm::normalize(glm::cross(this->up.value, this->look.value));
   vec3 dpos = x * dx.x + y * dx.y;
-  this->moveTo(this->position.value + dpos);
+  this->position.value += dpos;
   this->focalPoint.value += dpos;
 }
 
@@ -115,13 +119,13 @@ Camera::orbit(const vec2 & dx)
   self->orientation = glm::rotate(self->orientation, dx.x, vec3(0, 1, 0));
   float z = glm::length(this->getFocalDir());
   vec3 newdir = vec3(self->orientation * vec4(0, 0, z, 0));
-  this->moveTo(this->focalPoint.value + newdir);
+  this->position.value = this->focalPoint.value + newdir;
 }
 
 void 
 Camera::perspective(float fovy, float aspect, float near, float far)
 {
-  self->projmatrix = glm::perspective(fovy, aspect, near, far);
+  self->projmatrix.value.value = glm::perspective(fovy, aspect, near, far);
 }
 
 // *************************************************************************************************
@@ -145,9 +149,6 @@ Viewport::traverse(RenderAction * action)
 void
 Viewport::flush(State * state)
 {
-  if (this->size.value == ivec2(-1) || this->origin.value == ivec2(-1)) {
-    throw std::invalid_argument("invalid viewport");
-  }
   glViewport(this->origin.value.x, this->origin.value.y, this->size.value.x, this->size.value.y);
 }
 
@@ -292,15 +293,15 @@ Program::~Program()
 void
 Program::traverse(RenderAction * action)
 {
-  if (self.get() == nullptr) {
-    self.reset(new ProgramP(this));
-  }
   action->state->program = this;
 }
 
 void
 Program::flush(State * state)
 {
+  if (self.get() == nullptr) {
+    self.reset(new ProgramP(this));
+  }
   self->glprogram->bind();
   for each (const shared_ptr<Uniform> & uniform in this->uniforms.values) {
     uniform->flush(state);

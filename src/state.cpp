@@ -20,10 +20,10 @@ public:
 };
 
 State::State()
-  : self(new StateP), 
-    camera(nullptr),
-    program(nullptr),
-    viewport(nullptr)
+  : self(new StateP),
+    camera(new Camera),
+    program(new Program),
+    viewport(new Viewport)
 {
 }
 

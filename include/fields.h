@@ -107,6 +107,15 @@ public:
   GLuint value;
 };
 
+class SFFloat : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    Value<GLfloat> value(L, this->name, this->value);
+  }
+  GLfloat value;
+};
+
 class SFString : public Field {
 public:
   virtual void read(lua_State * L)

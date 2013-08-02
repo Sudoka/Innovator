@@ -7,7 +7,7 @@
 using namespace std;
 
 Action::Action()
-  : state(nullptr) 
+  : state(new State) 
 {
 }
 
@@ -31,7 +31,6 @@ RenderAction::apply(Node * node)
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  state.reset(new State);
   node->traverse(this);
   glFinish();
 }
@@ -55,7 +54,6 @@ BoundingBoxAction::extendBy(const box3 & box)
 void
 BoundingBoxAction::apply(Node * node)
 {
-  state.reset(new State);
   this->box.makeEmpty();
   node->traverse(this);
 }

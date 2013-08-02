@@ -8,7 +8,7 @@ public:
   Viewer(int width, int height);
   ~Viewer();
 
-  void setSceneGraph(std::shared_ptr<Separator> root);
+  void setSceneGraph(const std::shared_ptr<Separator> & root);
   void renderGL();
 
   void resize(int width, int height);
