@@ -29,6 +29,7 @@ public:
   void apply(Node * node);
   void extendBy(const box3 & box);
   const box3 & getBoundingBox() const;
+  static box3 getBoundingBox(Separator * root);
 
 private:
   box3 box;

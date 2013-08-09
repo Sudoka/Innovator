@@ -63,3 +63,11 @@ BoundingBoxAction::getBoundingBox() const
 {
   return this->box;
 }
+
+box3
+BoundingBoxAction::getBoundingBox(Separator * root)
+{
+  BoundingBoxAction action;
+  action.apply(root);
+  return action.getBoundingBox();
+}

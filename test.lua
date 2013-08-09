@@ -40,7 +40,7 @@ void main()
 
 SceneRoot = Nodes.Separator {
    shader,
-   Nodes.Transform { translation = { -2, -2, -2 } },
+   Nodes.Transform { translation = { 2, 2, 2 } },
    Nodes.Box {},
    Nodes.Transform { translation = { 2, 2, 2 } },
    Nodes.Sphere { lod = 0 },

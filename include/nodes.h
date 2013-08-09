@@ -86,10 +86,7 @@ class Camera : public Node {
 public:
   Camera();
   virtual ~Camera();
-  SFVec3f up;
-  SFVec3f look;
   SFVec3f position;
-  SFVec3f focalPoint;
   SFFloat focalDistance;
   virtual void traverse(RenderAction * action);
   void flush(State * state);
@@ -98,8 +95,6 @@ public:
   void orbit(const glm::vec2 & dx);
   void lookAt(const glm::vec3 & focalpoint);
   void viewAll(Separator * root);
-  glm::mat4 getOrientation() const;
-  glm::vec3 getFocalDir() const;
   void perspective(float fovy, float aspect, float near, float far);
 private:
   class CameraP;

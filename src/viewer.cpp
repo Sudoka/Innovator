@@ -92,7 +92,7 @@ Viewer::mouseMoved(int x, int y)
       self->renderaction->state->camera->pan(vec2(dx / 10.0, -dy / 10.0f));
       break;
     case GLFW_MOUSE_BUTTON_RIGHT:
-      self->renderaction->state->camera->zoom(-dy / 10.0f);
+      self->renderaction->state->camera->zoom(dy / 10.0f);
       break;
     }
     self->redraw = true;
