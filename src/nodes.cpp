@@ -15,7 +15,6 @@ using namespace std;
 
 class Camera::CameraP {
 public:
-  mat3 orientation;
   UniformMatrix4f projmatrix;
   UniformMatrix4f viewmatrix;
 };
@@ -25,10 +24,10 @@ Camera::Camera()
 {
   this->registerField(this->position, "position", vec3(0, 0, 1));
   this->registerField(this->focalDistance, "focalDistance", 1.0f);
+  this->registerField(this->orientation, "orientation", mat3(1.0));
 
   self->viewmatrix.name.value = "ViewMatrix";
   self->projmatrix.name.value = "ProjectionMatrix";
-  self->orientation = mat3(1.0);
 }
 
 Camera::~Camera()
@@ -44,7 +43,7 @@ Camera::traverse(RenderAction * action)
 void
 Camera::flush(State * state)
 {
-  self->viewmatrix.value.value = glm::transpose(mat4(self->orientation));
+  self->viewmatrix.value.value = glm::transpose(mat4(this->orientation.value));
   self->viewmatrix.value.value = glm::translate(self->viewmatrix.value.value, -this->position.value);
   self->viewmatrix.flush(state);
   self->projmatrix.flush(state);
@@ -53,9 +52,9 @@ Camera::flush(State * state)
 void
 Camera::lookAt(const vec3 & focalpoint)
 {
-  self->orientation[2] = glm::normalize(this->position.value - focalpoint);
-  self->orientation[0] = glm::normalize(glm::cross(self->orientation[1], self->orientation[2]));
-  self->orientation[1] = glm::normalize(glm::cross(self->orientation[2], self->orientation[0]));
+  this->orientation.value[2] = glm::normalize(this->position.value - focalpoint);
+  this->orientation.value[0] = glm::normalize(glm::cross(this->orientation.value[1], this->orientation.value[2]));
+  this->orientation.value[1] = glm::normalize(glm::cross(this->orientation.value[2], this->orientation.value[0]));
 }
 
 void
@@ -65,34 +64,36 @@ Camera::viewAll(Separator * root)
   vec3 focalpoint = box.center();
   this->focalDistance.value = box.size();
 
-  this->position.value = focalpoint + self->orientation[2] * this->focalDistance.value;
+  this->position.value = focalpoint + this->orientation.value[2] * this->focalDistance.value;
   this->lookAt(focalpoint);
 }
 
 void 
 Camera::zoom(float dy)
 {
-  vec3 focalpoint = this->position.value - self->orientation[2] * this->focalDistance.value;
-  this->position.value += self->orientation[2] * dy;
+  vec3 focalpoint = this->position.value - this->orientation.value[2] * this->focalDistance.value;
+  this->position.value += this->orientation.value[2] * dy;
   this->focalDistance.value = glm::length(this->position.value - focalpoint);
 }
 
 void
 Camera::pan(const vec2 & dx)
 {
-  this->position.value += self->orientation[0] * dx.x + self->orientation[1] * dx.y;
+  this->position.value += this->orientation.value[0] * dx.x + this->orientation.value[1] * dx.y;
 }
 
 void
 Camera::orbit(const vec2 & dx)
 {
-  vec3 focalpoint = this->position.value - self->orientation[2] * this->focalDistance.value;
+  vec3 focalpoint = this->position.value - this->orientation.value[2] * this->focalDistance.value;
 
-  self->orientation = mat3(glm::rotate(mat4(self->orientation), dx.y, vec3(1, 0, 0)));
-  self->orientation = mat3(glm::rotate(mat4(self->orientation), dx.x, vec3(0, 1, 0)));
+  mat4 rot = mat4(this->orientation.value);
+  rot = glm::rotate(rot, dx.y, vec3(1, 0, 0));
+  rot = glm::rotate(rot, dx.x, vec3(0, 1, 0));
+  vec3 look = mat3(rot) * vec3(0, 0, this->focalDistance.value);
 
-  this->position.value = focalpoint + self->orientation[2] * this->focalDistance.value;
-  this->lookAt(focalpoint); // orthogonalizes orientation matrix
+  this->position.value = focalpoint + look;
+  this->lookAt(focalpoint);
 }
 
 void 

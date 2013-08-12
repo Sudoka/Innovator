@@ -88,6 +88,7 @@ public:
   virtual ~Camera();
   SFVec3f position;
   SFFloat focalDistance;
+  SFMatrix3f orientation;
   virtual void traverse(RenderAction * action);
   void flush(State * state);
   void zoom(float dz);

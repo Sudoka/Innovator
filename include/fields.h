@@ -214,6 +214,21 @@ public:
   glm::vec3 value;
 };
 
+class SFMatrix3f : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    std::vector<double> tmp;
+    Array<double> value(L, this->name, tmp);
+    if (tmp.size() == 9) {
+      this->value = glm::mat3(tmp[0], tmp[1], tmp[2],
+                              tmp[3], tmp[4], tmp[5],
+                              tmp[6], tmp[7], tmp[8]);
+    }
+  }
+  glm::mat3 value;
+};
+
 class SFMatrix4f : public Field {
 public:
   virtual void read(lua_State * L)
