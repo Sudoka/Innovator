@@ -15,8 +15,7 @@ using namespace std;
 
 class Camera::CameraP {
 public:
-  UniformMatrix4f projmatrix;
-  UniformMatrix4f viewmatrix;
+  mat4 projmatrix;
 };
 
 Camera::Camera()
@@ -25,9 +24,6 @@ Camera::Camera()
   this->registerField(this->position, "position", vec3(0, 0, 1));
   this->registerField(this->focalDistance, "focalDistance", 1.0f);
   this->registerField(this->orientation, "orientation", mat3(1.0));
-
-  self->viewmatrix.name.value = "ViewMatrix";
-  self->projmatrix.name.value = "ProjectionMatrix";
 }
 
 Camera::~Camera()
@@ -37,16 +33,11 @@ Camera::~Camera()
 void 
 Camera::traverse(RenderAction * action)
 {
-  action->state->camera = this;
-}
+  mat4 viewmatrix = glm::transpose(mat4(this->orientation.value));
+  viewmatrix = glm::translate(viewmatrix, -this->position.value);
 
-void
-Camera::flush(State * state)
-{
-  self->viewmatrix.value.value = glm::transpose(mat4(this->orientation.value));
-  self->viewmatrix.value.value = glm::translate(self->viewmatrix.value.value, -this->position.value);
-  self->viewmatrix.flush(state);
-  self->projmatrix.flush(state);
+  action->state->viewmatelem.matrix = viewmatrix;
+  action->state->projmatelem.matrix = self->projmatrix;
 }
 
 void
@@ -99,31 +90,7 @@ Camera::orbit(const vec2 & dx)
 void 
 Camera::perspective(float fovy, float aspect, float near, float far)
 {
-  self->projmatrix.value.value = glm::perspective(fovy, aspect, near, far);
-}
-
-// *************************************************************************************************
-
-Viewport::Viewport()
-{
-  this->registerField(this->size, "size", ivec2(-1));
-  this->registerField(this->origin, "origin", ivec2(-1));
-}
-
-Viewport::~Viewport()
-{
-}
-
-void
-Viewport::traverse(RenderAction * action)
-{
-  action->state->viewport = this;
-}
-
-void
-Viewport::flush(State * state)
-{
-  glViewport(this->origin.value.x, this->origin.value.y, this->size.value.x, this->size.value.y);
+  self->projmatrix = glm::perspective(fovy, aspect, near, far);
 }
 
 // *************************************************************************************************
@@ -155,11 +122,42 @@ Group::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
+class Separator::SeparatorP {
+public:
+  SeparatorP() : rendercache(nullptr) {}
+  std::function<void()> rendercache;
+};
+
+Separator::Separator()
+  : self(new SeparatorP)
+{
+  this->registerField(this->renderCaching, "renderCaching", Separator::ON);
+  this->registerEnum(this->renderCaching, "ON", Separator::ON);
+  this->registerEnum(this->renderCaching, "OFF", Separator::OFF);
+}
+
+Separator::~Separator()
+{
+
+}
+
 void
 Separator::traverse(RenderAction * action)
 {
   StateScope scope(action->state.get());
-  Group::traverse(action);
+
+  if (this->renderCaching.value == Separator::ON) {
+    if (self->rendercache == nullptr) {
+      action->state->cacheelem.push();
+      Group::traverse(action);
+      self->rendercache = action->state->cacheelem.pop();
+    }
+    if (self->rendercache != nullptr) {
+      self->rendercache();
+    }
+  } else {
+    Group::traverse(action);
+  }
 }
 
 void
@@ -191,13 +189,6 @@ Uniform3f::~Uniform3f()
 {
 }
 
-void
-Uniform3f::flush(State * state)
-{
-  GLint location = state->program->getUniformLocation(this->name.value);
-  glUniform3fv(location, 1, glm::value_ptr(this->value.value));
-}
-
 // *************************************************************************************************
 
 
@@ -208,13 +199,6 @@ UniformMatrix4f::UniformMatrix4f()
 
 UniformMatrix4f::~UniformMatrix4f()
 {
-}
-
-void
-UniformMatrix4f::flush(State * state)
-{
-  GLint location = state->program->getUniformLocation(this->name.value);
-  glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(this->value.value));
 }
 
 // *************************************************************************************************
@@ -242,10 +226,6 @@ public:
     for each (const shared_ptr<ShaderObject> & shader in self->shaders.values) {
       this->glprogram->attach(shader->source.value.c_str(), shader->type.value);
     }
-    if (!self->feedbackVarying.value.empty()) {
-      const char * varyings[] = { self->feedbackVarying.value.c_str() };
-      glTransformFeedbackVaryings(this->glprogram->id, 1, varyings, GL_SEPARATE_ATTRIBS);
-    }
     this->glprogram->link();
   }
   unique_ptr<GLProgram> glprogram;
@@ -257,7 +237,6 @@ Program::Program()
 {
   this->registerField(this->shaders);
   this->registerField(this->uniforms, "uniforms");
-  this->registerField(this->feedbackVarying, "feedbackVarying", "");
 }
 
 Program::~Program() 
@@ -267,19 +246,10 @@ Program::~Program()
 void
 Program::traverse(RenderAction * action)
 {
-  action->state->program = this;
-}
-
-void
-Program::flush(State * state)
-{
   if (self.get() == nullptr) {
     self.reset(new ProgramP(this));
   }
-  self->glprogram->bind();
-  for each (const shared_ptr<Uniform> & uniform in this->uniforms.values) {
-    uniform->flush(state);
-  }
+  action->state->programelem.program = self->glprogram->id;
 }
 
 GLint
@@ -403,7 +373,7 @@ TextureUnit::traverse(RenderAction * action)
   if (this->gltexunit.get() == nullptr) {
     this->gltexunit.reset(new GLTextureUnit(this->unit.value));
   }
-  action->state->textureelem.set(this);
+  //action->state->textureelem.set(this);
 }
 
 // *************************************************************************************************
@@ -447,7 +417,7 @@ Texture::traverse(RenderAction * action)
                                               this->type.value,
                                               nullptr));
   }
-  action->state->textureelem.set(this);
+  //action->state->textureelem.set(this);
 }
 
 // *************************************************************************************************
@@ -477,7 +447,7 @@ TextureSampler::traverse(RenderAction * action)
                                                this->minFilter.value,
                                                this->magFilter.value));
   }
-  action->state->textureelem.set(this);
+  //action->state->textureelem.set(this);
 }
 
 // *************************************************************************************************
@@ -518,7 +488,12 @@ DrawCall::traverse(RenderAction * action)
     this->vao.reset(action->state->vertexelem.createVAO());
   }
   BindScope vao(this->vao.get());
-  action->state->flush(this);
+  action->state->drawelem.drawcall = this;
+  if (action->state->cacheelem.isCreatingCache) {
+    action->state->cacheelem.append(action->state->capture());
+  } else {
+    action->state->capture()();
+  }
 }
 
 // *************************************************************************************************
@@ -538,7 +513,7 @@ DrawElements::~DrawElements()
 }
 
 void
-DrawElements::execute(State * state)
+DrawElements::execute()
 {
   glDrawElements(this->mode.value, this->count.value, this->type.value, nullptr);
 }
@@ -556,7 +531,7 @@ DrawArrays::~DrawArrays()
 }
 
 void
-DrawArrays::execute(State * state)
+DrawArrays::execute()
 {
   glDrawArrays(this->mode.value, this->first.value, this->count.value);
 }

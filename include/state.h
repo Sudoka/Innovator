@@ -1,11 +1,9 @@
 #pragma once
 
-#include <memory>
 #include <elements.h>
+#include <memory>
+#include <functional>
 
-class Camera;
-class Program;
-class Viewport;
 class DrawCall;
 
 class State {
@@ -13,15 +11,15 @@ public:
   State();
   ~State();
 
-  void flush(DrawCall * drawcall);
-
-  Camera * camera;
-  Program * program;
-  Viewport * viewport;
-
+  DrawElement drawelem;
+  CacheElement cacheelem;
   VertexElement vertexelem;
-  TextureElement textureelem;
+  ProgramElement programelem;
+  ViewMatrixElement viewmatelem;
   TransformElement transformelem;
+  ProjectionMatrixElement projmatelem;
+
+  std::function<void()> capture();
 
 private:
   void push();

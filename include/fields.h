@@ -214,6 +214,19 @@ public:
   glm::vec3 value;
 };
 
+class SFVec4f : public Field {
+public:
+  virtual void read(lua_State * L)
+  {
+    std::vector<double> tmp;
+    Array<double> value(L, this->name, tmp);
+    if (tmp.size() == 4) {
+      this->value = glm::vec4(tmp[0], tmp[1], tmp[2], tmp[3]);
+    }
+  }
+  glm::vec4 value;
+};
+
 class SFMatrix3f : public Field {
 public:
   virtual void read(lua_State * L)

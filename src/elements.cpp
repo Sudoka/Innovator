@@ -8,6 +8,42 @@
 using namespace glm;
 using namespace std;
 
+DrawElement::DrawElement()
+  : drawcall(nullptr)
+{
+}
+
+DrawElement::~DrawElement()
+{
+}
+
+ProgramElement::ProgramElement()
+  : program(0)
+{
+}
+
+ProgramElement::~ProgramElement()
+{
+}
+
+ViewMatrixElement::ViewMatrixElement()
+  : matrix(1.0)
+{
+}
+
+ViewMatrixElement::~ViewMatrixElement()
+{
+}
+
+ProjectionMatrixElement::ProjectionMatrixElement()
+  : matrix(1.0)
+{
+}
+
+ProjectionMatrixElement::~ProjectionMatrixElement()
+{
+}
+
 TransformElement::TransformElement()
   : matrix(1.0)
 {
@@ -21,12 +57,6 @@ void
 TransformElement::mult(const mat4 & mat)
 {
   this->matrix *= mat;
-}
-
-void
-TransformElement::flush(State * state)
-{
-  glUniformMatrix4fv(state->program->getUniformLocation("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(this->matrix));
 }
 
 VertexElement::VertexElement()
@@ -96,3 +126,48 @@ TextureElement::flush(State * state)
     bindable->bind();
   }
 }
+
+CacheElement::CacheElement()
+  : depth(0),
+    isCreatingCache(false)
+{
+
+}
+
+CacheElement::~CacheElement()
+{
+
+}
+
+void
+CacheElement::push()
+{
+  if (this->depth == 0) {
+    this->isCreatingCache = true;
+    this->drawlist.clear();
+  }
+  this->depth++;
+}
+
+std::function<void()>
+CacheElement::pop()
+{
+  this->depth--;
+  if (this->depth == 0) {
+    this->isCreatingCache = false;
+    vector<function<void()>> drawlist = this->drawlist;
+    return [=]() {
+      for each (std::function<void()> draw in drawlist) {
+        draw();
+      }
+    };
+  }
+  return nullptr;
+}
+
+void
+CacheElement::append(std::function<void()> draw)
+{
+  this->drawlist.push_back(draw);
+}
+

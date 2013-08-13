@@ -3,8 +3,11 @@
 #include <GL/glew.h>
 #include <opengl.h>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
+using namespace glm;
 
 Action::Action()
   : state(new State) 
@@ -25,11 +28,18 @@ RenderAction::~RenderAction()
 }
 
 void
+RenderAction::setViewport(const glm::vec4 & viewport)
+{
+  this->viewport = viewport;
+}
+
+void
 RenderAction::apply(Node * node)
 {
   glEnable(GL_DEPTH_TEST);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glViewportIndexedfv(0, glm::value_ptr(this->viewport));
   
   node->traverse(this);
   glFinish();

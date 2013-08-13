@@ -66,20 +66,21 @@ public:
   MFNode children;
 };
 
-class Viewport : public Node {
-public:
-  Viewport();
-  virtual ~Viewport();
-  SFVec2i origin;
-  SFVec2i size;
-  virtual void traverse(RenderAction * action);
-  void flush(State * state);
-};
-
 class Separator : public Group {
 public:
+  Separator();
+  ~Separator();
+  enum RenderCaching {
+    ON,
+    OFF
+  };
+  SFEnum renderCaching;
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
+
+private:
+  class SeparatorP;
+  std::unique_ptr<SeparatorP> self;
 };
 
 class Camera : public Node {
@@ -90,7 +91,6 @@ public:
   SFFloat focalDistance;
   SFMatrix3f orientation;
   virtual void traverse(RenderAction * action);
-  void flush(State * state);
   void zoom(float dz);
   void pan(const glm::vec2 & dx);
   void orbit(const glm::vec2 & dx);
@@ -117,9 +117,7 @@ public:
   MFShader shaders;
   MFUniform uniforms;
   SFString fileName;
-  SFString feedbackVarying;
   virtual void traverse(RenderAction * action);
-  void flush(State * state);
   GLint getUniformLocation(const std::string & name);
 private:
   class ProgramP;
@@ -130,7 +128,7 @@ class Uniform : public FieldContainer {
 public:
   Uniform();
   virtual ~Uniform();
-  virtual void flush(State * state) = 0;
+  virtual void flush(State * state) {};
   SFString name;
 };
 
@@ -138,7 +136,6 @@ class Uniform3f : public Uniform {
 public:
   Uniform3f();
   virtual ~Uniform3f();
-  virtual void flush(State * state);
   SFVec3f value;
 };
 
@@ -146,7 +143,6 @@ class UniformMatrix4f : public Uniform {
 public:
   UniformMatrix4f();
   virtual ~UniformMatrix4f();
-  virtual void flush(State * state);
   SFMatrix4f value;
 };
 
@@ -258,7 +254,7 @@ public:
   virtual ~DrawCall();
   SFEnum mode;
   virtual void traverse(RenderAction * action);
-  virtual void execute(State * state) = 0;
+  virtual void execute() = 0;
 protected:
   std::unique_ptr<GLVertexArrayObject> vao;
 };
@@ -269,7 +265,7 @@ public:
   virtual ~DrawArrays();
   SFInt first;
   SFInt count;
-  virtual void execute(State * state);
+  virtual void execute();
 };
 
 class DrawElements : public DrawCall {
@@ -279,5 +275,5 @@ public:
   SFEnum type;
   SFInt count;
   MFNumber indices;
-  virtual void execute(State * state);
+  virtual void execute();
 };

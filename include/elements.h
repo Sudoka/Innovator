@@ -7,10 +7,13 @@
 #include <opengl.h>
 #include <fields.h>
 #include <memory.h>
+#include <functional>
 
+class Shape;
 class State;
 class Buffer;
 class Texture;
+class DrawCall;
 class TextureUnit;
 class TextureSampler;
 class FeedbackBuffer;
@@ -19,12 +22,39 @@ class VertexAttribute;
 class GLVertexArrayObject;
 class GLTransformFeedback;
 
+class DrawElement {
+public:
+  DrawElement();
+  ~DrawElement();
+  DrawCall * drawcall;
+};
+
+class ProgramElement {
+public:
+  ProgramElement();
+  ~ProgramElement();
+  GLuint program;
+};
+
+class ViewMatrixElement {
+public:
+  ViewMatrixElement();
+  ~ViewMatrixElement();
+  glm::mat4 matrix;
+};
+
+class ProjectionMatrixElement {
+public:
+  ProjectionMatrixElement();
+  ~ProjectionMatrixElement();
+  glm::mat4 matrix;
+};
+
 class TransformElement {
 public:
   TransformElement();
   ~TransformElement();
   void mult(const glm::mat4 & mat);
-  void flush(State * state);
   glm::mat4 matrix;
 };
 
@@ -53,4 +83,18 @@ public:
 private:
   GLuint unit;
   std::vector<Bindable*> statevec;
+};
+
+class CacheElement {
+public:
+  CacheElement();
+  ~CacheElement();
+
+  void push();
+  std::function<void()> pop();
+  void append(std::function<void()> draw);
+
+  int depth;
+  bool isCreatingCache;
+  std::vector<std::function<void()>> drawlist;
 };
