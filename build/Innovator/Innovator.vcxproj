@@ -188,6 +188,7 @@
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\nodes.cpp" />
     <ClCompile Include="..\..\src\opengl.cpp" />
+    <ClCompile Include="..\..\src\rendercache.cpp" />
     <ClCompile Include="..\..\src\state.cpp" />
     <ClCompile Include="..\..\src\viewer.cpp" />
   </ItemGroup>
@@ -200,6 +201,7 @@
     <ClInclude Include="..\..\include\luawrapper.h" />
     <ClInclude Include="..\..\include\nodes.h" />
     <ClInclude Include="..\..\include\opengl.h" />
+    <ClInclude Include="..\..\include\rendercache.h" />
     <ClInclude Include="..\..\include\state.h" />
     <ClInclude Include="..\..\include\viewer.h" />
   </ItemGroup>

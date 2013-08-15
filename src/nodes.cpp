@@ -3,7 +3,7 @@
 #include <opengl.h>
 #include <state.h>
 #include <box3.h>
-#include <map>
+#include <rendercache.h>
 #include <functional>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,17 +13,15 @@ using namespace std;
 
 // *************************************************************************************************
 
-class Camera::CameraP {
-public:
-  mat4 projmatrix;
-};
-
 Camera::Camera()
-  : self(new CameraP)
 {
+  this->registerField(this->orientation, "orientation", mat3(1.0));
+  this->registerField(this->aspectRatio, "aspectRatio", 4.0f / 3.0f);
+  this->registerField(this->fieldOfView, "fieldOfView", 45.0f);
+  this->registerField(this->nearPlane, "nearPlane", 0.1f);
+  this->registerField(this->farPlane, "farPlane", 10000.0f);
   this->registerField(this->position, "position", vec3(0, 0, 1));
   this->registerField(this->focalDistance, "focalDistance", 1.0f);
-  this->registerField(this->orientation, "orientation", mat3(1.0));
 }
 
 Camera::~Camera()
@@ -34,10 +32,11 @@ void
 Camera::traverse(RenderAction * action)
 {
   mat4 viewmatrix = glm::transpose(mat4(this->orientation.value));
-  viewmatrix = glm::translate(viewmatrix, -this->position.value);
-
-  action->state->viewmatelem.matrix = viewmatrix;
-  action->state->projmatelem.matrix = self->projmatrix;
+  action->state->viewmatrix = glm::translate(viewmatrix, -this->position.value);
+  action->state->projmatrix = glm::perspective(this->fieldOfView.value, 
+                                               this->aspectRatio.value, 
+                                               this->nearPlane.value, 
+                                               this->farPlane.value);
 }
 
 void
@@ -87,12 +86,6 @@ Camera::orbit(const vec2 & dx)
   this->lookAt(focalpoint);
 }
 
-void 
-Camera::perspective(float fovy, float aspect, float near, float far)
-{
-  self->projmatrix = glm::perspective(fovy, aspect, near, far);
-}
-
 // *************************************************************************************************
 
 
@@ -125,7 +118,7 @@ Group::traverse(BoundingBoxAction * action)
 class Separator::SeparatorP {
 public:
   SeparatorP() : rendercache(nullptr) {}
-  std::function<void()> rendercache;
+  unique_ptr<RenderCache> rendercache;
 };
 
 Separator::Separator()
@@ -138,7 +131,6 @@ Separator::Separator()
 
 Separator::~Separator()
 {
-
 }
 
 void
@@ -146,17 +138,17 @@ Separator::traverse(RenderAction * action)
 {
   StateScope scope(action->state.get());
 
-  if (this->renderCaching.value == Separator::ON) {
-    if (self->rendercache == nullptr) {
-      action->state->cacheelem.push();
-      Group::traverse(action);
-      self->rendercache = action->state->cacheelem.pop();
-    }
-    if (self->rendercache != nullptr) {
-      self->rendercache();
-    }
-  } else {
+  if (this->renderCaching.value == Separator::OFF) {
     Group::traverse(action);
+    return;
+  }
+  if (self->rendercache.get() == nullptr) {
+    action->state->cacheelem.push(self->rendercache);
+    Group::traverse(action);
+    action->state->cacheelem.pop();
+  }
+  if (self->rendercache.get() != nullptr) {
+    self->rendercache->flush();
   }
 }
 
@@ -203,6 +195,36 @@ UniformMatrix4f::~UniformMatrix4f()
 
 // *************************************************************************************************
 
+Material::Material()
+  : glmaterial(nullptr)
+{
+  this->registerField(this->ambient, "ambient", vec3(1, 1, 1));
+  this->registerField(this->diffuse, "diffuse", vec3(0, 0, 0));
+  this->registerField(this->specular, "specular", vec3(0.5f, 0.5f, 0.5f));
+  this->registerField(this->shininess, "shininess", 0.1f);
+  this->registerField(this->transparency, "transparency", 0.0f);
+}
+
+Material::~Material()
+{
+
+}
+
+void
+Material::traverse(RenderAction * action)
+{
+  if (this->glmaterial.get() == nullptr) {
+    this->glmaterial.reset(new GLMaterial(this->ambient.value,
+                                          this->diffuse.value,
+                                          this->specular.value,
+                                          this->shininess.value,
+                                          this->transparency.value));
+  }
+  action->state->material = this->glmaterial.get();
+}
+
+
+// *************************************************************************************************
 
 ShaderObject::ShaderObject()
 {
@@ -219,24 +241,10 @@ ShaderObject::~ShaderObject()
 
 // *************************************************************************************************
 
-class Program::ProgramP {
-public:
-  ProgramP(Program * self) {
-    this->glprogram.reset(new GLProgram);
-    for each (const shared_ptr<ShaderObject> & shader in self->shaders.values) {
-      this->glprogram->attach(shader->source.value.c_str(), shader->type.value);
-    }
-    this->glprogram->link();
-  }
-  unique_ptr<GLProgram> glprogram;
-  map<string, GLint> uniformLocations;
-};
-
 Program::Program() 
-  : self(nullptr)
+  : glprogram(nullptr)
 {
   this->registerField(this->shaders);
-  this->registerField(this->uniforms, "uniforms");
 }
 
 Program::~Program() 
@@ -246,19 +254,10 @@ Program::~Program()
 void
 Program::traverse(RenderAction * action)
 {
-  if (self.get() == nullptr) {
-    self.reset(new ProgramP(this));
+  if (this->glprogram.get() == nullptr) {
+    this->glprogram.reset(new GLProgram(this->shaders.values));
   }
-  action->state->programelem.program = self->glprogram->id;
-}
-
-GLint
-Program::getUniformLocation(const std::string & name)
-{
-  if (self->uniformLocations.find(name) == self->uniformLocations.end()) {
-    self->uniformLocations[name] = glGetUniformLocation(self->glprogram->id, name.c_str());
-  }
-  return self->uniformLocations[name];
+  action->state->program = this->glprogram.get();
 }
 
 // *************************************************************************************************
@@ -277,7 +276,7 @@ Transform::doAction(Action * action)
   mat4 matrix(1.0);
   matrix = glm::scale(matrix, this->scaleFactor.value);
   matrix = glm::translate(matrix, this->translation.value);
-  action->state->transformelem.mult(matrix);
+  action->state->transform *= matrix;
 }
 
 void
@@ -458,11 +457,15 @@ BoundingBox::BoundingBox()
   this->registerField(this->max, "max", vec3( 1));
 }
 
+BoundingBox::~BoundingBox()
+{
+}
+
 void
 BoundingBox::traverse(BoundingBoxAction * action) 
 {
   box3 bbox(this->min.value, this->max.value);
-  bbox.transform(action->state->transformelem.matrix);
+  bbox.transform(action->state->transform);
   action->extendBy(bbox);
 }
 
@@ -487,12 +490,13 @@ DrawCall::traverse(RenderAction * action)
   if (this->vao.get() == nullptr) {
     this->vao.reset(action->state->vertexelem.createVAO());
   }
-  BindScope vao(this->vao.get());
-  action->state->drawelem.drawcall = this;
-  if (action->state->cacheelem.isCreatingCache) {
-    action->state->cacheelem.append(action->state->capture());
+  action->state->drawcall = this;
+  DrawCache cache(action->state.get());
+
+  if (action->state->cacheelem.isCreatingCache()) {
+    action->state->cacheelem.append(cache);
   } else {
-    action->state->capture()();
+    cache.flush();
   }
 }
 

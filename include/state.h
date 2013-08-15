@@ -1,25 +1,25 @@
 #pragma once
 
 #include <elements.h>
-#include <memory>
-#include <functional>
+#include <glm/glm.hpp>
 
 class DrawCall;
+class GLProgram;
+class GLMaterial;
 
 class State {
 public:
   State();
   ~State();
 
-  DrawElement drawelem;
+  DrawCall * drawcall;
+  GLProgram * program;
+  GLMaterial * material;
+  glm::mat4 transform;
+  glm::mat4 viewmatrix;
+  glm::mat4 projmatrix;
   CacheElement cacheelem;
   VertexElement vertexelem;
-  ProgramElement programelem;
-  ViewMatrixElement viewmatelem;
-  TransformElement transformelem;
-  ProjectionMatrixElement projmatelem;
-
-  std::function<void()> capture();
 
 private:
   void push();
@@ -32,12 +32,8 @@ private:
 
 class StateScope {
 public:
-  StateScope(State * state) : state(state) {
-    state->push();
-  }
-  ~StateScope() {
-    state->pop();
-  }
+  StateScope(State * state) : state(state) { state->push(); }
+  ~StateScope() { state->pop(); }
 private:
   State * state;
 };

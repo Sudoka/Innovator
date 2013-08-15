@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <map>
+#include <string>
 #include <vector>
 
 class Bindable {
@@ -47,15 +49,48 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
+class GLMaterial {
+public:
+  GLMaterial(const glm::vec3 & ambient,
+             const glm::vec3 & diffuse,
+             const glm::vec3 & specular,
+             float shininess,
+             float transparency);
+  ~GLMaterial();
+
+  void updateGL() const;
+
+  GLint ambient, diffuse, specular;
+  GLfloat shininess;
+};
+
+class GLMatrix {
+public:
+  GLMatrix(const glm::mat4 & matrix, GLint location);
+  ~GLMatrix();
+
+  void updateGL() const;
+
+private:
+  GLint location;
+  std::string name;
+  glm::mat4 matrix;
+};
+
+class ShaderObject;
+
 class GLProgram : public Bindable {
 public:
-  GLProgram();
+  GLProgram(const std::vector<std::shared_ptr<ShaderObject>> & shaderobjects);
   ~GLProgram();
   void attach(const char * shader, GLenum type);
   void link();
-  GLuint id;
   virtual void bind();
   virtual void unbind();
+  GLint getUniformLocation(const std::string & name);
+  GLuint id;
+private:
+  std::map<std::string, GLint> uniformLocations;
 };
 
 class GLBufferObject : public Bindable {

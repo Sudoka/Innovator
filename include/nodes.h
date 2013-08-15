@@ -69,14 +69,13 @@ public:
 class Separator : public Group {
 public:
   Separator();
-  ~Separator();
-  enum RenderCaching {
-    ON,
-    OFF
-  };
-  SFEnum renderCaching;
+  virtual ~Separator();
+
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
+
+  enum RenderCaching { ON, OFF };
+  SFEnum renderCaching;
 
 private:
   class SeparatorP;
@@ -87,19 +86,21 @@ class Camera : public Node {
 public:
   Camera();
   virtual ~Camera();
+  virtual void traverse(RenderAction * action);
+
+  SFFloat farPlane;
   SFVec3f position;
+  SFFloat nearPlane;
+  SFFloat aspectRatio;
+  SFFloat fieldOfView;
   SFFloat focalDistance;
   SFMatrix3f orientation;
-  virtual void traverse(RenderAction * action);
+
   void zoom(float dz);
+  void viewAll(Separator * root);
   void pan(const glm::vec2 & dx);
   void orbit(const glm::vec2 & dx);
   void lookAt(const glm::vec3 & focalpoint);
-  void viewAll(Separator * root);
-  void perspective(float fovy, float aspect, float near, float far);
-private:
-  class CameraP;
-  std::unique_ptr<CameraP> self;
 };
 
 class ShaderObject : public FieldContainer {
@@ -114,14 +115,10 @@ class Program : public Node {
 public:
   Program();
   virtual ~Program();
-  MFShader shaders;
-  MFUniform uniforms;
-  SFString fileName;
   virtual void traverse(RenderAction * action);
-  GLint getUniformLocation(const std::string & name);
+  MFShader shaders;
 private:
-  class ProgramP;
-  std::unique_ptr<ProgramP> self;
+  std::unique_ptr<GLProgram> glprogram;
 };
 
 class Uniform : public FieldContainer {
@@ -146,12 +143,29 @@ public:
   SFMatrix4f value;
 };
 
+class Material : public Node {
+public:
+  Material();
+  virtual ~Material();
+  virtual void traverse(RenderAction * action);
+
+  SFVec3f ambient;
+  SFVec3f diffuse;
+  SFVec3f specular;
+  SFFloat shininess;
+  SFFloat transparency;
+
+private:
+  std::unique_ptr<GLMaterial> glmaterial;
+};
+
 class Transform : public Node {
 public:
   Transform();
   virtual ~Transform();
   virtual void traverse(RenderAction * action);
   virtual void traverse(BoundingBoxAction * action);
+
   SFVec3f translation;
   SFVec3f scaleFactor;
 private:
@@ -162,12 +176,15 @@ class Buffer : public Node {
 public:
   Buffer();
   virtual ~Buffer();
+  virtual void traverse(RenderAction * action);
+
   SFInt count;
   SFEnum type;
   SFEnum usage;
   SFEnum target;
   MFNumber values;
-  virtual void traverse(RenderAction * action);
+
+private:
   std::unique_ptr<GLBufferObject> buffer;
 };
 
@@ -175,13 +192,13 @@ class VertexAttribute : public Node {
 public:
   VertexAttribute();
   virtual ~VertexAttribute();
+  virtual void traverse(RenderAction * action);
 
   SFEnum type;
   SFUint size;
   SFUint index;
   SFUint divisor;
 
-  virtual void traverse(RenderAction * action);
 private:
   friend class VertexElement;
   std::unique_ptr<GLVertexAttribute> glattrib;
@@ -191,9 +208,9 @@ class TextureUnit : public Node {
 public:
   TextureUnit();
   virtual ~TextureUnit();
-  
-  SFUint unit;
   virtual void traverse(RenderAction * action);
+
+  SFUint unit;
 
 private:
   friend class TextureElement;
@@ -204,6 +221,7 @@ class Texture : public Node {
 public:
   Texture();
   virtual ~Texture();
+  virtual void traverse(RenderAction * action);
 
   SFString fileName;
   SFEnum target;
@@ -214,8 +232,6 @@ public:
   SFInt border;
   SFEnum type;
   SFEnum internalFormat;
-
-  virtual void traverse(RenderAction * action);
 
 private:
   friend class TextureElement;
@@ -243,19 +259,21 @@ private:
 class BoundingBox : public Node {
 public:
   BoundingBox();
+  virtual ~BoundingBox();
+  virtual void traverse(BoundingBoxAction * action);
+
   SFVec3f min;
   SFVec3f max;
-  virtual void traverse(BoundingBoxAction * action);
 };
 
 class DrawCall : public Node {
 public:
   DrawCall();
   virtual ~DrawCall();
-  SFEnum mode;
   virtual void traverse(RenderAction * action);
   virtual void execute() = 0;
-protected:
+
+  SFEnum mode;
   std::unique_ptr<GLVertexArrayObject> vao;
 };
 
@@ -263,17 +281,19 @@ class DrawArrays : public DrawCall {
 public:
   DrawArrays();
   virtual ~DrawArrays();
+  virtual void execute();
+
   SFInt first;
   SFInt count;
-  virtual void execute();
 };
 
 class DrawElements : public DrawCall {
 public:
   DrawElements();
   virtual ~DrawElements();
+  virtual void execute();
+
   SFEnum type;
   SFInt count;
   MFNumber indices;
-  virtual void execute();
 };

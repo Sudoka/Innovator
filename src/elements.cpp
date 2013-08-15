@@ -8,57 +8,6 @@
 using namespace glm;
 using namespace std;
 
-DrawElement::DrawElement()
-  : drawcall(nullptr)
-{
-}
-
-DrawElement::~DrawElement()
-{
-}
-
-ProgramElement::ProgramElement()
-  : program(0)
-{
-}
-
-ProgramElement::~ProgramElement()
-{
-}
-
-ViewMatrixElement::ViewMatrixElement()
-  : matrix(1.0)
-{
-}
-
-ViewMatrixElement::~ViewMatrixElement()
-{
-}
-
-ProjectionMatrixElement::ProjectionMatrixElement()
-  : matrix(1.0)
-{
-}
-
-ProjectionMatrixElement::~ProjectionMatrixElement()
-{
-}
-
-TransformElement::TransformElement()
-  : matrix(1.0)
-{
-}
-
-TransformElement::~TransformElement()
-{
-}
-
-void
-TransformElement::mult(const mat4 & mat)
-{
-  this->matrix *= mat;
-}
-
 VertexElement::VertexElement()
 {
 }
@@ -119,55 +68,45 @@ TextureElement::set(TextureSampler * sampler)
   this->statevec.push_back(sampler->glsampler.get());
 }
 
-void
-TextureElement::flush(State * state)
-{
-  for each (Bindable * bindable in this->statevec) {
-    bindable->bind();
-  }
-}
-
 CacheElement::CacheElement()
   : depth(0),
-    isCreatingCache(false)
+    rendercache(nullptr)
 {
-
 }
 
 CacheElement::~CacheElement()
 {
-
 }
 
 void
-CacheElement::push()
+CacheElement::push(std::unique_ptr<RenderCache> & rendercache)
 {
   if (this->depth == 0) {
-    this->isCreatingCache = true;
-    this->drawlist.clear();
+    rendercache.reset(new RenderCache);
+    this->rendercache = rendercache.get();
   }
   this->depth++;
 }
 
-std::function<void()>
+void
 CacheElement::pop()
 {
   this->depth--;
   if (this->depth == 0) {
-    this->isCreatingCache = false;
-    vector<function<void()>> drawlist = this->drawlist;
-    return [=]() {
-      for each (std::function<void()> draw in drawlist) {
-        draw();
-      }
-    };
+    this->rendercache->compile();
+    this->rendercache = nullptr;
   }
-  return nullptr;
+}
+
+bool
+CacheElement::isCreatingCache()
+{
+  return this->rendercache != nullptr;
 }
 
 void
-CacheElement::append(std::function<void()> draw)
+CacheElement::append(const DrawCache & cache)
 {
-  this->drawlist.push_back(draw);
+  this->rendercache->drawlist.push_back(cache);
 }
 

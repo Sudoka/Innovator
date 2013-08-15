@@ -1,4 +1,5 @@
 #include <opengl.h>
+#include <nodes.h>
 #include <innovator.h>
 #include <string>
 #include <glm/gtc/type_ptr.hpp>
@@ -193,9 +194,55 @@ GLQueryObject::unbind()
 
 // *************************************************************************************************
 
-GLProgram::GLProgram() 
+GLMaterial::GLMaterial(const glm::vec3 & ambient,
+                       const glm::vec3 & diffuse,
+                       const glm::vec3 & specular,
+                       float shininess,
+                       float transparency)
+{
+  
+}
+
+GLMaterial::~GLMaterial()
+{
+}
+
+void
+GLMaterial::updateGL() const
+{
+
+}
+
+// *************************************************************************************************
+
+GLMatrix::GLMatrix(const mat4 & matrix, GLint location)
+  : matrix(matrix),
+    location(location)
+{
+
+}
+
+GLMatrix::~GLMatrix()
+{
+
+}
+
+void
+GLMatrix::updateGL() const
+{
+  assert(this->location != -1);
+  glUniformMatrix4fv(this->location, 1, GL_FALSE, glm::value_ptr(this->matrix));
+}
+
+// *************************************************************************************************
+
+GLProgram::GLProgram(const vector<shared_ptr<ShaderObject>> & shaderobjects)
   : id(glCreateProgram())
 {
+  for each (const shared_ptr<ShaderObject> & shader in shaderobjects) {
+    this->attach(shader->source.value.c_str(), shader->type.value);
+  }
+  this->link();
 }
 
 GLProgram::~GLProgram()
@@ -240,6 +287,15 @@ GLProgram::link()
     Innovator::postError("Shader::link(): failed to link program: " + string(log));
     delete [] log;
   }
+}
+
+GLint
+GLProgram::getUniformLocation(const std::string & name)
+{
+  if (this->uniformLocations.find(name) == this->uniformLocations.end()) {
+    this->uniformLocations[name] = glGetUniformLocation(this->id, name.c_str());
+  }
+  return this->uniformLocations[name];
 }
 
 void
