@@ -69,7 +69,7 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   self->lua->registerFunction("Uniform3f", Node::CreateInstance<Uniform3f>);
   self->lua->registerFunction("Separator", Node::CreateInstance<Separator>);
   self->lua->registerFunction("Transform", Node::CreateInstance<Transform>);
-  self->lua->registerFunction("DrawArrays", Node::CreateInstance<DrawArrays>);
+  //self->lua->registerFunction("DrawArrays", Node::CreateInstance<DrawArrays>);
   self->lua->registerFunction("TextureUnit", Node::CreateInstance<TextureUnit>);
   self->lua->registerFunction("BoundingBox", Node::CreateInstance<BoundingBox>);
   self->lua->registerFunction("DrawElements", Node::CreateInstance<DrawElements>);

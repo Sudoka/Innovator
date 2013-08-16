@@ -101,6 +101,10 @@ public:
   void pan(const glm::vec2 & dx);
   void orbit(const glm::vec2 & dx);
   void lookAt(const glm::vec3 & focalpoint);
+
+private:
+  std::unique_ptr<GLMatrix> viewmatrix;
+  std::unique_ptr<GLMatrix> projmatrix;
 };
 
 class ShaderObject : public FieldContainer {
@@ -270,13 +274,11 @@ class DrawCall : public Node {
 public:
   DrawCall();
   virtual ~DrawCall();
-  virtual void traverse(RenderAction * action);
-  virtual void execute() = 0;
 
   SFEnum mode;
-  std::unique_ptr<GLVertexArrayObject> vao;
 };
 
+/*
 class DrawArrays : public DrawCall {
 public:
   DrawArrays();
@@ -286,14 +288,19 @@ public:
   SFInt first;
   SFInt count;
 };
+*/
 
 class DrawElements : public DrawCall {
 public:
   DrawElements();
   virtual ~DrawElements();
-  virtual void execute();
+  virtual void traverse(RenderAction * action);
 
   SFEnum type;
   SFInt count;
   MFNumber indices;
+
+private:
+  class DrawElementsP;
+  std::unique_ptr<DrawElementsP> self;
 };

@@ -1,61 +1,37 @@
 #include <rendercache.h>
-#include <state.h>
-#include <nodes.h>
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 using namespace glm;
 
-DrawCache::DrawCache(State * state)
-  : state(state),
-    program(state->program),
-    drawcall(state->drawcall),
-    material(state->material),
-    transform(state->transform)
+DrawCache::DrawCache(GLProgram * program,
+                     GLMaterial * material,
+                     GLMatrix * viewmatrix,
+                     GLMatrix * projmatrix,
+                     GLMatrix * transform,
+                     GLVertexArrayObject * vao,
+                     GLDrawCall * drawcall)
+  : program(program),
+    material(material),
+    transform(transform),
+    viewmatrix(viewmatrix),
+    projmatrix(projmatrix),
+    vao(vao),
+    drawcall(drawcall)
 {
 }
 
-std::function<void()>
-DrawCache::updateProgram() const
-{
-  GLint viewmatloc = this->program->getUniformLocation("ViewMatrix");
-  GLint projmatloc = this->program->getUniformLocation("ProjectionMatrix");
-  
-  return [=](){
-    this->program->bind();
-    GLMatrix viewmatrix(state->viewmatrix, viewmatloc);
-    GLMatrix projmatrix(state->projmatrix, projmatloc);
-    viewmatrix.updateGL();
-    projmatrix.updateGL();
-  };
-}
-
-std::function<void()>
-DrawCache::updateMaterial() const
-{
-  return [=](){
-    this->material->updateGL();
-  };
-}
-
-std::function<void()>
-DrawCache::executeDrawCall() const
-{
-  GLMatrix matrix(this->transform, this->program->getUniformLocation("ModelMatrix"));
-
-  return [=](){
-    matrix.updateGL();
-    BindScope vao(this->drawcall->vao.get());
-    this->drawcall->execute();
-  };
-}
-
-void
+void 
 DrawCache::flush()
 {
-  this->updateProgram()();
-  this->executeDrawCall()();
+  BindScope program(this->program);
+  this->viewmatrix->updateGL(this->program);
+  this->projmatrix->updateGL(this->program);
+  this->material->updateGL(this->program);
+  this->transform->updateGL(this->program);
+  BindScope vao(this->vao);
+  this->drawcall->execute();
 }
 
 RenderCache::RenderCache()
@@ -68,9 +44,10 @@ RenderCache::~RenderCache()
 
 void
 RenderCache::compile()
-{
-  // sort by shader id
+{/*
   std::sort(begin(this->drawlist), end(this->drawlist), [](DrawCache & c1, DrawCache & c2) { return c1.program->id > c2.program->id; } );
+  
+
   this->glcalls.push_back(this->drawlist[0].updateProgram());
   this->glcalls.push_back(this->drawlist[0].executeDrawCall());
 
@@ -80,12 +57,13 @@ RenderCache::compile()
     }
     this->glcalls.push_back(this->drawlist[i].executeDrawCall());
   }
+  */
 }
 
 void 
 RenderCache::flush()
 {
-  for (size_t i = 0; i < this->glcalls.size(); i++) {
-    this->glcalls[i]();
+  for (size_t i = 0; i < this->drawlist.size(); i++) {
+    this->drawlist[i].flush();
   }
 }

@@ -20,7 +20,7 @@ public:
       redraw(true),
       mousedown(false),
       camera(new Camera),
-      root(new Separator),
+      root(new Group),
       renderaction(new RenderAction)
   {}
   ~ViewerP() {}
@@ -30,8 +30,8 @@ public:
   int button;
   bool redraw;
   bool mousedown;
+  shared_ptr<Group> root;
   shared_ptr<Camera> camera;
-  shared_ptr<Separator> root;
   unique_ptr<RenderAction> renderaction;
 };
 
@@ -75,7 +75,6 @@ Viewer::renderGL()
 void
 Viewer::setSceneGraph(const shared_ptr<Separator> & root)
 {
-  self->root->renderCaching.value = Separator::OFF;
   self->root->children.values.push_back(self->camera);
   self->root->children.values.push_back(root);
   self->camera->viewAll(root.get());

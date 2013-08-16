@@ -1,4 +1,5 @@
 #include <opengl.h>
+#include <state.h>
 #include <nodes.h>
 #include <innovator.h>
 #include <string>
@@ -132,6 +133,35 @@ GLVertexAttribute::unbind()
 
 // *************************************************************************************************
 
+GLDrawCall::GLDrawCall()
+{
+}
+
+GLDrawCall::~GLDrawCall()
+{
+}
+
+// *************************************************************************************************
+
+GLDrawElements::GLDrawElements(GLenum mode, GLsizei count, GLenum type)
+  : mode(mode),
+    count(count),
+    type(type)
+{
+}
+
+GLDrawElements::~GLDrawElements()
+{
+}
+
+void
+GLDrawElements::execute()
+{
+  glDrawElements(this->mode, this->count, this->type, nullptr);
+}
+
+// *************************************************************************************************
+
 GLTransformFeedback::GLTransformFeedback(GLenum mode, GLuint index, GLuint buffer)
   : mode(mode),
     index(index),
@@ -208,30 +238,28 @@ GLMaterial::~GLMaterial()
 }
 
 void
-GLMaterial::updateGL() const
+GLMaterial::updateGL(GLProgram * program) const
 {
 
 }
 
 // *************************************************************************************************
 
-GLMatrix::GLMatrix(const mat4 & matrix, GLint location)
-  : matrix(matrix),
-    location(location)
+GLMatrix::GLMatrix(const std::string & name, const glm::mat4 & matrix)
+  : name(name),
+    matrix(matrix)
 {
-
 }
 
 GLMatrix::~GLMatrix()
 {
-
 }
 
 void
-GLMatrix::updateGL() const
+GLMatrix::updateGL(GLProgram * program) const
 {
-  assert(this->location != -1);
-  glUniformMatrix4fv(this->location, 1, GL_FALSE, glm::value_ptr(this->matrix));
+  GLint location = program->getUniformLocation(this->name);
+  glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(this->matrix));
 }
 
 // *************************************************************************************************

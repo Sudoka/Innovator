@@ -1,6 +1,7 @@
 #include <state.h>
 #include <vector>
 #include <nodes.h>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 using namespace glm;
@@ -16,7 +17,9 @@ public:
 State::State()
   : self(new StateP),
     program(nullptr),
-    material(nullptr)
+    material(nullptr),
+    viewmatrix(nullptr),
+    projmatrix(nullptr)
 {
 }
 

@@ -3,21 +3,23 @@
 #include <elements.h>
 #include <glm/glm.hpp>
 
-class DrawCall;
+class Camera;
+class GLMatrix;
 class GLProgram;
 class GLMaterial;
+class GLDrawCall;
+class GLVertexArrayObject;
 
 class State {
 public:
   State();
   ~State();
 
-  DrawCall * drawcall;
   GLProgram * program;
   GLMaterial * material;
   glm::mat4 transform;
-  glm::mat4 viewmatrix;
-  glm::mat4 projmatrix;
+  GLMatrix * viewmatrix;
+  GLMatrix * projmatrix;
   CacheElement cacheelem;
   VertexElement vertexelem;
 

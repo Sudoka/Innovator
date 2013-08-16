@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class State;
+
 class Bindable {
 public:
   virtual void bind() = 0;
@@ -49,34 +51,6 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
-class GLMaterial {
-public:
-  GLMaterial(const glm::vec3 & ambient,
-             const glm::vec3 & diffuse,
-             const glm::vec3 & specular,
-             float shininess,
-             float transparency);
-  ~GLMaterial();
-
-  void updateGL() const;
-
-  GLint ambient, diffuse, specular;
-  GLfloat shininess;
-};
-
-class GLMatrix {
-public:
-  GLMatrix(const glm::mat4 & matrix, GLint location);
-  ~GLMatrix();
-
-  void updateGL() const;
-
-private:
-  GLint location;
-  std::string name;
-  glm::mat4 matrix;
-};
-
 class ShaderObject;
 
 class GLProgram : public Bindable {
@@ -91,6 +65,32 @@ public:
   GLuint id;
 private:
   std::map<std::string, GLint> uniformLocations;
+};
+
+class GLMaterial {
+public:
+  GLMaterial(const glm::vec3 & ambient,
+             const glm::vec3 & diffuse,
+             const glm::vec3 & specular,
+             float shininess,
+             float transparency);
+  ~GLMaterial();
+
+  void updateGL(GLProgram * program) const;
+
+  GLint ambient, diffuse, specular;
+  GLfloat shininess;
+};
+
+class GLMatrix {
+public:
+  GLMatrix(const std::string & name, const glm::mat4 & matrix = glm::mat4(1.0));
+  ~GLMatrix();
+
+  void updateGL(GLProgram * program) const;
+
+  std::string name;
+  glm::mat4 matrix;
 };
 
 class GLBufferObject : public Bindable {
@@ -132,6 +132,26 @@ public:
   GLuint divisor;
   GLenum type;
   GLint size;
+};
+
+class GLDrawCall {
+public:
+  GLDrawCall();
+  ~GLDrawCall();
+
+  virtual void execute() = 0;
+};
+
+class GLDrawElements : public GLDrawCall {
+public:
+  GLDrawElements(GLenum mode, GLsizei count, GLenum type);
+  ~GLDrawElements();
+
+  virtual void execute();
+
+  GLenum mode;
+  GLenum type;
+  GLsizei count;
 };
 
 class GLTransformFeedback : public Bindable {

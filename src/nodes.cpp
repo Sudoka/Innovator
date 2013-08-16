@@ -14,6 +14,8 @@ using namespace std;
 // *************************************************************************************************
 
 Camera::Camera()
+  : viewmatrix(new GLMatrix("ViewMatrix")),
+    projmatrix(new GLMatrix("ProjectionMatrix"))
 {
   this->registerField(this->orientation, "orientation", mat3(1.0));
   this->registerField(this->aspectRatio, "aspectRatio", 4.0f / 3.0f);
@@ -32,11 +34,14 @@ void
 Camera::traverse(RenderAction * action)
 {
   mat4 viewmatrix = glm::transpose(mat4(this->orientation.value));
-  action->state->viewmatrix = glm::translate(viewmatrix, -this->position.value);
-  action->state->projmatrix = glm::perspective(this->fieldOfView.value, 
-                                               this->aspectRatio.value, 
-                                               this->nearPlane.value, 
-                                               this->farPlane.value);
+  this->viewmatrix->matrix = glm::translate(viewmatrix, -this->position.value);
+  this->projmatrix->matrix = glm::perspective(this->fieldOfView.value, 
+                                              this->aspectRatio.value,
+                                              this->nearPlane.value,
+                                              this->farPlane.value);
+
+  action->state->viewmatrix = this->viewmatrix.get();
+  action->state->projmatrix = this->projmatrix.get();
 }
 
 void
@@ -472,7 +477,6 @@ BoundingBox::traverse(BoundingBoxAction * action)
 // *************************************************************************************************
 
 DrawCall::DrawCall()
-  : vao(nullptr)
 {
   this->registerField(this->mode, "mode", GL_POINTS);
   this->registerEnum(this->mode, "POINTS", GL_POINTS);
@@ -484,25 +488,25 @@ DrawCall::~DrawCall()
 {
 }
 
-void
-DrawCall::traverse(RenderAction * action)
-{
-  if (this->vao.get() == nullptr) {
-    this->vao.reset(action->state->vertexelem.createVAO());
-  }
-  action->state->drawcall = this;
-  DrawCache cache(action->state.get());
-
-  if (action->state->cacheelem.isCreatingCache()) {
-    action->state->cacheelem.append(cache);
-  } else {
-    cache.flush();
-  }
-}
-
 // *************************************************************************************************
 
+class DrawElements::DrawElementsP {
+public:
+  DrawElementsP(DrawElements * self, State * state)
+    : vao(state->vertexelem.createVAO()),
+      transform(new GLMatrix("ModelMatrix")),
+      drawcall(new GLDrawElements(self->mode.value, 
+                                  self->count.value, 
+                                  self->type.value))
+  {
+  }
+  unique_ptr<GLMatrix> transform;
+  unique_ptr<GLDrawElements> drawcall;
+  unique_ptr<GLVertexArrayObject> vao;
+};
+
 DrawElements::DrawElements()
+  : self(nullptr)
 {
   this->registerField(this->count, "count", 0);
   this->registerField(this->indices, "indices");
@@ -517,13 +521,31 @@ DrawElements::~DrawElements()
 }
 
 void
-DrawElements::execute()
+DrawElements::traverse(RenderAction * action)
 {
-  glDrawElements(this->mode.value, this->count.value, this->type.value, nullptr);
+  if (self.get() == nullptr) {
+    self.reset(new DrawElementsP(this, action->state.get()));
+  }
+  State * state = action->state.get();
+  self->transform->matrix = state->transform;
+
+  DrawCache cache(state->program,
+                  state->material,
+                  state->viewmatrix,
+                  state->projmatrix,
+                  self->transform.get(),
+                  self->vao.get(),
+                  self->drawcall.get());
+
+  if (state->cacheelem.isCreatingCache()) {
+    state->cacheelem.append(cache);
+  } else {
+    cache.flush();
+  }
 }
 
 // *************************************************************************************************
-
+/*
 DrawArrays::DrawArrays()
 {
   this->registerField(this->first, "first", 0);
@@ -539,5 +561,5 @@ DrawArrays::execute()
 {
   glDrawArrays(this->mode.value, this->first.value, this->count.value);
 }
-
+*/
 // *************************************************************************************************

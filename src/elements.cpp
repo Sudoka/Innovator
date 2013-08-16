@@ -109,4 +109,3 @@ CacheElement::append(const DrawCache & cache)
 {
   this->rendercache->drawlist.push_back(cache);
 }
-

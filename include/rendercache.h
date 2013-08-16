@@ -1,26 +1,32 @@
 #pragma once
 
 #include <vector>
-#include <functional>
-#include <glm/glm.hpp>
+#include <memory>
 #include <opengl.h>
 
-class State;
-class DrawCall;
+class GLMatrix;
+class GLDrawCall;
+class GLVertexArrayObject;
 
 class DrawCache {
 public:
-  DrawCache(State * state);
-  void flush();
-  std::function<void()> updateProgram() const;
-  std::function<void()> updateMaterial() const;
-  std::function<void()> executeDrawCall() const;
+  DrawCache(GLProgram * program,
+            GLMaterial * material,
+            GLMatrix * viewmatrix,
+            GLMatrix * projmatrix,
+            GLMatrix * transform,
+            GLVertexArrayObject * vao,
+            GLDrawCall * drawcall);
 
-  State * state;
-  DrawCall * drawcall;
+  void flush();
+
   GLProgram * program;
+  GLMatrix * transform;
+  GLMatrix * viewmatrix;
+  GLMatrix * projmatrix;
+  GLDrawCall * drawcall;
+  GLVertexArrayObject * vao;
   GLMaterial * material;
-  glm::mat4 transform;
 };
 
 class RenderCache {
@@ -32,5 +38,5 @@ public:
   void flush();
 
   std::vector<DrawCache> drawlist;
-  std::vector<std::function<void()>> glcalls;
+  //std::vector<std::function<void()>> glcalls;
 };
