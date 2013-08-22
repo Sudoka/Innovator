@@ -14,9 +14,7 @@ using namespace std;
 // *************************************************************************************************
 
 Camera::Camera()
-  : viewmatrix(new GLMatrix("ViewMatrix")),
-    projmatrix(new GLMatrix("ProjectionMatrix")),
-    buffer(nullptr)
+  : buffer(nullptr)
 {
   this->registerField(this->orientation, "orientation", mat3(1.0));
   this->registerField(this->aspectRatio, "aspectRatio", 4.0f / 3.0f);
@@ -31,32 +29,20 @@ Camera::~Camera()
 {
 }
 
-struct CameraMatrices {
-  glm::mat4 viewmatrix;
-  glm::mat4 projmatrix;
-};
-
 void 
 Camera::traverse(RenderAction * action)
 {
-  if (this->buffer.get() == nullptr) {
-    this->buffer.reset(new GLBufferObject(GL_UNIFORM_BUFFER, GL_STREAM_DRAW, sizeof(CameraMatrices)));
-    this->buffer->bindBufferBase(0);
-  }
-
   mat4 viewmatrix = glm::transpose(mat4(this->orientation.value));
-  this->viewmatrix->matrix = glm::translate(viewmatrix, -this->position.value);
-  this->projmatrix->matrix = glm::perspective(this->fieldOfView.value, 
-                                              this->aspectRatio.value,
-                                              this->nearPlane.value,
-                                              this->farPlane.value);
+  viewmatrix = glm::translate(viewmatrix, -this->position.value);
+  mat4 projmatrix = glm::perspective(this->fieldOfView.value,
+                                     this->aspectRatio.value,
+                                     this->nearPlane.value,
+                                     this->farPlane.value);
 
-  CameraMatrices data;
-  data.viewmatrix = this->viewmatrix->matrix;
-  data.projmatrix = this->projmatrix->matrix;
-  this->buffer->bufferSubData(0, sizeof(CameraMatrices), &data.viewmatrix[0]);
-  action->state->viewmatrix = this->viewmatrix.get();
-  action->state->projmatrix = this->projmatrix.get();
+  if (action->state->camera.get() == nullptr) {
+    action->state->camera.reset(new GLCamera);
+  }
+  action->state->camera->updateGL(viewmatrix, projmatrix);
 }
 
 void
@@ -546,8 +532,6 @@ DrawElements::traverse(RenderAction * action)
 
   DrawCache cache(state->program,
                   state->material,
-                  state->viewmatrix,
-                  state->projmatrix,
                   self->transform.get(),
                   self->vao.get(),
                   self->drawcall.get());

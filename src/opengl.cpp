@@ -262,6 +262,25 @@ GLMaterial::updateGL(GLProgram * program) const
 
 // *************************************************************************************************
 
+GLCamera::GLCamera()
+  : buffer(new GLBufferObject(GL_UNIFORM_BUFFER, GL_STREAM_DRAW, 2 * sizeof(mat4)))
+{
+  this->buffer->bindBufferBase(0);
+}
+
+GLCamera::~GLCamera()
+{
+}
+
+void
+GLCamera::updateGL(const glm::mat4 & viewmat, const glm::mat4 & projmat)
+{
+  this->buffer->bufferSubData(0 * sizeof(mat4), sizeof(mat4), glm::value_ptr(viewmat));
+  this->buffer->bufferSubData(1 * sizeof(mat4), sizeof(mat4), glm::value_ptr(projmat));
+}
+
+// *************************************************************************************************
+
 GLMatrix::GLMatrix(const std::string & name, const glm::mat4 & matrix)
   : name(name),
     matrix(matrix)
@@ -289,7 +308,9 @@ GLProgram::GLProgram(const vector<shared_ptr<ShaderObject>> & shaderobjects)
   }
   this->link();
   GLuint cameraindex = glGetUniformBlockIndex(this->id, "Camera");
-  glUniformBlockBinding(this->id, cameraindex, 0);
+  if (cameraindex != GL_INVALID_VALUE) {
+    glUniformBlockBinding(this->id, cameraindex, 0);
+  }
 }
 
 GLProgram::~GLProgram()

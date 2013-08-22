@@ -103,8 +103,6 @@ public:
   void lookAt(const glm::vec3 & focalpoint);
 
 private:
-  std::unique_ptr<GLMatrix> viewmatrix;
-  std::unique_ptr<GLMatrix> projmatrix;
   std::unique_ptr<GLBufferObject> buffer;
 };
 

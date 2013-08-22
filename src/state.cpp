@@ -16,10 +16,9 @@ public:
 
 State::State()
   : self(new StateP),
+    camera(nullptr),
     program(nullptr),
-    material(nullptr),
-    viewmatrix(nullptr),
-    projmatrix(nullptr)
+    material(nullptr)
 {
 }
 

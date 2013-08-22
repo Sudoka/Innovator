@@ -12,8 +12,6 @@ class DrawCache {
 public:
   DrawCache(GLProgram * program,
             GLMaterial * material,
-            GLMatrix * viewmatrix,
-            GLMatrix * projmatrix,
             GLMatrix * transform,
             GLVertexArrayObject * vao,
             GLDrawCall * drawcall);
@@ -22,8 +20,6 @@ public:
 
   GLProgram * program;
   GLMatrix * transform;
-  GLMatrix * viewmatrix;
-  GLMatrix * projmatrix;
   GLDrawCall * drawcall;
   GLVertexArrayObject * vao;
   GLMaterial * material;

@@ -4,11 +4,9 @@
 #include <glm/glm.hpp>
 
 class Camera;
-class GLMatrix;
+class GLCamera;
 class GLProgram;
 class GLMaterial;
-class GLDrawCall;
-class GLVertexArrayObject;
 
 class State {
 public:
@@ -18,10 +16,10 @@ public:
   GLProgram * program;
   GLMaterial * material;
   glm::mat4 transform;
-  GLMatrix * viewmatrix;
-  GLMatrix * projmatrix;
   CacheElement cacheelem;
   VertexElement vertexelem;
+
+  std::unique_ptr<GLCamera> camera;
 
 private:
   void push();

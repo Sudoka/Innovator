@@ -82,6 +82,18 @@ public:
   GLfloat shininess;
 };
 
+class GLBufferObject;
+
+class GLCamera {
+public:
+  GLCamera();
+  ~GLCamera();
+
+  void updateGL(const glm::mat4 & viewmat, const glm::mat4 & projmat);
+private:
+  std::unique_ptr<GLBufferObject> buffer;
+};
+
 class GLMatrix {
 public:
   GLMatrix(const std::string & name, const glm::mat4 & matrix = glm::mat4(1.0));
