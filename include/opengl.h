@@ -101,6 +101,9 @@ public:
   void * map(GLenum access);
   void unmap();
 
+  void bindBufferBase(GLuint bindingPoint);
+  void bufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid * data);
+
   virtual void bind();
   virtual void unbind();
 

@@ -72,6 +72,23 @@ GLBufferObject::unmap()
 }
 
 void
+GLBufferObject::bindBufferBase(GLuint bindingPoint)
+{
+  if (this->target != GL_UNIFORM_BUFFER && this->target != GL_TRANSFORM_FEEDBACK_BUFFER) {
+    throw std::runtime_error("GLBufferObject::bindBufferBase(): invalid target.");
+  }
+  glBindBufferBase(this->target, bindingPoint, this->buffer);
+}
+
+void
+GLBufferObject::bufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid * data)
+{
+  this->bind();
+  glBufferSubData(this->target, offset, size, data);
+  this->unbind();
+}
+
+void
 GLBufferObject::bind() 
 {
   glBindBuffer(this->target, this->buffer);
@@ -271,6 +288,8 @@ GLProgram::GLProgram(const vector<shared_ptr<ShaderObject>> & shaderobjects)
     this->attach(shader->source.value.c_str(), shader->type.value);
   }
   this->link();
+  GLuint cameraindex = glGetUniformBlockIndex(this->id, "Camera");
+  glUniformBlockBinding(this->id, cameraindex, 0);
 }
 
 GLProgram::~GLProgram()

@@ -105,6 +105,7 @@ public:
 private:
   std::unique_ptr<GLMatrix> viewmatrix;
   std::unique_ptr<GLMatrix> projmatrix;
+  std::unique_ptr<GLBufferObject> buffer;
 };
 
 class ShaderObject : public FieldContainer {

@@ -5,9 +5,13 @@ local shader = {
 vertex = [[ 
 #version 330
 layout(location = 0) in vec3 Position;
-uniform mat4 ViewMatrix = mat4(1.0);
+
+layout(std140) uniform Camera {
+  mat4 ViewMatrix;
+  mat4 ProjectionMatrix;
+};
+
 uniform mat4 ModelMatrix = mat4(1.0);
-uniform mat4 ProjectionMatrix = mat4(1.0);
 
 out vec4 ViewPosition;
 
