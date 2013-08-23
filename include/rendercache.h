@@ -13,7 +13,7 @@ public:
             GLVertexArrayObject * vao,
             GLDrawCall * drawcall);
 
-  void flush(State * state);
+  void flush();
 
   GLProgram * program;
   GLDrawCall * drawcall;
@@ -29,7 +29,7 @@ public:
   ~RenderCache();
 
   void compile();
-  void flush(State * state);
+  void flush();
 
   std::vector<DrawCache> drawlist;
   //std::vector<std::function<void()>> glcalls;

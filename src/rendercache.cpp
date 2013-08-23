@@ -23,7 +23,7 @@ DrawCache::DrawCache(GLProgram * program,
 }
 
 void 
-DrawCache::flush(State * state)
+DrawCache::flush()
 {
   BindScope program(this->program);
   this->glcamera->bindBuffer();
@@ -59,9 +59,9 @@ RenderCache::compile()
 }
 
 void 
-RenderCache::flush(State * state)
+RenderCache::flush()
 {
   for (size_t i = 0; i < this->drawlist.size(); i++) {
-    this->drawlist[i].flush(state);
+    this->drawlist[i].flush();
   }
 }

@@ -158,7 +158,7 @@ Separator::traverse(RenderAction * action)
     action->state->cacheelem.pop();
   }
   if (self->rendercache.get() != nullptr) {
-    self->rendercache->flush(action->state.get());
+    self->rendercache->flush();
   }
 }
 
@@ -546,7 +546,7 @@ DrawElements::traverse(RenderAction * action)
   if (state->cacheelem.isCreatingCache()) {
     state->cacheelem.append(cache);
   } else {
-    cache.flush(state);
+    cache.flush();
   }
 }
 
