@@ -14,7 +14,7 @@ using namespace std;
 // *************************************************************************************************
 
 Camera::Camera()
-  : buffer(nullptr)
+  : glcamera(nullptr)
 {
   this->registerField(this->orientation, "orientation", mat3(1.0));
   this->registerField(this->aspectRatio, "aspectRatio", 4.0f / 3.0f);
@@ -32,6 +32,10 @@ Camera::~Camera()
 void 
 Camera::traverse(RenderAction * action)
 {
+  if (this->glcamera.get() == nullptr) {
+    this->glcamera.reset(new GLUniformBuffer(0, 2));
+  }
+
   mat4 viewmatrix = glm::transpose(mat4(this->orientation.value));
   viewmatrix = glm::translate(viewmatrix, -this->position.value);
   mat4 projmatrix = glm::perspective(this->fieldOfView.value,
@@ -39,10 +43,10 @@ Camera::traverse(RenderAction * action)
                                      this->nearPlane.value,
                                      this->farPlane.value);
 
-  if (action->state->camera.get() == nullptr) {
-    action->state->camera.reset(new GLCamera);
-  }
-  action->state->camera->updateGL(viewmatrix, projmatrix);
+  this->glcamera->updateGL(glm::value_ptr(viewmatrix), sizeof(mat4), 0);
+  this->glcamera->updateGL(glm::value_ptr(projmatrix), sizeof(mat4), 1);
+
+  action->state->glcamera = this->glcamera.get();
 }
 
 void
@@ -154,7 +158,7 @@ Separator::traverse(RenderAction * action)
     action->state->cacheelem.pop();
   }
   if (self->rendercache.get() != nullptr) {
-    self->rendercache->flush();
+    self->rendercache->flush(action->state.get());
   }
 }
 
@@ -219,13 +223,15 @@ Material::~Material()
 void
 Material::traverse(RenderAction * action)
 {
+/*
   if (this->glmaterial.get() == nullptr) {
-    this->glmaterial.reset(new GLMaterial(this->ambient.value,
+    this->glmaterial.reset(new GLUniformBuffer(this->ambient.value,
                                           this->diffuse.value,
                                           this->specular.value,
                                           this->shininess.value,
                                           this->transparency.value));
   }
+*/
   action->state->material = this->glmaterial.get();
 }
 
@@ -495,13 +501,13 @@ class DrawElements::DrawElementsP {
 public:
   DrawElementsP(DrawElements * self, State * state)
     : vao(state->vertexelem.createVAO()),
-      transform(new GLMatrix("ModelMatrix")),
+      transform(new GLUniformBuffer(1)),
       drawcall(new GLDrawElements(self->mode.value, 
                                   self->count.value, 
                                   self->type.value))
   {
   }
-  unique_ptr<GLMatrix> transform;
+  unique_ptr<GLUniformBuffer> transform;
   unique_ptr<GLDrawElements> drawcall;
   unique_ptr<GLVertexArrayObject> vao;
 };
@@ -528,10 +534,11 @@ DrawElements::traverse(RenderAction * action)
     self.reset(new DrawElementsP(this, action->state.get()));
   }
   State * state = action->state.get();
-  self->transform->matrix = state->transform;
+  self->transform->updateGL(glm::value_ptr(state->transform), sizeof(mat4));
 
   DrawCache cache(state->program,
                   state->material,
+                  state->glcamera,
                   self->transform.get(),
                   self->vao.get(),
                   self->drawcall.get());
@@ -539,7 +546,7 @@ DrawElements::traverse(RenderAction * action)
   if (state->cacheelem.isCreatingCache()) {
     state->cacheelem.append(cache);
   } else {
-    cache.flush();
+    cache.flush(state);
   }
 }
 

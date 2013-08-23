@@ -10,15 +10,15 @@ class State::StateP {
 public:
   vector<mat4> transformstack;
   vector<GLProgram*> programstack;
-  vector<GLMaterial*> materialstack;
+  vector<GLUniformBuffer*> materialstack;
   vector<VertexElement> vertexstack;
 };
 
 State::State()
   : self(new StateP),
-    camera(nullptr),
     program(nullptr),
-    material(nullptr)
+    material(nullptr),
+    glcamera(nullptr)
 {
 }
 

@@ -4,9 +4,9 @@
 #include <glm/glm.hpp>
 
 class Camera;
-class GLCamera;
 class GLProgram;
-class GLMaterial;
+class GLUniformBuffer;
+class GLUniformBuffer;
 
 class State {
 public:
@@ -14,12 +14,11 @@ public:
   ~State();
 
   GLProgram * program;
-  GLMaterial * material;
+  GLUniformBuffer * material;
   glm::mat4 transform;
+  GLUniformBuffer * glcamera;
   CacheElement cacheelem;
   VertexElement vertexelem;
-
-  std::unique_ptr<GLCamera> camera;
 
 private:
   void push();

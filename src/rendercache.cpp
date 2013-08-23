@@ -1,4 +1,6 @@
 #include <rendercache.h>
+#include <opengl.h>
+#include <state.h>
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -6,12 +8,14 @@ using namespace std;
 using namespace glm;
 
 DrawCache::DrawCache(GLProgram * program,
-                     GLMaterial * material,
-                     GLMatrix * transform,
+                     GLUniformBuffer * material,
+                     GLUniformBuffer * glcamera,
+                     GLUniformBuffer * transform,
                      GLVertexArrayObject * vao,
                      GLDrawCall * drawcall)
   : program(program),
     material(material),
+    glcamera(glcamera),
     transform(transform),
     vao(vao),
     drawcall(drawcall)
@@ -19,11 +23,11 @@ DrawCache::DrawCache(GLProgram * program,
 }
 
 void 
-DrawCache::flush()
+DrawCache::flush(State * state)
 {
   BindScope program(this->program);
-  this->material->updateGL(this->program);
-  this->transform->updateGL(this->program);
+  this->glcamera->bindBuffer();
+  this->transform->bindBuffer();
   BindScope vao(this->vao);
   this->drawcall->execute();
 }
@@ -55,9 +59,9 @@ RenderCache::compile()
 }
 
 void 
-RenderCache::flush()
+RenderCache::flush(State * state)
 {
   for (size_t i = 0; i < this->drawlist.size(); i++) {
-    this->drawlist[i].flush();
+    this->drawlist[i].flush(state);
   }
 }

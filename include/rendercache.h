@@ -4,25 +4,23 @@
 #include <memory>
 #include <opengl.h>
 
-class GLMatrix;
-class GLDrawCall;
-class GLVertexArrayObject;
-
 class DrawCache {
 public:
   DrawCache(GLProgram * program,
-            GLMaterial * material,
-            GLMatrix * transform,
+            GLUniformBuffer * material,
+            GLUniformBuffer * glcamera,
+            GLUniformBuffer * transform,
             GLVertexArrayObject * vao,
             GLDrawCall * drawcall);
 
-  void flush();
+  void flush(State * state);
 
   GLProgram * program;
-  GLMatrix * transform;
   GLDrawCall * drawcall;
+  GLUniformBuffer * material;
+  GLUniformBuffer * glcamera;
+  GLUniformBuffer * transform;
   GLVertexArrayObject * vao;
-  GLMaterial * material;
 };
 
 class RenderCache {
@@ -31,7 +29,7 @@ public:
   ~RenderCache();
 
   void compile();
-  void flush();
+  void flush(State * state);
 
   std::vector<DrawCache> drawlist;
   //std::vector<std::function<void()>> glcalls;

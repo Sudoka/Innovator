@@ -103,7 +103,7 @@ public:
   void lookAt(const glm::vec3 & focalpoint);
 
 private:
-  std::unique_ptr<GLBufferObject> buffer;
+  std::unique_ptr<GLUniformBuffer> glcamera;
 };
 
 class ShaderObject : public FieldContainer {
@@ -159,7 +159,7 @@ public:
   SFFloat transparency;
 
 private:
-  std::unique_ptr<GLMaterial> glmaterial;
+  std::unique_ptr<GLUniformBuffer> glmaterial;
 };
 
 class Transform : public Node {

@@ -67,44 +67,6 @@ private:
   std::map<std::string, GLint> uniformLocations;
 };
 
-class GLMaterial {
-public:
-  GLMaterial(const glm::vec3 & ambient,
-             const glm::vec3 & diffuse,
-             const glm::vec3 & specular,
-             float shininess,
-             float transparency);
-  ~GLMaterial();
-
-  void updateGL(GLProgram * program) const;
-
-  GLint ambient, diffuse, specular;
-  GLfloat shininess;
-};
-
-class GLBufferObject;
-
-class GLCamera {
-public:
-  GLCamera();
-  ~GLCamera();
-
-  void updateGL(const glm::mat4 & viewmat, const glm::mat4 & projmat);
-private:
-  std::unique_ptr<GLBufferObject> buffer;
-};
-
-class GLMatrix {
-public:
-  GLMatrix(const std::string & name, const glm::mat4 & matrix = glm::mat4(1.0));
-  ~GLMatrix();
-
-  void updateGL(GLProgram * program) const;
-
-  std::string name;
-  glm::mat4 matrix;
-};
-
 class GLBufferObject : public Bindable {
 public:
   GLBufferObject(GLenum target, GLenum usage, GLsizeiptr size, GLvoid * data = nullptr);
@@ -123,6 +85,18 @@ public:
 
   GLenum target;
   GLuint buffer;
+};
+
+class GLUniformBuffer {
+public:
+  GLUniformBuffer(GLuint blockbinding, GLsizeiptr count = 1);
+  ~GLUniformBuffer();
+
+  void updateGL(GLvoid * data, GLsizeiptr size, GLuint index = 0);
+  void bindBuffer();
+private:
+  GLuint blockbinding;
+  std::unique_ptr<GLBufferObject> buffer;
 };
 
 class GLVertexArrayObject : public Bindable {
@@ -169,10 +143,10 @@ public:
   GLsizei count;
 };
 
-class GLTransformFeedback : public Bindable {
+class GLUniformBufferFeedback : public Bindable {
 public:
-  GLTransformFeedback(GLenum mode, GLuint index, GLuint buffer);
-  ~GLTransformFeedback();
+  GLUniformBufferFeedback(GLenum mode, GLuint index, GLuint buffer);
+  ~GLUniformBufferFeedback();
 
   virtual void bind();
   virtual void unbind();

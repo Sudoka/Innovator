@@ -179,19 +179,19 @@ GLDrawElements::execute()
 
 // *************************************************************************************************
 
-GLTransformFeedback::GLTransformFeedback(GLenum mode, GLuint index, GLuint buffer)
+GLUniformBufferFeedback::GLUniformBufferFeedback(GLenum mode, GLuint index, GLuint buffer)
   : mode(mode),
     index(index),
     buffer(buffer)
 {
 }
 
-GLTransformFeedback::~GLTransformFeedback()
+GLUniformBufferFeedback::~GLUniformBufferFeedback()
 {
 }
 
 void
-GLTransformFeedback::bind()
+GLUniformBufferFeedback::bind()
 {
   glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, this->index, this->buffer);
   glEnable(GL_RASTERIZER_DISCARD);
@@ -199,7 +199,7 @@ GLTransformFeedback::bind()
 }
 
 void
-GLTransformFeedback::unbind()
+GLUniformBufferFeedback::unbind()
 {
   glEndTransformFeedback();
   glDisable(GL_RASTERIZER_DISCARD);
@@ -241,61 +241,26 @@ GLQueryObject::unbind()
 
 // *************************************************************************************************
 
-GLMaterial::GLMaterial(const glm::vec3 & ambient,
-                       const glm::vec3 & diffuse,
-                       const glm::vec3 & specular,
-                       float shininess,
-                       float transparency)
+GLUniformBuffer::GLUniformBuffer(GLuint blockbinding, GLsizeiptr count)
+  : blockbinding(blockbinding),
+    buffer(new GLBufferObject(GL_UNIFORM_BUFFER, GL_STREAM_DRAW, count * sizeof(mat4)))
 {
-  
 }
 
-GLMaterial::~GLMaterial()
+GLUniformBuffer::~GLUniformBuffer()
 {
 }
 
 void
-GLMaterial::updateGL(GLProgram * program) const
+GLUniformBuffer::updateGL(GLvoid * element, GLsizeiptr size, GLuint index)
 {
-
-}
-
-// *************************************************************************************************
-
-GLCamera::GLCamera()
-  : buffer(new GLBufferObject(GL_UNIFORM_BUFFER, GL_STREAM_DRAW, 2 * sizeof(mat4)))
-{
-  this->buffer->bindBufferBase(0);
-}
-
-GLCamera::~GLCamera()
-{
+  this->buffer->bufferSubData(size * index, size, element);
 }
 
 void
-GLCamera::updateGL(const glm::mat4 & viewmat, const glm::mat4 & projmat)
+GLUniformBuffer::bindBuffer()
 {
-  this->buffer->bufferSubData(0 * sizeof(mat4), sizeof(mat4), glm::value_ptr(viewmat));
-  this->buffer->bufferSubData(1 * sizeof(mat4), sizeof(mat4), glm::value_ptr(projmat));
-}
-
-// *************************************************************************************************
-
-GLMatrix::GLMatrix(const std::string & name, const glm::mat4 & matrix)
-  : name(name),
-    matrix(matrix)
-{
-}
-
-GLMatrix::~GLMatrix()
-{
-}
-
-void
-GLMatrix::updateGL(GLProgram * program) const
-{
-  GLint location = program->getUniformLocation(this->name);
-  glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(this->matrix));
+  this->buffer->bindBufferBase(this->blockbinding);
 }
 
 // *************************************************************************************************
@@ -307,9 +272,14 @@ GLProgram::GLProgram(const vector<shared_ptr<ShaderObject>> & shaderobjects)
     this->attach(shader->source.value.c_str(), shader->type.value);
   }
   this->link();
+
   GLuint cameraindex = glGetUniformBlockIndex(this->id, "Camera");
   if (cameraindex != GL_INVALID_VALUE) {
     glUniformBlockBinding(this->id, cameraindex, 0);
+  }
+  GLuint transformindex = glGetUniformBlockIndex(this->id, "Transform");
+  if (transformindex != GL_INVALID_VALUE) {
+    glUniformBlockBinding(this->id, transformindex, 1);
   }
 }
 
