@@ -489,6 +489,7 @@ DrawCall::DrawCall()
   this->registerEnum(this->mode, "POINTS", GL_POINTS);
   this->registerEnum(this->mode, "TRIANGLES", GL_TRIANGLES);
   this->registerEnum(this->mode, "TRIANGLE_STRIP", GL_TRIANGLE_STRIP);
+  this->registerEnum(this->mode, "LINES", GL_LINES);
 }
 
 DrawCall::~DrawCall()

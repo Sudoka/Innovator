@@ -56,7 +56,12 @@ local function Sphere(data)
                       { 0, t, 1 }, { 0, t,-1 }, { 0,-t, 1 }, { 0,-t,-1 },
                       { t, 1, 0 }, {-t, 1, 0 }, { t,-1, 0 }, {-t,-1, 0 } };
 
-   Utils.subdivide(indices, vertices, data.lod and data.lod or 1);
+   local lod = data.lod and data.lod or 1;
+   Utils.normalizeArray(vertices);
+   for l = 1, lod do
+      Utils.subdivide(indices, vertices);
+      Utils.normalizeArray(vertices);
+   end
 
    return Separator {
       IndexBuffer { 
@@ -67,6 +72,9 @@ local function Sphere(data)
       },
       VertexAttribute3f { 
          location = 0, 
+      },
+      VertexAttribute3f { 
+         location = 1, 
       },
       BoundingBox { 
          min = { -1, -1, -1 }, 
@@ -105,10 +113,85 @@ local function Box(data)
    }
 end
 
+local function addMidPoint(i0, i1, v0, v1)
+   local a = v0[i0];
+   local b = v0[i1];
+   v1[#v1 + 1] = a;
+   v1[#v1 + 1] = Utils.avg(a, b);
+end
+
+local function subdivideDisk(vertices)
+   local newvertices = {}
+   for i = 1, #vertices - 1 do
+      addMidPoint(i + 0, i + 1, vertices, newvertices);
+   end
+   addMidPoint(#vertices, 1, vertices, newvertices);
+   return newvertices;
+end
+
+local function Cylinder(data)
+   local disk = { { -1, -1, 0 }, { 1, -1, 0 }, { 1, 1, 0 }, {-1, 1, 0 } };
+   Utils.normalizeArray(disk);
+
+   for i = 1, data.lod do
+      disk = subdivideDisk(disk);
+      Utils.normalizeArray(disk);
+   end
+
+   local indices = {};
+   local vertices = {};
+
+   for i = 1, #disk do
+      local v = disk[i];
+      vertices[#vertices + 1] = { v[1], v[2],  1 };
+      vertices[#vertices + 1] = { v[1], v[2], -1 };
+   end
+
+   indices[#indices + 1] = { #vertices - 2, #vertices - 1, 0 };
+   indices[#indices + 1] = { 0, #vertices - 1, 1 };
+
+   -- tube
+   for i = 0, #vertices - 3, 2 do
+      indices[#indices + 1] = { i + 0, i + 1, i + 2 };
+      indices[#indices + 1] = { i + 2, i + 1, i + 3 };
+   end
+
+   -- top, bottom
+   for i = 1, #vertices - 4, 2 do
+      indices[#indices + 1] = { 0, i + 1, i + 3 };
+      indices[#indices + 1] = { 1, i + 2, i + 4 };
+   end
+
+   indices = Utils.flatten(indices);
+   vertices = Utils.flatten(vertices);
+
+   return Separator {
+      IndexBuffer {
+         values = indices;
+      },
+      VertexBuffer {
+         values = vertices;
+      },
+      VertexAttribute3f {
+         location = 0
+      },
+      BoundingBox { 
+         min = { -1, -1, -1 }, 
+         max = {  1,  1,  1 }
+      },
+      DrawElements { 
+         mode = "TRIANGLES",
+         type = "UNSIGNED_INT",
+         count = #indices
+      }
+   }
+end
+
 return {
    Box = Box,
    Sphere = Sphere,
    Program = Program,
+   Cylinder = Cylinder,
    Separator = Separator,
    Transform = Transform,
    VertexShader = VertexShader,
