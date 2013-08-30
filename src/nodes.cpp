@@ -5,6 +5,7 @@
 #include <box3.h>
 #include <rendercache.h>
 #include <functional>
+#include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -146,20 +147,23 @@ Separator::~Separator()
 void
 Separator::traverse(RenderAction * action)
 {
-  StateScope scope(action->state.get());
+  State * state = action->state.get();
 
-  if (this->renderCaching.value == Separator::OFF) {
-    Group::traverse(action);
-    return;
+  if (this->renderCaching.value == Separator::ON) {
+    if (state->rendercache == nullptr) {
+      if (self->rendercache.get() == nullptr) {
+        self->rendercache.reset(new RenderCache);
+        state->rendercache = self->rendercache.get();
+        StateScope scope(state);
+        Group::traverse(action);
+        state->rendercache = nullptr;
+      }
+      self->rendercache->flush();
+      return;
+    }
   }
-  if (self->rendercache.get() == nullptr) {
-    action->state->cacheelem.push(self->rendercache);
-    Group::traverse(action);
-    action->state->cacheelem.pop();
-  }
-  if (self->rendercache.get() != nullptr) {
-    self->rendercache->flush();
-  }
+  StateScope scope(state);
+  Group::traverse(action);
 }
 
 void
@@ -242,6 +246,8 @@ ShaderObject::ShaderObject()
 {
   this->registerField(this->type, "type", GL_INVALID_VALUE);
   this->registerEnum(this->type, "VERTEX_SHADER", GL_VERTEX_SHADER);
+  this->registerEnum(this->type, "TESS_CONTROL_SHADER", GL_TESS_CONTROL_SHADER);
+  this->registerEnum(this->type, "TESS_EVALUATION_SHADER", GL_TESS_EVALUATION_SHADER);
   this->registerEnum(this->type, "GEOMETRY_SHADER", GL_GEOMETRY_SHADER);
   this->registerEnum(this->type, "FRAGMENT_SHADER", GL_FRAGMENT_SHADER);
   this->registerField(this->source, "source");
@@ -490,6 +496,7 @@ DrawCall::DrawCall()
   this->registerEnum(this->mode, "TRIANGLES", GL_TRIANGLES);
   this->registerEnum(this->mode, "TRIANGLE_STRIP", GL_TRIANGLE_STRIP);
   this->registerEnum(this->mode, "LINES", GL_LINES);
+  this->registerEnum(this->mode, "PATCHES", GL_PATCHES);
 }
 
 DrawCall::~DrawCall()
@@ -544,8 +551,8 @@ DrawElements::traverse(RenderAction * action)
                   self->vao.get(),
                   self->drawcall.get());
 
-  if (state->cacheelem.isCreatingCache()) {
-    state->cacheelem.append(cache);
+  if (state->rendercache != nullptr) {
+    state->rendercache->drawlist.push_back(cache);
   } else {
     cache.flush();
   }

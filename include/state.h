@@ -5,6 +5,7 @@
 
 class Camera;
 class GLProgram;
+class RenderCache;
 class GLUniformBuffer;
 class GLUniformBuffer;
 
@@ -14,10 +15,10 @@ public:
   ~State();
 
   GLProgram * program;
+  RenderCache * rendercache;
   GLUniformBuffer * material;
   glm::mat4 transform;
   GLUniformBuffer * glcamera;
-  CacheElement cacheelem;
   VertexElement vertexelem;
 
 private:

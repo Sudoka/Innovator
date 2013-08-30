@@ -174,6 +174,9 @@ GLDrawElements::~GLDrawElements()
 void
 GLDrawElements::execute()
 {
+  if (this->mode == GL_PATCHES) {
+    glPatchParameteri(GL_PATCH_VERTICES, 3);
+  }
   glDrawElements(this->mode, this->count, this->type, nullptr);
 }
 

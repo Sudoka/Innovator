@@ -18,7 +18,8 @@ State::State()
   : self(new StateP),
     program(nullptr),
     material(nullptr),
-    glcamera(nullptr)
+    glcamera(nullptr),
+    rendercache(nullptr)
 {
 }
 

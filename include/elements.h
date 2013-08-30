@@ -35,17 +35,3 @@ private:
   GLuint unit;
   std::vector<Bindable*> statevec;
 };
-
-class CacheElement {
-public:
-  CacheElement();
-  ~CacheElement();
-
-  void push(std::unique_ptr<RenderCache> & rendercache);
-  void pop();
-  bool isCreatingCache();
-  void append(const DrawCache & cache);
-
-  int depth;
-  RenderCache * rendercache;
-};
