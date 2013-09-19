@@ -61,21 +61,16 @@ Innovator::Innovator(int width, int height, const std::string & filename)
   glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
 
   self->lua->registerFunction("Group", Node::CreateInstance<Group>);
-  self->lua->registerFunction("Buffer", Node::CreateInstance<Buffer>);
+  self->lua->registerFunction("Shape", Node::CreateInstance<Shape>);
   self->lua->registerFunction("Texture", Node::CreateInstance<Texture>);
   self->lua->registerFunction("Program", Node::CreateInstance<Program>);
   self->lua->registerFunction("Material", Node::CreateInstance<Material>);
-  self->lua->registerFunction("Uniform3f", Node::CreateInstance<Uniform3f>);
   self->lua->registerFunction("Separator", Node::CreateInstance<Separator>);
   self->lua->registerFunction("Transform", Node::CreateInstance<Transform>);
-  //self->lua->registerFunction("DrawArrays", Node::CreateInstance<DrawArrays>);
   self->lua->registerFunction("TextureUnit", Node::CreateInstance<TextureUnit>);
   self->lua->registerFunction("BoundingBox", Node::CreateInstance<BoundingBox>);
-  self->lua->registerFunction("DrawElements", Node::CreateInstance<DrawElements>);
   self->lua->registerFunction("ShaderObject", Node::CreateInstance<ShaderObject>);
   self->lua->registerFunction("TextureSampler", Node::CreateInstance<TextureSampler>);
-  self->lua->registerFunction("VertexAttribute", Node::CreateInstance<VertexAttribute>);
-  self->lua->registerFunction("UniformMatrix4f", Node::CreateInstance<UniformMatrix4f>);
 
   self->lua->dofile(filename);
   shared_ptr<Separator> root(static_cast<Separator*>(self->lua->getglobaluserdata("SceneRoot")));

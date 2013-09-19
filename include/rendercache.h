@@ -2,25 +2,27 @@
 
 #include <vector>
 #include <memory>
+#include <nodes.h>
 #include <opengl.h>
+#include <glm/glm.hpp>
 
-class DrawCache {
+class CachedShape {
 public:
-  DrawCache(GLProgram * program,
-            GLUniformBuffer * material,
-            GLUniformBuffer * glcamera,
-            GLUniformBuffer * transform,
-            GLVertexArrayObject * vao,
-            GLDrawCall * drawcall);
+  CachedShape(State * state);
+  void flush(State * state);
 
-  void flush();
+  Shape * shape;
+  Program * program;
+  Material * material;
+  glm::mat4 transform;
 
-  GLProgram * program;
-  GLDrawCall * drawcall;
-  GLUniformBuffer * material;
-  GLUniformBuffer * glcamera;
-  GLUniformBuffer * transform;
-  GLVertexArrayObject * vao;
+  std::unique_ptr<GLProgram> glprogram;
+  std::unique_ptr<GLUniformBuffer> glcamera;
+  std::unique_ptr<GLUniformBuffer> gltransform;
+  std::unique_ptr<GLBufferObject> indexbuffer;
+  std::unique_ptr<GLBufferObject> vertexbuffer;
+  std::unique_ptr<GLVertexAttribute> vertexattrib;
+  std::unique_ptr<GLVertexArrayObject> vertexarrayobject;
 };
 
 class RenderCache {
@@ -28,9 +30,12 @@ public:
   RenderCache();
   ~RenderCache();
 
-  void compile();
-  void flush();
+  void capture(State * state);
 
-  std::vector<DrawCache> drawlist;
-  //std::vector<std::function<void()>> glcalls;
+  void compile();
+  void flush(State * state);
+
+private:
+  class Pimpl;
+  std::unique_ptr<Pimpl> self;
 };

@@ -15,7 +15,6 @@ using namespace std;
 // *************************************************************************************************
 
 Camera::Camera()
-  : glcamera(nullptr)
 {
   this->registerField(this->orientation, "orientation", mat3(1.0));
   this->registerField(this->aspectRatio, "aspectRatio", 4.0f / 3.0f);
@@ -33,21 +32,15 @@ Camera::~Camera()
 void 
 Camera::traverse(RenderAction * action)
 {
-  if (this->glcamera.get() == nullptr) {
-    this->glcamera.reset(new GLUniformBuffer(0, 2));
-  }
+  State * state = action->state.get();
 
-  mat4 viewmatrix = glm::transpose(mat4(this->orientation.value));
-  viewmatrix = glm::translate(viewmatrix, -this->position.value);
-  mat4 projmatrix = glm::perspective(this->fieldOfView.value,
-                                     this->aspectRatio.value,
-                                     this->nearPlane.value,
-                                     this->farPlane.value);
+  state->viewmatrix = glm::transpose(mat4(this->orientation.value));
+  state->viewmatrix = glm::translate(state->viewmatrix, -this->position.value);
 
-  this->glcamera->updateGL(glm::value_ptr(viewmatrix), sizeof(mat4), 0);
-  this->glcamera->updateGL(glm::value_ptr(projmatrix), sizeof(mat4), 1);
-
-  action->state->glcamera = this->glcamera.get();
+  state->projmatrix = glm::perspective(this->fieldOfView.value,
+                                       this->aspectRatio.value,
+                                       this->nearPlane.value,
+                                       this->farPlane.value);
 }
 
 void
@@ -158,7 +151,7 @@ Separator::traverse(RenderAction * action)
         Group::traverse(action);
         state->rendercache = nullptr;
       }
-      self->rendercache->flush();
+      self->rendercache->flush(state);
       return;
     }
   }
@@ -175,42 +168,7 @@ Separator::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-Uniform::Uniform()
-{
-  this->registerField(this->name, "name");
-}
-
-Uniform::~Uniform()
-{
-}
-
-// *************************************************************************************************
-
-Uniform3f::Uniform3f()
-{
-  this->registerField(this->value, "value", vec3(0));
-}
-
-Uniform3f::~Uniform3f()
-{
-}
-
-// *************************************************************************************************
-
-
-UniformMatrix4f::UniformMatrix4f()
-{
-  this->registerField(this->value, "value", mat4(1.0));
-}
-
-UniformMatrix4f::~UniformMatrix4f()
-{
-}
-
-// *************************************************************************************************
-
 Material::Material()
-  : glmaterial(nullptr)
 {
   this->registerField(this->ambient, "ambient", vec3(1, 1, 1));
   this->registerField(this->diffuse, "diffuse", vec3(0, 0, 0));
@@ -227,16 +185,7 @@ Material::~Material()
 void
 Material::traverse(RenderAction * action)
 {
-/*
-  if (this->glmaterial.get() == nullptr) {
-    this->glmaterial.reset(new GLUniformBuffer(this->ambient.value,
-                                          this->diffuse.value,
-                                          this->specular.value,
-                                          this->shininess.value,
-                                          this->transparency.value));
-  }
-*/
-  action->state->material = this->glmaterial.get();
+  action->state->material = this;
 }
 
 
@@ -260,7 +209,6 @@ ShaderObject::~ShaderObject()
 // *************************************************************************************************
 
 Program::Program() 
-  : glprogram(nullptr)
 {
   this->registerField(this->shaders);
 }
@@ -272,10 +220,7 @@ Program::~Program()
 void
 Program::traverse(RenderAction * action)
 {
-  if (this->glprogram.get() == nullptr) {
-    this->glprogram.reset(new GLProgram(this->shaders.values));
-  }
-  action->state->program = this->glprogram.get();
+  action->state->program = this;
 }
 
 // *************************************************************************************************
@@ -311,69 +256,6 @@ Transform::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-Buffer::Buffer()
-  : buffer(nullptr)
-{
-  this->registerField(this->type, "type", GL_FLOAT);
-  this->registerEnum(this->type, "FLOAT", GL_FLOAT);
-  this->registerEnum(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
-
-  this->registerField(this->usage, "usage", GL_STATIC_DRAW);
-  this->registerEnum(this->usage, "STATIC_DRAW", GL_STATIC_DRAW);
-  this->registerEnum(this->usage, "DYNAMIC_DRAW", GL_DYNAMIC_DRAW);
-
-  this->registerField(this->target, "target", GL_ARRAY_BUFFER);
-  this->registerEnum(this->target, "ARRAY", GL_ARRAY_BUFFER);
-  this->registerEnum(this->target, "ELEMENT_ARRAY", GL_ELEMENT_ARRAY_BUFFER);
-
-  this->registerField(this->count, "count", 0);
-  this->registerField(this->values, "values");
-}
-
-Buffer::~Buffer()
-{
-}
-
-void
-Buffer::traverse(RenderAction * action)
-{
-  if (!this->buffer.get()) {
-    this->buffer.reset(GLBufferObject::create(this->target.value, 
-                                              this->usage.value, 
-                                              this->type.value, 
-                                              this->count.value,
-                                              this->values.vec));
-  }
-  action->state->vertexelem.set(this->buffer.get());
-}
-
-// *************************************************************************************************
-
-VertexAttribute::VertexAttribute()
-  : glattrib(nullptr)
-{
-  this->registerField(this->type, "type", GL_FLOAT);
-  this->registerField(this->size, "size", 3);
-  this->registerField(this->index, "location", 0);
-  this->registerField(this->divisor, "divisor", 0);
-}
-
-VertexAttribute::~VertexAttribute() {}
-
-void
-VertexAttribute::traverse(RenderAction * action)
-{
-  if (!this->glattrib.get()) {
-    this->glattrib.reset(new GLVertexAttribute(this->index.value, 
-                                               this->size.value,
-                                               this->type.value,
-                                               this->divisor.value));
-  }
-  action->state->vertexelem.set(this->glattrib.get());
-}
-
-// *************************************************************************************************
-
 TextureUnit::TextureUnit()
   : gltexunit(nullptr)
 {
@@ -387,9 +269,6 @@ TextureUnit::~TextureUnit()
 void
 TextureUnit::traverse(RenderAction * action)
 {
-  if (this->gltexunit.get() == nullptr) {
-    this->gltexunit.reset(new GLTextureUnit(this->unit.value));
-  }
   //action->state->textureelem.set(this);
 }
 
@@ -489,91 +368,32 @@ BoundingBox::traverse(BoundingBoxAction * action)
 
 // *************************************************************************************************
 
-DrawCall::DrawCall()
+Shape::Shape()
 {
-  this->registerField(this->mode, "mode", GL_POINTS);
-  this->registerEnum(this->mode, "POINTS", GL_POINTS);
-  this->registerEnum(this->mode, "TRIANGLES", GL_TRIANGLES);
-  this->registerEnum(this->mode, "TRIANGLE_STRIP", GL_TRIANGLE_STRIP);
-  this->registerEnum(this->mode, "LINES", GL_LINES);
-  this->registerEnum(this->mode, "PATCHES", GL_PATCHES);
-}
-
-DrawCall::~DrawCall()
-{
-}
-
-// *************************************************************************************************
-
-class DrawElements::DrawElementsP {
-public:
-  DrawElementsP(DrawElements * self, State * state)
-    : vao(state->vertexelem.createVAO()),
-      transform(new GLUniformBuffer(1)),
-      drawcall(new GLDrawElements(self->mode.value, 
-                                  self->count.value, 
-                                  self->type.value))
-  {
-  }
-  unique_ptr<GLUniformBuffer> transform;
-  unique_ptr<GLDrawElements> drawcall;
-  unique_ptr<GLVertexArrayObject> vao;
-};
-
-DrawElements::DrawElements()
-  : self(nullptr)
-{
-  this->registerField(this->count, "count", 0);
   this->registerField(this->indices, "indices");
-  this->registerField(this->type, "type", GL_UNSIGNED_INT);
-  this->registerEnum(this->type, "UNSIGNED_INT", GL_UNSIGNED_INT);
-  this->registerEnum(this->type, "UNSIGNED_BYTE", GL_UNSIGNED_BYTE);
-  this->registerEnum(this->type, "UNSIGNED_SHORT", GL_UNSIGNED_SHORT);
+  this->registerField(this->vertices, "vertices");
 }
 
-DrawElements::~DrawElements()
+Shape::~Shape()
 {
+
 }
 
 void
-DrawElements::traverse(RenderAction * action)
+Shape::traverse(RenderAction * action)
 {
-  if (self.get() == nullptr) {
-    self.reset(new DrawElementsP(this, action->state.get()));
+  if (action->state->rendercache != nullptr) {
+    action->state->shape = this;
+    action->state->rendercache->capture(action->state.get());
   }
-  State * state = action->state.get();
-  self->transform->updateGL(glm::value_ptr(state->transform), sizeof(mat4));
-
-  DrawCache cache(state->program,
-                  state->material,
-                  state->glcamera,
-                  self->transform.get(),
-                  self->vao.get(),
-                  self->drawcall.get());
-
-  if (state->rendercache != nullptr) {
-    state->rendercache->drawlist.push_back(cache);
-  } else {
-    cache.flush();
-  }
-}
-
-// *************************************************************************************************
-/*
-DrawArrays::DrawArrays()
-{
-  this->registerField(this->first, "first", 0);
-  this->registerField(this->count, "count", 0);
-}
-
-DrawArrays::~DrawArrays()
-{
 }
 
 void
-DrawArrays::execute()
+Shape::traverse(BoundingBoxAction * action)
 {
-  glDrawArrays(this->mode.value, this->first.value, this->count.value);
+  box3 bbox(vec3(-1), vec3( 1));
+  bbox.transform(action->state->transform);
+  action->extendBy(bbox);
 }
-*/
+
 // *************************************************************************************************

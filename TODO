@@ -1,10 +1,14 @@
 
+- remove GL code from nodes; create renderer for GL3/GL4
+
+- create shape node; TriangleShape
+
+- keep specific nodes such as vertexattribute, bufferobject, drawcall, etc...?
+
 - texture node(s)
 
 - screen-space effects
   - scenetexture node
-
-- Separator render cache, bbox cache, frustum culling
 
 - port LEGO model import to Lua?
 

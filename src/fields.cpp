@@ -18,22 +18,10 @@ FieldValue<shared_ptr<Node>>::readValue(lua_State * L)
   return shared_ptr<Node>(ReadUserData<Node>(L));
 }
 
-shared_ptr<Buffer>
-FieldValue<shared_ptr<Buffer>>::readValue(lua_State * L)
-{
-  return shared_ptr<Buffer>(ReadUserData<Buffer>(L));
-}
-
 shared_ptr<Separator>
 FieldValue<shared_ptr<Separator>>::readValue(lua_State * L)
 {
   return shared_ptr<Separator>(ReadUserData<Separator>(L));
-}
-
-shared_ptr<Uniform>
-FieldValue<shared_ptr<Uniform>>::readValue(lua_State * L)
-{
-  return shared_ptr<Uniform>(ReadUserData<Uniform>(L));
 }
 
 shared_ptr<ShaderObject>

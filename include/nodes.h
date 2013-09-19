@@ -6,7 +6,6 @@
 #include <elements.h>
 #include <functional>
 
-class GLProgram;
 class GLTextureUnit;
 class GLBufferObject;
 class GLTextureObject;
@@ -101,9 +100,6 @@ public:
   void pan(const glm::vec2 & dx);
   void orbit(const glm::vec2 & dx);
   void lookAt(const glm::vec3 & focalpoint);
-
-private:
-  std::unique_ptr<GLUniformBuffer> glcamera;
 };
 
 class ShaderObject : public FieldContainer {
@@ -120,8 +116,6 @@ public:
   virtual ~Program();
   virtual void traverse(RenderAction * action);
   MFShader shaders;
-private:
-  std::unique_ptr<GLProgram> glprogram;
 };
 
 class Uniform : public FieldContainer {
@@ -157,9 +151,6 @@ public:
   SFVec3f specular;
   SFFloat shininess;
   SFFloat transparency;
-
-private:
-  std::unique_ptr<GLUniformBuffer> glmaterial;
 };
 
 class Transform : public Node {
@@ -173,38 +164,6 @@ public:
   SFVec3f scaleFactor;
 private:
   void doAction(Action * action);
-};
-
-class Buffer : public Node {
-public:
-  Buffer();
-  virtual ~Buffer();
-  virtual void traverse(RenderAction * action);
-
-  SFInt count;
-  SFEnum type;
-  SFEnum usage;
-  SFEnum target;
-  MFNumber values;
-
-private:
-  std::unique_ptr<GLBufferObject> buffer;
-};
-
-class VertexAttribute : public Node {
-public:
-  VertexAttribute();
-  virtual ~VertexAttribute();
-  virtual void traverse(RenderAction * action);
-
-  SFEnum type;
-  SFUint size;
-  SFUint index;
-  SFUint divisor;
-
-private:
-  friend class VertexElement;
-  std::unique_ptr<GLVertexAttribute> glattrib;
 };
 
 class TextureUnit : public Node {
@@ -269,37 +228,13 @@ public:
   SFVec3f max;
 };
 
-class DrawCall : public Node {
+class Shape : public Node {
 public:
-  DrawCall();
-  virtual ~DrawCall();
-
-  SFEnum mode;
-};
-
-/*
-class DrawArrays : public DrawCall {
-public:
-  DrawArrays();
-  virtual ~DrawArrays();
-  virtual void execute();
-
-  SFInt first;
-  SFInt count;
-};
-*/
-
-class DrawElements : public DrawCall {
-public:
-  DrawElements();
-  virtual ~DrawElements();
+  Shape();
+  virtual ~Shape();
   virtual void traverse(RenderAction * action);
+  virtual void traverse(BoundingBoxAction * action);
 
-  SFEnum type;
-  SFInt count;
   MFNumber indices;
-
-private:
-  class DrawElementsP;
-  std::unique_ptr<DrawElementsP> self;
+  MFNumber vertices;
 };

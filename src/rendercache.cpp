@@ -1,38 +1,62 @@
 #include <rendercache.h>
-#include <opengl.h>
 #include <state.h>
-#include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 using namespace glm;
 
-DrawCache::DrawCache(GLProgram * program,
-                     GLUniformBuffer * material,
-                     GLUniformBuffer * glcamera,
-                     GLUniformBuffer * transform,
-                     GLVertexArrayObject * vao,
-                     GLDrawCall * drawcall)
-  : program(program),
-    material(material),
-    glcamera(glcamera),
-    transform(transform),
-    vao(vao),
-    drawcall(drawcall)
+CachedShape::CachedShape(State * state)
 {
+  this->shape = state->shape;
+  this->program = state->program;
+  this->material = state->material;
+  this->transform = state->transform;
+
+  this->indexbuffer.reset(GLBufferObject::create(GL_ELEMENT_ARRAY_BUFFER,
+                                                 GL_STATIC_DRAW,
+                                                 GL_UNSIGNED_INT,
+                                                 0,
+                                                 this->shape->indices.vec));
+  this->vertexbuffer.reset(GLBufferObject::create(GL_ARRAY_BUFFER,
+                                                  GL_STATIC_DRAW,
+                                                  GL_FLOAT,
+                                                  0,
+                                                  this->shape->vertices.vec));
+
+  this->glprogram.reset(new GLProgram(this->program->shaders.values));
+  this->vertexattrib.reset(new GLVertexAttribute(0, 3, GL_FLOAT, 0));
+  this->vertexarrayobject.reset(new GLVertexArrayObject);
+  this->gltransform.reset(new GLUniformBuffer(1));
+  this->glcamera.reset(new GLUniformBuffer(0, 2));
+  
+  this->vertexarrayobject->bind();
+  BindScope indexbuffer(this->indexbuffer.get());
+  BindScope vertexbuffer(this->vertexbuffer.get());
+  BindScope vertexattrib(this->vertexattrib.get());
+  this->vertexarrayobject->unbind();
 }
 
 void 
-DrawCache::flush()
+CachedShape::flush(State * state)
 {
-  BindScope program(this->program);
+  this->gltransform->updateGL(glm::value_ptr(this->transform), sizeof(mat4));
+  this->glcamera->updateGL(glm::value_ptr(state->viewmatrix), sizeof(mat4), 0);
+  this->glcamera->updateGL(glm::value_ptr(state->projmatrix), sizeof(mat4), 1);
+  
+  BindScope program(this->glprogram.get());
   this->glcamera->bindBuffer();
-  this->transform->bindBuffer();
-  BindScope vao(this->vao);
-  this->drawcall->execute();
+  this->gltransform->bindBuffer();
+  BindScope vao(this->vertexarrayobject.get());
+  glDrawElements(GL_TRIANGLES, this->shape->indices.vec.size(), GL_UNSIGNED_INT, nullptr);
 }
 
+class RenderCache::Pimpl {
+public:
+  vector<CachedShape*> shapes;
+};
+
 RenderCache::RenderCache()
+  : self(new Pimpl)
 {
 }
 
@@ -40,28 +64,21 @@ RenderCache::~RenderCache()
 {
 }
 
+void 
+RenderCache::capture(State * state)
+{
+  self->shapes.push_back(new CachedShape(state));
+}
+
 void
 RenderCache::compile()
-{/*
-  std::sort(begin(this->drawlist), end(this->drawlist), [](DrawCache & c1, DrawCache & c2) { return c1.program->id > c2.program->id; } );
-  
-
-  this->glcalls.push_back(this->drawlist[0].updateProgram());
-  this->glcalls.push_back(this->drawlist[0].executeDrawCall());
-
-  for (size_t i = 1; i < this->drawlist.size(); i++) {
-    if (this->drawlist[i].program->id != this->drawlist[i-1].program->id) {
-      this->glcalls.push_back(this->drawlist[i].updateProgram());
-    }
-    this->glcalls.push_back(this->drawlist[i].executeDrawCall());
-  }
-  */
+{
 }
 
 void 
-RenderCache::flush()
+RenderCache::flush(State * state)
 {
-  for (size_t i = 0; i < this->drawlist.size(); i++) {
-    this->drawlist[i].flush();
+  for each (CachedShape * shape in self->shapes) {
+    shape->flush(state);
   }
 }

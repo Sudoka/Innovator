@@ -9,8 +9,6 @@
 #include <innovator.h>
 
 class Node;
-class Buffer;
-class Uniform;
 class Separator;
 class ShaderObject;
 
@@ -143,15 +141,6 @@ public:
   std::vector<double> vec;
 };
 
-class SFBuffer : public Field {
-public:
-  virtual void read(lua_State * L)
-  {
-    Value<std::shared_ptr<Buffer>> value(L, this->name, this->value);
-  }
-  std::shared_ptr<Buffer> value;
-};
-
 class SFSeparator : public Field {
 public:
   virtual void read(lua_State * L)
@@ -177,15 +166,6 @@ public:
     Array<std::shared_ptr<ShaderObject>> value(L, this->values);
   }
   std::vector<std::shared_ptr<ShaderObject>> values;
-};
-
-class MFUniform : public Field {
-public:
-  virtual void read(lua_State * L)
-  {
-    Array<std::shared_ptr<Uniform>> value(L, this->name, this->values);
-  }
-  std::vector<std::shared_ptr<Uniform>> values;
 };
 
 class SFVec2i : public Field {

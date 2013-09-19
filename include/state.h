@@ -3,23 +3,23 @@
 #include <elements.h>
 #include <glm/glm.hpp>
 
-class Camera;
-class GLProgram;
+class Shape;
+class Program;
+class Material;
 class RenderCache;
-class GLUniformBuffer;
-class GLUniformBuffer;
 
 class State {
 public:
   State();
   ~State();
 
-  GLProgram * program;
+  Shape * shape;
+  Program * program;
+  Material * material;
   RenderCache * rendercache;
-  GLUniformBuffer * material;
+  glm::mat4 viewmatrix;
+  glm::mat4 projmatrix;
   glm::mat4 transform;
-  GLUniformBuffer * glcamera;
-  VertexElement vertexelem;
 
 private:
   void push();
