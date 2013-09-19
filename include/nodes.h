@@ -3,15 +3,6 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <fields.h>
-#include <elements.h>
-#include <functional>
-
-class GLTextureUnit;
-class GLBufferObject;
-class GLTextureObject;
-class GLTextureSampler;
-class GLVertexAttribute;
-class GLVertexArrayObject;
 
 class State;
 class Action;
@@ -118,28 +109,6 @@ public:
   MFShader shaders;
 };
 
-class Uniform : public FieldContainer {
-public:
-  Uniform();
-  virtual ~Uniform();
-  virtual void flush(State * state) {};
-  SFString name;
-};
-
-class Uniform3f : public Uniform {
-public:
-  Uniform3f();
-  virtual ~Uniform3f();
-  SFVec3f value;
-};
-
-class UniformMatrix4f : public Uniform {
-public:
-  UniformMatrix4f();
-  virtual ~UniformMatrix4f();
-  SFMatrix4f value;
-};
-
 class Material : public Node {
 public:
   Material();
@@ -173,10 +142,6 @@ public:
   virtual void traverse(RenderAction * action);
 
   SFUint unit;
-
-private:
-  friend class TextureElement;
-  std::unique_ptr<GLTextureUnit> gltexunit;
 };
 
 class Texture : public Node {
@@ -194,10 +159,6 @@ public:
   SFInt border;
   SFEnum type;
   SFEnum internalFormat;
-
-private:
-  friend class TextureElement;
-  std::unique_ptr<GLTextureObject> gltexture;
 };
 
 class TextureSampler : public Node {
@@ -212,10 +173,6 @@ public:
   SFEnum magFilter;
 
   virtual void traverse(RenderAction * action);
-
-private:
-  friend class TextureElement;
-  std::unique_ptr<GLTextureSampler> glsampler;
 };
 
 class BoundingBox : public Node {

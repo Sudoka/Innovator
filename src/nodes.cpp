@@ -150,6 +150,7 @@ Separator::traverse(RenderAction * action)
         StateScope scope(state);
         Group::traverse(action);
         state->rendercache = nullptr;
+        self->rendercache->compile();
       }
       self->rendercache->flush(state);
       return;
@@ -257,7 +258,6 @@ Transform::traverse(BoundingBoxAction * action)
 // *************************************************************************************************
 
 TextureUnit::TextureUnit()
-  : gltexunit(nullptr)
 {
   this->registerField(this->unit, "unit", 0);
 }
@@ -275,7 +275,6 @@ TextureUnit::traverse(RenderAction * action)
 // *************************************************************************************************
 
 Texture::Texture()
-  : gltexture(nullptr)
 {
   this->registerField(this->fileName, "fileName");
   this->registerField(this->target, "target", GL_TEXTURE_2D);
@@ -302,6 +301,7 @@ Texture::~Texture()
 void
 Texture::traverse(RenderAction * action)
 {
+/*
   if (this->gltexture.get() == nullptr) {
     this->gltexture.reset(new GLTextureObject(this->target.value,
                                               this->level.value, 
@@ -313,13 +313,13 @@ Texture::traverse(RenderAction * action)
                                               this->type.value,
                                               nullptr));
   }
+*/
   //action->state->textureelem.set(this);
 }
 
 // *************************************************************************************************
 
 TextureSampler::TextureSampler()
-  : glsampler(nullptr)
 {
   this->registerField(this->wrapS, "wrapS", GL_CLAMP_TO_EDGE);
   this->registerField(this->wrapT, "wrapT", GL_CLAMP_TO_EDGE);
@@ -336,6 +336,7 @@ TextureSampler::~TextureSampler()
 void
 TextureSampler::traverse(RenderAction * action)
 {
+/*
   if (this->glsampler.get() == nullptr) {
     this->glsampler.reset(new GLTextureSampler(this->wrapS.value,
                                                this->wrapT.value,
@@ -343,7 +344,8 @@ TextureSampler::traverse(RenderAction * action)
                                                this->minFilter.value,
                                                this->magFilter.value));
   }
-  //action->state->textureelem.set(this);
+*/
+  //action->state->textureelem.set(this);`
 }
 
 // *************************************************************************************************

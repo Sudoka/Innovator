@@ -6,23 +6,12 @@
 #include <opengl.h>
 #include <glm/glm.hpp>
 
-class CachedShape {
+class ShapeInfo {
 public:
-  CachedShape(State * state);
-  void flush(State * state);
-
-  Shape * shape;
-  Program * program;
-  Material * material;
+  int shapeindex;
+  int programindex;
+  int materialindex;
   glm::mat4 transform;
-
-  std::unique_ptr<GLProgram> glprogram;
-  std::unique_ptr<GLUniformBuffer> glcamera;
-  std::unique_ptr<GLUniformBuffer> gltransform;
-  std::unique_ptr<GLBufferObject> indexbuffer;
-  std::unique_ptr<GLBufferObject> vertexbuffer;
-  std::unique_ptr<GLVertexAttribute> vertexattrib;
-  std::unique_ptr<GLVertexArrayObject> vertexarrayobject;
 };
 
 class RenderCache {

@@ -1,58 +1,28 @@
 #include <rendercache.h>
 #include <state.h>
+#include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 using namespace glm;
 
-CachedShape::CachedShape(State * state)
-{
-  this->shape = state->shape;
-  this->program = state->program;
-  this->material = state->material;
-  this->transform = state->transform;
-
-  this->indexbuffer.reset(GLBufferObject::create(GL_ELEMENT_ARRAY_BUFFER,
-                                                 GL_STATIC_DRAW,
-                                                 GL_UNSIGNED_INT,
-                                                 0,
-                                                 this->shape->indices.vec));
-  this->vertexbuffer.reset(GLBufferObject::create(GL_ARRAY_BUFFER,
-                                                  GL_STATIC_DRAW,
-                                                  GL_FLOAT,
-                                                  0,
-                                                  this->shape->vertices.vec));
-
-  this->glprogram.reset(new GLProgram(this->program->shaders.values));
-  this->vertexattrib.reset(new GLVertexAttribute(0, 3, GL_FLOAT, 0));
-  this->vertexarrayobject.reset(new GLVertexArrayObject);
-  this->gltransform.reset(new GLUniformBuffer(1));
-  this->glcamera.reset(new GLUniformBuffer(0, 2));
-  
-  this->vertexarrayobject->bind();
-  BindScope indexbuffer(this->indexbuffer.get());
-  BindScope vertexbuffer(this->vertexbuffer.get());
-  BindScope vertexattrib(this->vertexattrib.get());
-  this->vertexarrayobject->unbind();
-}
-
-void 
-CachedShape::flush(State * state)
-{
-  this->gltransform->updateGL(glm::value_ptr(this->transform), sizeof(mat4));
-  this->glcamera->updateGL(glm::value_ptr(state->viewmatrix), sizeof(mat4), 0);
-  this->glcamera->updateGL(glm::value_ptr(state->projmatrix), sizeof(mat4), 1);
-  
-  BindScope program(this->glprogram.get());
-  this->glcamera->bindBuffer();
-  this->gltransform->bindBuffer();
-  BindScope vao(this->vertexarrayobject.get());
-  glDrawElements(GL_TRIANGLES, this->shape->indices.vec.size(), GL_UNSIGNED_INT, nullptr);
-}
-
 class RenderCache::Pimpl {
 public:
-  vector<CachedShape*> shapes;
+  Pimpl() : shapecount(0) {}
+  vector<Shape*> shapes;
+  vector<Program*> programs;
+
+  std::unique_ptr<GLUniformBuffer> glcamera;
+  std::unique_ptr<GLUniformBuffer> gltransform;
+
+  vector<GLProgram*> glprograms;
+  vector<GLBufferObject*> indexbuffers;
+  vector<GLBufferObject*> vertexbuffers;
+  vector<GLVertexAttribute*> vertexattribs;
+  vector<GLVertexArrayObject*> vertexarrayobjects;
+
+  vector<ShapeInfo> shapeinfovec;
+  int shapecount;
 };
 
 RenderCache::RenderCache()
@@ -67,18 +37,78 @@ RenderCache::~RenderCache()
 void 
 RenderCache::capture(State * state)
 {
-  self->shapes.push_back(new CachedShape(state));
+  if (std::find(begin(self->shapes), end(self->shapes), state->shape) == end(self->shapes)) {
+    self->shapes.push_back(state->shape);
+  }
+  if (std::find(begin(self->programs), end(self->programs), state->program) == end(self->programs)) {
+    self->programs.push_back(state->program);
+  }
+
+  ShapeInfo shapeinfo;
+  shapeinfo.transform = state->transform;
+  shapeinfo.shapeindex = self->shapes.size() - 1;
+  shapeinfo.programindex = self->programs.size() - 1;
+
+  self->shapeinfovec.push_back(shapeinfo);
+  self->shapecount++;
 }
 
 void
 RenderCache::compile()
 {
+  for each (Shape * shape in self->shapes) {
+    GLBufferObject * indexbuffer = GLBufferObject::create(GL_ELEMENT_ARRAY_BUFFER,
+                                                          GL_STATIC_DRAW,
+                                                          GL_UNSIGNED_INT,
+                                                          0,
+                                                          shape->indices.vec);
+    GLBufferObject * vertexbuffer = GLBufferObject::create(GL_ARRAY_BUFFER,
+                                                           GL_STATIC_DRAW,
+                                                           GL_FLOAT,
+                                                           0,
+                                                           shape->vertices.vec);
+    GLVertexAttribute * vertexattrib = new GLVertexAttribute(0, 3, GL_FLOAT, 0);
+
+    GLVertexArrayObject * vertexarrayobject = new GLVertexArrayObject;
+
+    vertexarrayobject->bind();
+    BindScope indexbufferscope(indexbuffer);
+    BindScope vertexbufferscope(vertexbuffer);
+    BindScope vertexattribscope(vertexattrib);
+    vertexarrayobject->unbind();
+
+    self->indexbuffers.push_back(indexbuffer);
+    self->vertexbuffers.push_back(vertexbuffer);
+    self->vertexattribs.push_back(vertexattrib);
+    self->vertexarrayobjects.push_back(vertexarrayobject);
+  }
+
+  for each (Program * program in self->programs) {
+    self->glprograms.push_back(new GLProgram(program->shaders.values));
+  }
+
+  self->glcamera.reset(new GLUniformBuffer(0, 2));
+  self->gltransform.reset(new GLUniformBuffer(1));
 }
 
 void 
 RenderCache::flush(State * state)
 {
-  for each (CachedShape * shape in self->shapes) {
-    shape->flush(state);
+  self->glcamera->updateGL(glm::value_ptr(state->viewmatrix), sizeof(mat4), 0);
+  self->glcamera->updateGL(glm::value_ptr(state->projmatrix), sizeof(mat4), 1);
+
+  Shape * shape = self->shapes[0];
+  GLProgram * program = self->glprograms[0];
+  GLVertexArrayObject * vao = self->vertexarrayobjects[0];
+  
+  BindScope programscope(program);
+  self->glcamera->bindBuffer();
+  self->gltransform->bindBuffer();
+  BindScope vaoscope(vao);
+
+  for (int i = 0; i < self->shapecount; i++) {
+    ShapeInfo shapeinfo = self->shapeinfovec[i];
+    self->gltransform->updateGL(glm::value_ptr(shapeinfo.transform), sizeof(mat4));
+    glDrawElements(GL_TRIANGLES, shape->indices.vec.size(), GL_UNSIGNED_INT, nullptr);
   }
 }
