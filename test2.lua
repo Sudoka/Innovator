@@ -41,7 +41,7 @@ void main()
 ]]
 }
 
-local shape = Shape {
+local box = Shape {
    indices = { 0, 1, 3, 3, 2, 0, 1, 5, 7, 7, 3, 1, 5, 4, 6, 6, 7, 5, 
                4, 0, 2, 2, 6, 4, 2, 3, 7, 7, 6, 2, 1, 0, 4, 4, 5, 1 },
    vertices = { -1, -1, -1, -1, -1,  1, -1,  1, -1, -1,  1,  1,
@@ -56,34 +56,34 @@ SceneRoot = Nodes.Separator {
    },
    Separator {
       Transform { translation = { 0, 0, 0 } },
-      shape
+      box
    },
    Separator {
       Transform { translation = { 0, 0, 3 } },
-      shape
+      box
    },
    Separator {
       Transform { translation = { 0, 3, 0 } },
-      shape
+      box
    },
    Separator {
       Transform { translation = { 0, 3, 3 } },
-      shape
+      box
    },
    Separator {
       Transform { translation = { 3, 0, 0 } },
-      shape
+      box
    },
    Separator {
       Transform { translation = { 3, 0, 3 } },
-      shape
+      box
    },
    Separator {
       Transform { translation = { 3, 3, 0 } },
-      shape
+      box
    },
    Separator {
       Transform { translation = { 3, 3, 3 } },
-      shape
+      box
    }
 }

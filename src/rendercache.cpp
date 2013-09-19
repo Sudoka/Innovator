@@ -84,7 +84,17 @@ RenderCache::compile()
   }
 
   for each (Program * program in self->programs) {
-    self->glprograms.push_back(new GLProgram(program->shaders.values));
+    GLProgram * glprogram = new GLProgram(program->shaders.values);
+    self->glprograms.push_back(glprogram);
+
+    GLuint cameraindex = glGetUniformBlockIndex(glprogram->id, "Camera");
+    if (cameraindex != GL_INVALID_VALUE) {
+      glUniformBlockBinding(glprogram->id, cameraindex, 0);
+    }
+    GLuint transformindex = glGetUniformBlockIndex(glprogram->id, "Transform");
+    if (transformindex != GL_INVALID_VALUE) {
+      glUniformBlockBinding(glprogram->id, transformindex, 1);
+    }
   }
 
   self->glcamera.reset(new GLUniformBuffer(0, 2));

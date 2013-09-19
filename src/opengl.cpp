@@ -275,15 +275,6 @@ GLProgram::GLProgram(const vector<shared_ptr<ShaderObject>> & shaderobjects)
     this->attach(shader->source.value.c_str(), shader->type.value);
   }
   this->link();
-
-  GLuint cameraindex = glGetUniformBlockIndex(this->id, "Camera");
-  if (cameraindex != GL_INVALID_VALUE) {
-    glUniformBlockBinding(this->id, cameraindex, 0);
-  }
-  GLuint transformindex = glGetUniformBlockIndex(this->id, "Transform");
-  if (transformindex != GL_INVALID_VALUE) {
-    glUniformBlockBinding(this->id, transformindex, 1);
-  }
 }
 
 GLProgram::~GLProgram()
