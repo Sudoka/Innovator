@@ -6,20 +6,29 @@ vertex = [[
 #version 330
 layout(location = 0) in vec3 VertexPosition;
 
-uniform Transform {
-  mat4 ModelMatrix;
-};
-
-layout(std140) uniform Camera {
+layout(std140) uniform Transform {
   mat4 ViewMatrix;
   mat4 ProjectionMatrix;
+  mat4 ModelMatrix[8];
+};
+
+struct MaterialInfo {
+  vec4 ambient;
+  vec4 diffuse;
+  vec4 specular;
+};
+
+layout(std140) uniform Material {
+  MaterialInfo Materials[8];
 };
 
 out vec4 position;
+out vec3 color;
 
 void main() 
 {
-   mat4 ModelViewMatrix = ViewMatrix * ModelMatrix;
+   color = Materials[gl_InstanceID].diffuse.rgb;
+   mat4 ModelViewMatrix = ViewMatrix * ModelMatrix[gl_InstanceID];
    position = ModelViewMatrix * vec4(VertexPosition, 1.0);
    gl_Position = ProjectionMatrix * position;
 }
@@ -30,13 +39,14 @@ fragment = [[
 layout(location = 0) out vec4 FragColor;
 
 in vec4 position;
+in vec3 color;
 
 void main()
 {
   vec3 dx = dFdx(position.xyz);
   vec3 dy = dFdy(position.xyz);
   vec3 n = normalize(cross(dx, dy));
-  FragColor = vec4(n.zzz, 1.0);
+  FragColor = vec4(color * n.zzz, 1.0);
 }
 ]]
 }
@@ -56,34 +66,42 @@ SceneRoot = Nodes.Separator {
    },
    Separator {
       Transform { translation = { 0, 0, 0 } },
+      Material { diffuse = { 1, 1, 1 } },
       box
    },
    Separator {
       Transform { translation = { 0, 0, 3 } },
+      Material { diffuse = { 1, 1, 0 } },
       box
    },
    Separator {
       Transform { translation = { 0, 3, 0 } },
+      Material { diffuse = { 1, 0, 1 } },
       box
    },
    Separator {
       Transform { translation = { 0, 3, 3 } },
+      Material { diffuse = { 1, 0, 0 } },
       box
    },
    Separator {
       Transform { translation = { 3, 0, 0 } },
+      Material { diffuse = { 0, 1, 1 } },
       box
    },
    Separator {
       Transform { translation = { 3, 0, 3 } },
+      Material { diffuse = { 0, 0, 1 } },
       box
    },
    Separator {
-      Transform { translation = { 3, 3, 0 } },
-      box
+      Transform { translation = { 3, 3, 0 } }, 
+      Material { diffuse = { 0, 1, 0 } },
+     box
    },
    Separator {
       Transform { translation = { 3, 3, 3 } },
+      Material { diffuse = { 0, 0, 0 } },
       box
    }
 }

@@ -244,9 +244,9 @@ GLQueryObject::unbind()
 
 // *************************************************************************************************
 
-GLUniformBuffer::GLUniformBuffer(GLuint blockbinding, GLsizeiptr count)
+GLUniformBuffer::GLUniformBuffer(GLuint blockbinding, GLsizeiptr size)
   : blockbinding(blockbinding),
-    buffer(new GLBufferObject(GL_UNIFORM_BUFFER, GL_STREAM_DRAW, count * sizeof(mat4)))
+    buffer(new GLBufferObject(GL_UNIFORM_BUFFER, GL_STREAM_DRAW, size))
 {
 }
 

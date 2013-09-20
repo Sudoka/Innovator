@@ -14,6 +14,18 @@ public:
   glm::mat4 transform;
 };
 
+struct GLMaterial {
+  glm::vec4 ambient;
+  glm::vec4 diffuse;
+  glm::vec4 specular;
+};
+
+struct GLTransform {
+  glm::mat4 ViewMatrix;
+  glm::mat4 ProjectionMatrix;
+  glm::mat4 ModelMatrix;
+};
+
 class RenderCache {
 public:
   RenderCache();

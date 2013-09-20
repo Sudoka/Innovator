@@ -171,9 +171,9 @@ Separator::traverse(BoundingBoxAction * action)
 
 Material::Material()
 {
-  this->registerField(this->ambient, "ambient", vec3(1, 1, 1));
-  this->registerField(this->diffuse, "diffuse", vec3(0, 0, 0));
-  this->registerField(this->specular, "specular", vec3(0.5f, 0.5f, 0.5f));
+  this->registerField(this->ambient, "ambient", vec3(0.2f, 0.2f, 0.2f));
+  this->registerField(this->diffuse, "diffuse", vec3(0.8f, 0.8f, 0.8f));
+  this->registerField(this->specular, "specular", vec3(0.1f, 0.1f, 0.1f));
   this->registerField(this->shininess, "shininess", 0.1f);
   this->registerField(this->transparency, "transparency", 0.0f);
 }

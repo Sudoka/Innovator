@@ -89,7 +89,7 @@ public:
 
 class GLUniformBuffer {
 public:
-  GLUniformBuffer(GLuint blockbinding, GLsizeiptr count = 1);
+  GLUniformBuffer(GLuint blockbinding, GLsizeiptr size);
   ~GLUniformBuffer();
 
   void updateGL(GLvoid * data, GLsizeiptr size, GLuint index = 0);
