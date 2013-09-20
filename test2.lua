@@ -7,8 +7,8 @@ vertex = [[
 layout(location = 0) in vec3 VertexPosition;
 
 layout(std140) uniform Transform {
-  mat4 ViewMatrix;
-  mat4 ProjectionMatrix;
+  mat4 iv_ViewMatrix;
+  mat4 iv_ProjectionMatrix;
   mat4 ModelMatrix[8];
 };
 
@@ -22,21 +22,24 @@ layout(std140) uniform Material {
   MaterialInfo Materials[8];
 };
 
+MaterialInfo iv_Material = Materials[gl_InstanceID];
+mat4 iv_ModelViewMatrix = iv_ViewMatrix * ModelMatrix[gl_InstanceID];
+vec4 iv_Vertex = vec4(VertexPosition, 1.0);
+
 out vec4 position;
 out vec3 color;
 
 void main() 
 {
-   color = Materials[gl_InstanceID].diffuse.rgb;
-   mat4 ModelViewMatrix = ViewMatrix * ModelMatrix[gl_InstanceID];
-   position = ModelViewMatrix * vec4(VertexPosition, 1.0);
-   gl_Position = ProjectionMatrix * position;
+   color = iv_Material.diffuse.rgb;
+   position = iv_ModelViewMatrix * iv_Vertex;
+   gl_Position = iv_ProjectionMatrix * position;
 }
 ]]
 ,
 fragment = [[
 #version 330
-layout(location = 0) out vec4 FragColor;
+layout(location = 0) out vec4 iv_FragColor;
 
 in vec4 position;
 in vec3 color;
@@ -46,7 +49,7 @@ void main()
   vec3 dx = dFdx(position.xyz);
   vec3 dy = dFdy(position.xyz);
   vec3 n = normalize(cross(dx, dy));
-  FragColor = vec4(color * n.zzz, 1.0);
+  iv_FragColor = vec4(color * n.zzz, 1.0);
 }
 ]]
 }

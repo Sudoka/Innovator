@@ -8,7 +8,7 @@ using namespace glm;
 
 class RenderCache::Pimpl {
 public:
-  Pimpl() : shapecount(0) {}
+  Pimpl() : shapecount(0), draw_instanced(false) {}
   vector<Shape*> shapes;
   vector<Program*> programs;
   vector<Material*> materials;
@@ -24,6 +24,7 @@ public:
 
   vector<ShapeInfo> shapeinfovec;
   int shapecount;
+  bool draw_instanced;
 };
 
 RenderCache::RenderCache()
@@ -102,7 +103,9 @@ RenderCache::compile()
     }
   }
 
-  if (self->shapes.size() == 1 && self->programs.size() == 1) {
+  self->draw_instanced = (self->shapes.size() == 1 && self->programs.size() == 1);
+
+  if (self->draw_instanced) {
     self->gltransform.reset(new GLUniformBuffer(0, sizeof(mat4) * (self->shapecount + 2)));
     for (int i = 0; i < self->shapecount; i++) {
       ShapeInfo shapeinfo = self->shapeinfovec[i];
@@ -133,7 +136,7 @@ RenderCache::flush(State * state)
   self->gltransform->updateGL(glm::value_ptr(state->viewmatrix), sizeof(mat4), 0);
   self->gltransform->updateGL(glm::value_ptr(state->projmatrix), sizeof(mat4), 1);
 
-  if (self->shapes.size() == 1 && self->programs.size() == 1) {
+  if (self->draw_instanced) {
 
     BindScope programscope(self->glprograms[0]);
     self->glmaterial->bindBuffer();
@@ -151,9 +154,17 @@ RenderCache::flush(State * state)
       GLVertexArrayObject * vao = self->vertexarrayobjects[shapeinfo.shapeindex];
       
       BindScope programscope(program);
+      self->glmaterial->bindBuffer();
       self->gltransform->bindBuffer();
       BindScope vaoscope(vao);
 
+      Material * mat = self->materials[shapeinfo.materialindex];
+      GLMaterial glmat;
+      glmat.ambient = vec4(mat->ambient.value, 1.0);
+      glmat.diffuse = vec4(mat->diffuse.value, mat->transparency.value);
+      glmat.specular = vec4(mat->specular.value, 1.0);
+      
+      self->glmaterial->updateGL(&glmat, sizeof(GLMaterial), 0);
       self->gltransform->updateGL(glm::value_ptr(shapeinfo.transform), sizeof(mat4), 2);
       glDrawElements(GL_TRIANGLES, shape->indices.vec.size(), GL_UNSIGNED_INT, nullptr);
     }
