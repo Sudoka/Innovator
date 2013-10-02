@@ -1,8 +1,9 @@
 #pragma once
 
+#include <GL/glew.h>
+
 #include <memory>
 #include <vector>
-#include <GL/glew.h>
 
 class Texture;
 class TextureUnit;

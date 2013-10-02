@@ -6,7 +6,7 @@
 using namespace std;
 using namespace glm;
 
-class RenderCache::Pimpl {
+class GL3Renderer::Pimpl {
 public:
   Pimpl() : shapecount(0), draw_instanced(false) {}
   vector<Shape*> shapes;
@@ -27,17 +27,17 @@ public:
   bool draw_instanced;
 };
 
-RenderCache::RenderCache()
+GL3Renderer::GL3Renderer()
   : self(new Pimpl)
 {
 }
 
-RenderCache::~RenderCache()
+GL3Renderer::~GL3Renderer()
 {
 }
 
 void 
-RenderCache::capture(State * state)
+GL3Renderer::capture(State * state)
 {
   if (std::find(begin(self->shapes), end(self->shapes), state->shape) == end(self->shapes)) {
     self->shapes.push_back(state->shape);
@@ -60,7 +60,7 @@ RenderCache::capture(State * state)
 }
 
 void
-RenderCache::compile()
+GL3Renderer::compile()
 {
   for each (Shape * shape in self->shapes) {
     GLBufferObject * indexbuffer = GLBufferObject::create(GL_ELEMENT_ARRAY_BUFFER,
@@ -131,7 +131,7 @@ RenderCache::compile()
 }
 
 void 
-RenderCache::flush(State * state)
+GL3Renderer::flush(State * state)
 {
   self->gltransform->updateGL(glm::value_ptr(state->viewmatrix), sizeof(mat4), 0);
   self->gltransform->updateGL(glm::value_ptr(state->projmatrix), sizeof(mat4), 1);

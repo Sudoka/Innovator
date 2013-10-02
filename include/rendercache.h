@@ -26,10 +26,17 @@ struct GLTransform {
   glm::mat4 ModelMatrix;
 };
 
-class RenderCache {
+class GLRenderer {
 public:
-  RenderCache();
-  ~RenderCache();
+  virtual void capture(State * state) = 0;
+  virtual void compile() = 0;
+  virtual void flush(State * state) = 0;
+};
+
+class GL3Renderer : public GLRenderer {
+public:
+  GL3Renderer();
+  ~GL3Renderer();
 
   void capture(State * state);
 

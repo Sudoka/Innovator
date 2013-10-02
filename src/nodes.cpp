@@ -122,7 +122,7 @@ Group::traverse(BoundingBoxAction * action)
 class Separator::SeparatorP {
 public:
   SeparatorP() : rendercache(nullptr) {}
-  unique_ptr<RenderCache> rendercache;
+  unique_ptr<GLRenderer> rendercache;
 };
 
 Separator::Separator()
@@ -145,7 +145,7 @@ Separator::traverse(RenderAction * action)
   if (this->renderCaching.value == Separator::ON) {
     if (state->rendercache == nullptr) {
       if (self->rendercache.get() == nullptr) {
-        self->rendercache.reset(new RenderCache);
+        self->rendercache.reset(new GL3Renderer);
         state->rendercache = self->rendercache.get();
         StateScope scope(state);
         Group::traverse(action);

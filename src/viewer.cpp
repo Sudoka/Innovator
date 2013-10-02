@@ -1,5 +1,5 @@
 #include <viewer.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 #include <nodes.h>
 #include <state.h>

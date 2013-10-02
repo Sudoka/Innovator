@@ -6,7 +6,7 @@
 class Shape;
 class Program;
 class Material;
-class RenderCache;
+class GLRenderer;
 
 class State {
 public:
@@ -16,7 +16,7 @@ public:
   Shape * shape;
   Program * program;
   Material * material;
-  RenderCache * rendercache;
+  GLRenderer * rendercache;
   glm::mat4 viewmatrix;
   glm::mat4 projmatrix;
   glm::mat4 transform;
