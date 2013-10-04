@@ -62,7 +62,7 @@ void
 Viewer::resize(int width, int height)
 {
   self->camera->aspectRatio.value = float(width) / float(height);
-  self->renderaction->setViewport(vec4(0, 0, width, height));
+  self->renderaction->setViewport(ivec4(0, 0, width, height));
   self->redraw = true;
 }
 

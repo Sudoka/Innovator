@@ -1,19 +1,19 @@
 #pragma once
 
+#include <fields.h>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <fields.h>
+#include <map>
 
+class Node;
 class State;
 class Action;
 class RenderAction;
+class FieldContainer;
 class BoundingBoxAction;
 
 class FieldContainer {
 public:
-  virtual ~FieldContainer() {
-    
-  }
   template <typename T>
   static int CreateInstance(lua_State * L) {
     T * self = new T;
@@ -96,7 +96,7 @@ public:
   void lookAt(const glm::vec3 & focalpoint);
 };
 
-class ShaderObject : public FieldContainer {
+class ShaderObject : public Node {
 public:
   ShaderObject();
   virtual ~ShaderObject();
@@ -109,7 +109,7 @@ public:
   Program();
   virtual ~Program();
   virtual void traverse(RenderAction * action);
-  MFShader shaders;
+  MFNode shaders;
 };
 
 class Material : public Node {

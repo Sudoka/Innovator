@@ -18,11 +18,14 @@ static void ErrorCallback(int error, const char * description)
   cout << string(description) << endl;
 }
 
+static void WindowSizeCallback(GLFWwindow * window, int width, int height)
+{
+  windows[window]->resize(width, height);
+}
+
 static void KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, GL_TRUE);
-  }
+  windows[window]->keyboard(key);
 }
 
 static void CursorPosCallback(GLFWwindow * window, double x, double y)
@@ -58,6 +61,7 @@ Innovator::CreateWindow(int width, int height, const std::string & title)
   glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, KeyCallback);
   glfwSetCursorPosCallback(window, CursorPosCallback);
+  glfwSetWindowSizeCallback(window, WindowSizeCallback);
   glfwSetMouseButtonCallback(window, MouseButtonCallback);
 
   // TODO: multi-context glew

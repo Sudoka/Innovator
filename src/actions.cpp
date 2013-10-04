@@ -28,7 +28,7 @@ RenderAction::~RenderAction()
 }
 
 void
-RenderAction::setViewport(const glm::vec4 & viewport)
+RenderAction::setViewport(const glm::ivec4 & viewport)
 {
   this->viewport = viewport;
 }

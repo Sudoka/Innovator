@@ -1,6 +1,5 @@
 #pragma once
 
-#include <window.h>
 #include <nodes.h>
 #include <memory>
 

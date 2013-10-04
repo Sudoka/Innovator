@@ -41,7 +41,6 @@ Lua::dofile(const string & file)
     string message = luaL_checkstring(L, -1);
     throw runtime_error("Failed to open file: " + message);
   }
-  clearNodePtrMap();
 }
 
 void * 

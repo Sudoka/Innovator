@@ -12,8 +12,6 @@ class Node;
 class Separator;
 class ShaderObject;
 
-void clearNodePtrMap();
-
 class Field {
 public:
   virtual void read(lua_State * L) = 0;
@@ -150,15 +148,6 @@ public:
     Array<std::shared_ptr<Node>> value(L, this->values);
   }
   std::vector<std::shared_ptr<Node>> values;
-};
-
-class MFShader : public Field {
-public:
-  virtual void read(lua_State * L)
-  {
-    Array<std::shared_ptr<ShaderObject>> value(L, this->values);
-  }
-  std::vector<std::shared_ptr<ShaderObject>> values;
 };
 
 class SFVec2i : public Field {

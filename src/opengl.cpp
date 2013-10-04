@@ -268,10 +268,12 @@ GLUniformBuffer::bindBuffer()
 
 // *************************************************************************************************
 
-GLProgram::GLProgram(const vector<shared_ptr<ShaderObject>> & shaderobjects)
+GLProgram::GLProgram(const vector<shared_ptr<Node>> & shaderobjects)
   : id(glCreateProgram())
 {
-  for each (const shared_ptr<ShaderObject> & shader in shaderobjects) {
+  for each (const shared_ptr<Node> & node in shaderobjects) {
+    ShaderObject * shader = static_cast<ShaderObject*>(node.get());
+    assert(shader != nullptr);
     this->attach(shader->source.value.c_str(), shader->type.value);
   }
   this->link();

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+class Node;
 class State;
 
 class Bindable {
@@ -51,11 +52,9 @@ struct DrawElementsIndirectBuffer
   GLuint reservedMustBeZero;
 };
 
-class ShaderObject;
-
 class GLProgram : public Bindable {
 public:
-  GLProgram(const std::vector<std::shared_ptr<ShaderObject>> & shaderobjects);
+  GLProgram(const std::vector<std::shared_ptr<Node>> & shaderobjects);
   ~GLProgram();
   void attach(const char * shader, GLenum type);
   void link();

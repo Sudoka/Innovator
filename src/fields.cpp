@@ -6,13 +6,6 @@
 using namespace std;
 using namespace glm;
 
-static map<Node *, shared_ptr<Node>> nodeptrs;
-
-void clearNodePtrMap()
-{
-  nodeptrs.clear();
-}
-
 template <typename T> T * 
 ReadUserData(lua_State * L)
 {
@@ -25,18 +18,7 @@ ReadUserData(lua_State * L)
 shared_ptr<Node>
 FieldValue<shared_ptr<Node>>::readValue(lua_State * L)
 {
-  Node * node = ReadUserData<Node>(L);
-  assert(node != nullptr);
-  if (nodeptrs.find(node) == nodeptrs.end()) {
-    nodeptrs[node] = shared_ptr<Node>(node);
-  }
-  return nodeptrs[node];
-}
-
-shared_ptr<ShaderObject>
-FieldValue<shared_ptr<ShaderObject>>::readValue(lua_State * L)
-{
-  return shared_ptr<ShaderObject>(ReadUserData<ShaderObject>(L));
+  return shared_ptr<Node>(ReadUserData<Node>(L));
 }
 
 double

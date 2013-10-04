@@ -20,9 +20,9 @@ public:
   RenderAction();
   ~RenderAction();
   void apply(Node * node);
-  void setViewport(const glm::vec4 & viewport);
+  void setViewport(const glm::ivec4 & viewport);
 private:
-  glm::vec4 viewport;
+  glm::ivec4 viewport;
 };
 
 class BoundingBoxAction : public Action {
