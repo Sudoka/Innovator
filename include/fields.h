@@ -12,6 +12,8 @@ class Node;
 class Separator;
 class ShaderObject;
 
+void clearNodePtrMap();
+
 class Field {
 public:
   virtual void read(lua_State * L) = 0;
@@ -141,15 +143,6 @@ public:
   std::vector<double> vec;
 };
 
-class SFSeparator : public Field {
-public:
-  virtual void read(lua_State * L)
-  {
-    Value<std::shared_ptr<Separator>> value(L, this->name, this->value);
-  }
-  std::shared_ptr<Separator> value;
-};
-
 class MFNode : public Field {
 public:
   virtual void read(lua_State * L)
@@ -247,7 +240,7 @@ public:
     if (name.empty()) return;
     
     if (this->enums.find(name) == this->enums.end()) {
-      Innovator::postError("Invalid Enum: " + name);
+      //Innovator::postError("Invalid Enum: " + name);
       return;
     }
     this->value = this->enums[name];

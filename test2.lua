@@ -61,7 +61,6 @@ local box = Shape {
                  1, -1, -1,  1, -1,  1,  1,  1, -1,  1,  1,  1 }
 }
 
-
 SceneRoot = Nodes.Separator {
    Nodes.Program {
       Nodes.VertexShader { source = shader.vertex },
@@ -100,7 +99,7 @@ SceneRoot = Nodes.Separator {
    Separator {
       Transform { translation = { 3, 3, 0 } }, 
       Material { diffuse = { 0, 1, 0 } },
-     box
+      box
    },
    Separator {
       Transform { translation = { 3, 3, 3 } },

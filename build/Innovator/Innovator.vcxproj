@@ -191,7 +191,6 @@
     <ClCompile Include="..\..\src\rendercache.cpp" />
     <ClCompile Include="..\..\src\state.cpp" />
     <ClCompile Include="..\..\src\viewer.cpp" />
-    <ClCompile Include="..\..\src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\actions.h" />
@@ -205,7 +204,6 @@
     <ClInclude Include="..\..\include\rendercache.h" />
     <ClInclude Include="..\..\include\state.h" />
     <ClInclude Include="..\..\include\viewer.h" />
-    <ClInclude Include="..\..\include\window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

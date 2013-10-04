@@ -180,7 +180,6 @@ Material::Material()
 
 Material::~Material()
 {
-
 }
 
 void

@@ -296,7 +296,7 @@ GLProgram::attach(const char * source, GLenum type)
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
     GLchar * log = new GLchar[length + 1];
     glGetShaderInfoLog(shader, length, NULL, log);
-    Innovator::postError("Shader::attach: failed to compile shader: " + string(log));
+    //Innovator::postError("Shader::attach: failed to compile shader: " + string(log));
     delete [] log;
   } else {
     glAttachShader(this->id, shader);
@@ -316,7 +316,7 @@ GLProgram::link()
     glGetProgramiv(this->id, GL_INFO_LOG_LENGTH, &length);
     GLchar * log = new GLchar[length + 1];
     glGetProgramInfoLog(this->id, length, NULL, log);
-    Innovator::postError("Shader::link(): failed to link program: " + string(log));
+    //Innovator::postError("Shader::link(): failed to link program: " + string(log));
     delete [] log;
   }
 }

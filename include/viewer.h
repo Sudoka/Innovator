@@ -1,7 +1,8 @@
 #pragma once
 
-#include <memory>
+#include <window.h>
 #include <nodes.h>
+#include <memory>
 
 class Viewer {
 public:
@@ -9,11 +10,11 @@ public:
   ~Viewer();
 
   void setSceneGraph(const std::shared_ptr<Separator> & root);
-  void renderGL();
+  virtual void render();
 
   void resize(int width, int height);
   void mouseMoved(int x, int y);
-  void mouseButton(int button, int action);
+  virtual void mouseButton(int button, int action);
   void keyboard(int button);
 
   void scheduleRedraw();

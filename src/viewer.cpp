@@ -13,7 +13,7 @@ using namespace std;
 
 class Viewer::ViewerP {
 public:
-  ViewerP(int width, int height) 
+  ViewerP() 
     : prev_x(0),
       prev_y(0),
       button(0),
@@ -36,13 +36,14 @@ public:
 };
 
 Viewer::Viewer(int width, int height)
-  : self(new ViewerP(width, height))
+  : self(new ViewerP)
 {
   this->resize(width, height);
 }
 
 Viewer::~Viewer()
 {
+
 }
 
 void
@@ -66,7 +67,7 @@ Viewer::resize(int width, int height)
 }
 
 void
-Viewer::renderGL()
+Viewer::render()
 {
   self->renderaction->apply(self->root.get());
   self->redraw = false;

@@ -11,6 +11,9 @@ class BoundingBoxAction;
 
 class FieldContainer {
 public:
+  virtual ~FieldContainer() {
+    
+  }
   template <typename T>
   static int CreateInstance(lua_State * L) {
     T * self = new T;
@@ -164,7 +167,7 @@ public:
 class TextureSampler : public Node {
 public:
   TextureSampler();
-  ~TextureSampler();
+  virtual ~TextureSampler();
 
   SFEnum wrapS;
   SFEnum wrapT;

@@ -1,27 +1,36 @@
 #include <fields.h>
 #include <nodes.h>
 
+#include <map>
+
 using namespace std;
 using namespace glm;
+
+static map<Node *, shared_ptr<Node>> nodeptrs;
+
+void clearNodePtrMap()
+{
+  nodeptrs.clear();
+}
 
 template <typename T> T * 
 ReadUserData(lua_State * L)
 {
   luaL_checktype(L, -1, LUA_TLIGHTUSERDATA);
   T * userdata = static_cast<T *>(lua_touserdata(L, -1));
+  assert(userdata != nullptr);
   return userdata;
 }
 
 shared_ptr<Node>
 FieldValue<shared_ptr<Node>>::readValue(lua_State * L)
 {
-  return shared_ptr<Node>(ReadUserData<Node>(L));
-}
-
-shared_ptr<Separator>
-FieldValue<shared_ptr<Separator>>::readValue(lua_State * L)
-{
-  return shared_ptr<Separator>(ReadUserData<Separator>(L));
+  Node * node = ReadUserData<Node>(L);
+  assert(node != nullptr);
+  if (nodeptrs.find(node) == nodeptrs.end()) {
+    nodeptrs[node] = shared_ptr<Node>(node);
+  }
+  return nodeptrs[node];
 }
 
 shared_ptr<ShaderObject>

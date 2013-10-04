@@ -1,136 +1,105 @@
 #include <innovator.h>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <viewer.h>
 #include <luawrapper.h>
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include <map>
+#include <string>
 #include <iostream>
-#include <nodes.h>
 
 using namespace std;
 
-class Glfw {
-public:
-  Glfw() {
-    if (!glfwInit()) {
-      throw std::runtime_error("failed to initialize GLFW.");
-    }
-  }
-  ~Glfw() {
-    glfwTerminate();
-  }
-};
+static map<GLFWwindow *, shared_ptr<Viewer>> windows;
 
-class Innovator::InnovatorP {
-public:
-  unique_ptr<Lua> lua;
-  unique_ptr<Glfw> glfw;
-  unique_ptr<Viewer> viewer;
-  GLFWwindow * window;
-  bool lod_enabled;
-};
-
-std::unique_ptr<Innovator::InnovatorP> Innovator::self = nullptr;
-
-Innovator::Innovator(int width, int height, const std::string & filename)
+static void ErrorCallback(int error, const char * description)
 {
-  if (self.get() != nullptr) {
-    throw std::runtime_error("Innovator already created.");
+  cout << string(description) << endl;
+}
+
+static void KeyCallback(GLFWwindow * window, int key, int scancode, int action, int mods)
+{
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GL_TRUE);
   }
-  self.reset(new InnovatorP);
-  self->viewer.reset(new Viewer(width, height));
-  self->lua.reset(new Lua);
+}
 
-  self->glfw.reset(new Glfw);
+static void CursorPosCallback(GLFWwindow * window, double x, double y)
+{
+  windows[window]->mouseMoved((int)x, (int)y);
+}
 
-  //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+static void MouseButtonCallback(GLFWwindow * window, int button, int action, int mods)
+{
+  windows[window]->mouseButton(button, action);
+}
 
-  self->window = glfwCreateWindow(width, height, "Innovator", nullptr, nullptr);
-  if (self->window == nullptr) {
+void
+Innovator::init()
+{
+  if (!glfwInit()) {
+    throw std::runtime_error("failed to initialize GLFW.");
+  }
+  glfwSetErrorCallback(ErrorCallback);
+}
+
+void
+Innovator::CreateWindow(int width, int height, const std::string & title)
+{
+  GLFWwindow * shared = nullptr;
+  GLFWmonitor * monitor = nullptr;
+
+  GLFWwindow * window = glfwCreateWindow(width, height, title.c_str(), monitor, shared);
+  if (window == nullptr) {
     throw std::runtime_error("failed to open GLFW window.");
   }
 
-  glfwMakeContextCurrent(self->window);
+  glfwMakeContextCurrent(window);
+  glfwSetKeyCallback(window, KeyCallback);
+  glfwSetCursorPosCallback(window, CursorPosCallback);
+  glfwSetMouseButtonCallback(window, MouseButtonCallback);
 
+  // TODO: multi-context glew
   if (glewInit() != GLEW_OK) {
     throw std::runtime_error("failed to initialize GLEW.");
   }
-  if (!GLEW_VERSION_3_3) {
-    throw std::runtime_error("OpenGL 3.3 not supported.");
-  }
 
-  //glfwDisable(GLFW_AUTO_POLL_EVENTS);
-  //glfwSetWindowSizeCallback(Innovator::resizeCB);
-  //glfwSetMousePosCallback(Innovator::mouseMovedCB);
-  //glfwSetMouseButtonCallback(Innovator::mouseButtonCB);
-
-  self->lua->registerFunction("Group", Node::CreateInstance<Group>);
-  self->lua->registerFunction("Shape", Node::CreateInstance<Shape>);
-  self->lua->registerFunction("Texture", Node::CreateInstance<Texture>);
-  self->lua->registerFunction("Program", Node::CreateInstance<Program>);
-  self->lua->registerFunction("Material", Node::CreateInstance<Material>);
-  self->lua->registerFunction("Separator", Node::CreateInstance<Separator>);
-  self->lua->registerFunction("Transform", Node::CreateInstance<Transform>);
-  self->lua->registerFunction("TextureUnit", Node::CreateInstance<TextureUnit>);
-  self->lua->registerFunction("BoundingBox", Node::CreateInstance<BoundingBox>);
-  self->lua->registerFunction("ShaderObject", Node::CreateInstance<ShaderObject>);
-  self->lua->registerFunction("TextureSampler", Node::CreateInstance<TextureSampler>);
-
-  self->lua->dofile(filename);
-  shared_ptr<Separator> root(static_cast<Separator*>(self->lua->getglobaluserdata("SceneRoot")));
-  self->viewer->setSceneGraph(root);
-}
-
-Innovator::~Innovator()
-{
-}
-
-void 
-Innovator::resizeCB(int width, int height)
-{
-  self->viewer->resize(width, height);
-  self->viewer->scheduleRedraw();
+  Lua lua;
+  lua.dofile("test2.lua");
+  shared_ptr<Separator> root(static_cast<Separator*>(lua.getglobaluserdata("SceneRoot")));
+  
+  windows[window] = make_shared<Viewer>(width, height);
+  windows[window]->setSceneGraph(root);
 }
 
 void
-Innovator::mouseMovedCB(int x, int y)
-{
-  self->viewer->mouseMoved(x, y);
-}
-
-void
-Innovator::mouseButtonCB(int button, int action)
-{
-  self->viewer->mouseButton(button, action);
-}
-
-void 
 Innovator::loop()
 {
-  while (!glfwWindowShouldClose(self->window)) {
-    glfwWaitEvents();
-    //if (glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
-    //break;
+  while (true) {
 
-    if (self->viewer->needRedraw()) {
-      self->viewer->renderGL();
-      if (glGetError() != GL_NO_ERROR) {
-        cout << "GL error" << endl;
+    if (windows.empty()) return;
+    glfwWaitEvents();
+
+    // remove closed windows
+    for (auto it = windows.begin(); it != windows.end();) {
+      glfwMakeContextCurrent(it->first);
+
+      if (glfwWindowShouldClose(it->first)) {
+        glfwDestroyWindow(it->first);
+        windows.erase(it++);
+      } else {
+        it->second->render();
+        glfwSwapBuffers(it->first);
+        glfwPollEvents();
+        it++;
       }
-      glfwSwapBuffers(self->window);
     }
   }
 }
 
 void
-Innovator::postError(const string & msg)
+Innovator::exit()
 {
-  cout << "Innovator error: " << msg << endl;
+  glfwTerminate();
 }
-
-Lua *
-Innovator::lua()
-{
-  return self->lua.get();
-}  

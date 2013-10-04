@@ -1,5 +1,5 @@
 #include <luawrapper.h>
-#include <innovator.h>
+#include <nodes.h>
 
 using namespace std;
 
@@ -7,6 +7,18 @@ Lua::Lua()
 {
   L = luaL_newstate();
   luaL_openlibs(L);
+
+  this->registerFunction("Group", Node::CreateInstance<Group>);
+  this->registerFunction("Shape", Node::CreateInstance<Shape>);
+  this->registerFunction("Texture", Node::CreateInstance<Texture>);
+  this->registerFunction("Program", Node::CreateInstance<Program>);
+  this->registerFunction("Material", Node::CreateInstance<Material>);
+  this->registerFunction("Separator", Node::CreateInstance<Separator>);
+  this->registerFunction("Transform", Node::CreateInstance<Transform>);
+  this->registerFunction("TextureUnit", Node::CreateInstance<TextureUnit>);
+  this->registerFunction("BoundingBox", Node::CreateInstance<BoundingBox>);
+  this->registerFunction("ShaderObject", Node::CreateInstance<ShaderObject>);
+  this->registerFunction("TextureSampler", Node::CreateInstance<TextureSampler>);
 }
 
 Lua::~Lua()
@@ -29,6 +41,7 @@ Lua::dofile(const string & file)
     string message = luaL_checkstring(L, -1);
     throw runtime_error("Failed to open file: " + message);
   }
+  clearNodePtrMap();
 }
 
 void * 
